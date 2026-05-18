@@ -15,13 +15,10 @@ def check_for_leaked_secrets() -> list[str]:
 
     for key in sensitive_keys:
         val = os.environ.get(key, "")
-        if val and val not in placeholders:
-            # Basic entropy/length check for real secrets
-            # Binance API keys/secrets are typically 64 chars
-            if len(val) > 20 and not bool(re.search(r"\s", val)):
-                warnings.append(
-                    f"Warning: Suspiciously long value found for {key}. Ensure this is not logged."
-                )
+        if val and val not in placeholders and len(val) > 20 and not bool(re.search(r"\s", val)):
+            warnings.append(
+                f"Warning: Suspiciously long value found for {key}. Ensure this is not logged."
+            )
 
     return warnings
 

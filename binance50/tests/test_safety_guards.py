@@ -1,6 +1,6 @@
 import pytest
 
-from binance50.config.models import AppConfig
+from binance50.config.loader import load_config
 from binance50.core.enums import RuntimeEnvironment, TradingMode
 from binance50.core.exceptions import InvalidTradingModeError, LiveTradingBlockedError
 from binance50.safety.live_guard import check_live_trading_guard
@@ -8,7 +8,7 @@ from binance50.safety.mode_guard import check_mode_consistency
 
 
 def test_paper_mode_safe():
-    config = AppConfig()
+    config = load_config()
     config.runtime.trading_mode = TradingMode.PAPER
     config.runtime.environment = RuntimeEnvironment.LOCAL
 
@@ -18,7 +18,7 @@ def test_paper_mode_safe():
 
 
 def test_live_guard_blocks_by_default():
-    config = AppConfig()
+    config = load_config()
     config.runtime.trading_mode = TradingMode.LIVE
     config.runtime.environment = RuntimeEnvironment.MAINNET
 
@@ -32,9 +32,11 @@ def test_live_guard_blocks_by_default():
 
 
 def test_mode_consistency_invalid():
-    config = AppConfig()
+    config = load_config()
     config.runtime.trading_mode = TradingMode.TESTNET
     config.runtime.environment = RuntimeEnvironment.LOCAL
+    # Need a profile mismatch or something to trigger mode inconsistency
+    # local_paper_spot profile doesn't allow TESTNET mode
 
     with pytest.raises(InvalidTradingModeError):
         check_mode_consistency(config)
