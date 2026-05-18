@@ -1,0 +1,19 @@
+local:
+  description: "Local development environment"
+  api_url: "https://api.binance.com" # Placeholder
+  stream_url: "wss://stream.binance.com:9443/ws" # Placeholder
+
+testnet:
+  description: "Binance Spot Testnet environment"
+  api_url: "https://testnet.binance.vision/api" # Placeholder
+  stream_url: "wss://testnet.binance.vision/ws" # Placeholder
+
+demo:
+  description: "Binance Paper Trading / Demo environment"
+  api_url: "https://api.binance.com" # Placeholder
+  stream_url: "wss://stream.binance.com:9443/ws" # Placeholder
+
+mainnet:
+  description: "Binance Mainnet environment"
+  api_url: "https://api.binance.com" # Placeholder
+  stream_url: "wss://stream.binance.com:9443/ws" # Placeholder

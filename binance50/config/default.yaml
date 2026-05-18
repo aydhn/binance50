@@ -1,0 +1,25 @@
+project:
+  name: "binance50"
+  version: "0.1.0"
+
+runtime:
+  environment: "local"
+  trading_mode: "paper"
+  market_scope: "spot"
+  timezone: "UTC"
+
+safety:
+  enable_live_trading: false
+  confirm_live_trading: false
+  max_symbols_initial: 5
+  default_quote_asset: "USDT"
+
+logging:
+  level: "INFO"
+  log_dir: "logs"
+
+data:
+  root_dir: "data"
+
+reports:
+  root_dir: "reports"
