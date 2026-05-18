@@ -3,9 +3,12 @@ project:
   version: "0.1.0"
 
 runtime:
+  environment_profile: "local_paper_spot"
+  exchange: "binance"
   environment: "local"
   trading_mode: "paper"
   market_scope: "spot"
+  account_domain: "spot"
   timezone: "UTC"
 
 safety:
@@ -13,6 +16,23 @@ safety:
   confirm_live_trading: false
   max_symbols_initial: 5
   default_quote_asset: "USDT"
+  allow_testnet_orders: false
+  allow_demo_orders: false
+  allow_live_orders: false
+  require_manual_live_unlock: true
+  require_mainnet_confirmation: true
+  readonly_mainnet_allowed: true
+
+connector:
+  connection_enabled: false
+  order_gateway_enabled: false
+  websocket_enabled: false
+  user_data_stream_enabled: false
+  request_timeout_seconds: 10
+  recv_window_ms: 5000
+  max_retry_attempts: 3
+  backoff_initial_seconds: 0.5
+  backoff_max_seconds: 8.0
 
 logging:
   level: "INFO"

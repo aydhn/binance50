@@ -46,3 +46,13 @@ The system is designed with multiple decoupled engines and layers. This allows s
     Maintains a detailed ledger of all decisions.
 21. **Tests and Validation Layer**
     Ensures code quality and correctness.
+
+## Environment Matrix
+
+To safely manage trading environments, we utilize a strict Environment Matrix. This decouples the trading logic from the underlying execution context and ensures that dangerous actions are difficult to perform accidentally.
+
+*   **Paper/Testnet/Live Separation**: By explicitly separating paper, testnet, and live modes, the system knows exactly what the intention is. Paper mode uses local simulation, testnet connects to Binance's simulated endpoints, and live connects to the real market.
+*   **Read-Only Mainnet**: We offer profiles that connect to the mainnet for real-time market data but explicitly disallow any order placement. This is ideal for paper trading against real order books without any risk of executing a trade.
+*   **Live Order Gateway Flag**: Even if a profile supports live trading, the order gateway must be explicitly enabled via a separate configuration flag (`order_gateway_enabled`). This adds an extra layer of protection.
+*   **Endpoint Configuration**: Endpoints (REST and WebSocket URLs) are tied directly to the selected environment profile in the configuration (`environments.yaml`). The code never hardcodes endpoints during execution, making the system extensible and easily testable.
+*   **Connector Separation**: In Phase 2, the actual connection logic is mocked/disabled by default. This ensures that the environment setup is completely solid before we introduce live network requests in later phases.

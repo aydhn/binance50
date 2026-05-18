@@ -1,19 +1,245 @@
-local:
-  description: "Local development environment"
-  api_url: "https://api.binance.com" # Placeholder
-  stream_url: "wss://stream.binance.com:9443/ws" # Placeholder
+default_profile: local_paper_spot
+profiles:
+  local_paper_spot:
+    profile_name: local_paper_spot
+    exchange: binance
+    runtime_environment: local
+    trading_mode: paper
+    market_scope: spot
+    account_domain: spot
+    endpoints:
+      rest_base_url: null
+      rest_fallback_urls: []
+      websocket_market_base_url: null
+      websocket_user_base_url: null
+    is_testnet: false
+    is_mainnet: false
+    is_paper: true
+    is_live: false
+    allows_real_orders: false
+    requires_api_key: false
+    requires_api_secret: false
+    requires_live_guard: false
+    supports_user_data_stream: false
+    supports_market_stream: false
+    supports_order_placement: false
+    permission_level: no_credentials
+    notes: "Default local paper trading profile for spot"
 
-testnet:
-  description: "Binance Spot Testnet environment"
-  api_url: "https://testnet.binance.vision/api" # Placeholder
-  stream_url: "wss://testnet.binance.vision/ws" # Placeholder
+  local_paper_usdm_futures:
+    profile_name: local_paper_usdm_futures
+    exchange: binance
+    runtime_environment: local
+    trading_mode: paper
+    market_scope: usdm_futures
+    account_domain: usdm_futures
+    endpoints:
+      rest_base_url: null
+      rest_fallback_urls: []
+      websocket_market_base_url: null
+      websocket_user_base_url: null
+    is_testnet: false
+    is_mainnet: false
+    is_paper: true
+    is_live: false
+    allows_real_orders: false
+    requires_api_key: false
+    requires_api_secret: false
+    requires_live_guard: false
+    supports_user_data_stream: false
+    supports_market_stream: false
+    supports_order_placement: false
+    permission_level: no_credentials
+    notes: "Local paper trading profile for usdm futures"
 
-demo:
-  description: "Binance Paper Trading / Demo environment"
-  api_url: "https://api.binance.com" # Placeholder
-  stream_url: "wss://stream.binance.com:9443/ws" # Placeholder
+  spot_testnet:
+    profile_name: spot_testnet
+    exchange: binance
+    runtime_environment: testnet
+    trading_mode: testnet
+    market_scope: spot
+    account_domain: spot
+    endpoints:
+      rest_base_url: "https://testnet.binance.vision/api"
+      rest_fallback_urls: []
+      websocket_market_base_url: "wss://stream.testnet.binance.vision/ws"
+      websocket_user_base_url: "wss://stream.testnet.binance.vision/ws"
+    is_testnet: true
+    is_mainnet: false
+    is_paper: false
+    is_live: false
+    allows_real_orders: true
+    requires_api_key: true
+    requires_api_secret: true
+    requires_live_guard: false
+    supports_user_data_stream: true
+    supports_market_stream: true
+    supports_order_placement: true
+    permission_level: test_order
+    notes: "Spot testnet with real testnet order placement allowed"
 
-mainnet:
-  description: "Binance Mainnet environment"
-  api_url: "https://api.binance.com" # Placeholder
-  stream_url: "wss://stream.binance.com:9443/ws" # Placeholder
+  usdm_futures_testnet:
+    profile_name: usdm_futures_testnet
+    exchange: binance
+    runtime_environment: testnet
+    trading_mode: testnet
+    market_scope: usdm_futures
+    account_domain: usdm_futures
+    endpoints:
+      rest_base_url: "https://demo-fapi.binance.com"
+      rest_fallback_urls: []
+      websocket_market_base_url: "wss://fstream.binancefuture.com"
+      websocket_user_base_url: "wss://fstream.binancefuture.com"
+    is_testnet: true
+    is_mainnet: false
+    is_paper: false
+    is_live: false
+    allows_real_orders: true
+    requires_api_key: true
+    requires_api_secret: true
+    requires_live_guard: false
+    supports_user_data_stream: true
+    supports_market_stream: true
+    supports_order_placement: true
+    permission_level: test_order
+    notes: "USDM futures testnet with real testnet order placement allowed"
+
+  spot_mainnet_readonly:
+    profile_name: spot_mainnet_readonly
+    exchange: binance
+    runtime_environment: mainnet
+    trading_mode: paper
+    market_scope: spot
+    account_domain: spot
+    endpoints:
+      rest_base_url: "https://api.binance.com"
+      rest_fallback_urls:
+        - "https://api-gcp.binance.com"
+        - "https://api1.binance.com"
+        - "https://api2.binance.com"
+        - "https://api3.binance.com"
+        - "https://api4.binance.com"
+      websocket_market_base_url: "wss://stream.binance.com:9443/ws"
+      websocket_user_base_url: "wss://stream.binance.com:9443/ws"
+    is_testnet: false
+    is_mainnet: true
+    is_paper: true
+    is_live: false
+    allows_real_orders: false
+    requires_api_key: false
+    requires_api_secret: false
+    requires_live_guard: false
+    supports_user_data_stream: true
+    supports_market_stream: true
+    supports_order_placement: false
+    permission_level: no_credentials
+    notes: "Readonly access to mainnet for paper trading with live market data"
+
+  usdm_futures_mainnet_readonly:
+    profile_name: usdm_futures_mainnet_readonly
+    exchange: binance
+    runtime_environment: mainnet
+    trading_mode: paper
+    market_scope: usdm_futures
+    account_domain: usdm_futures
+    endpoints:
+      rest_base_url: "https://fapi.binance.com"
+      rest_fallback_urls: []
+      websocket_market_base_url: "wss://fstream.binance.com"
+      websocket_user_base_url: "wss://fstream.binance.com"
+    is_testnet: false
+    is_mainnet: true
+    is_paper: true
+    is_live: false
+    allows_real_orders: false
+    requires_api_key: false
+    requires_api_secret: false
+    requires_live_guard: false
+    supports_user_data_stream: true
+    supports_market_stream: true
+    supports_order_placement: false
+    permission_level: no_credentials
+    notes: "Readonly access to USDM futures mainnet with live market data"
+
+  spot_mainnet_live:
+    profile_name: spot_mainnet_live
+    exchange: binance
+    runtime_environment: mainnet
+    trading_mode: live
+    market_scope: spot
+    account_domain: spot
+    endpoints:
+      rest_base_url: "https://api.binance.com"
+      rest_fallback_urls:
+        - "https://api-gcp.binance.com"
+        - "https://api1.binance.com"
+        - "https://api2.binance.com"
+        - "https://api3.binance.com"
+        - "https://api4.binance.com"
+      websocket_market_base_url: "wss://stream.binance.com:9443/ws"
+      websocket_user_base_url: "wss://stream.binance.com:9443/ws"
+    is_testnet: false
+    is_mainnet: true
+    is_paper: false
+    is_live: true
+    allows_real_orders: true
+    requires_api_key: true
+    requires_api_secret: true
+    requires_live_guard: true
+    supports_user_data_stream: true
+    supports_market_stream: true
+    supports_order_placement: true
+    permission_level: live_order
+    notes: "Full live trading access on Binance Spot mainnet"
+
+  usdm_futures_mainnet_live:
+    profile_name: usdm_futures_mainnet_live
+    exchange: binance
+    runtime_environment: mainnet
+    trading_mode: live
+    market_scope: usdm_futures
+    account_domain: usdm_futures
+    endpoints:
+      rest_base_url: "https://fapi.binance.com"
+      rest_fallback_urls: []
+      websocket_market_base_url: "wss://fstream.binance.com"
+      websocket_user_base_url: "wss://fstream.binance.com"
+    is_testnet: false
+    is_mainnet: true
+    is_paper: false
+    is_live: true
+    allows_real_orders: true
+    requires_api_key: true
+    requires_api_secret: true
+    requires_live_guard: true
+    supports_user_data_stream: true
+    supports_market_stream: true
+    supports_order_placement: true
+    permission_level: live_order
+    notes: "Full live trading access on Binance USDM futures mainnet"
+
+  coinm_futures_placeholder:
+    profile_name: coinm_futures_placeholder
+    exchange: binance
+    runtime_environment: local
+    trading_mode: paper
+    market_scope: coinm_futures
+    account_domain: coinm_futures
+    endpoints:
+      rest_base_url: "https://dapi.binance.com"
+      rest_fallback_urls: []
+      websocket_market_base_url: "wss://dstream.binance.com"
+      websocket_user_base_url: "wss://dstream.binance.com"
+    is_testnet: false
+    is_mainnet: false
+    is_paper: true
+    is_live: false
+    allows_real_orders: false
+    requires_api_key: false
+    requires_api_secret: false
+    requires_live_guard: false
+    supports_user_data_stream: false
+    supports_market_stream: false
+    supports_order_placement: false
+    permission_level: no_credentials
+    notes: "Placeholder profile for COINM futures"
