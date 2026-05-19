@@ -56,3 +56,32 @@ To safely manage trading environments, we utilize a strict Environment Matrix. T
 *   **Live Order Gateway Flag**: Even if a profile supports live trading, the order gateway must be explicitly enabled via a separate configuration flag (`order_gateway_enabled`). This adds an extra layer of protection.
 *   **Endpoint Configuration**: Endpoints (REST and WebSocket URLs) are tied directly to the selected environment profile in the configuration (`environments.yaml`). The code never hardcodes endpoints during execution, making the system extensible and easily testable.
 *   **Connector Separation**: In Phase 2, the actual connection logic is mocked/disabled by default. This ensures that the environment setup is completely solid before we introduce live network requests in later phases.
+
+## Logging Architecture
+The logging architecture uses standard Python `logging` with specialized formatters and filters.
+- **SafeConsoleFormatter**: For human-readable console output.
+- **SafeJsonFormatter**: For structured JSON logging to files, enabling easy integration with log aggregators.
+- **Filters**: `RedactionFilter` (masks secrets), `CorrelationIdFilter` (adds request tracking), `RuntimeContextFilter` (adds environment and mode info).
+
+## Audit Trail Architecture
+The audit trail is a separate, structured logging path designed for security and compliance.
+- Written to `logs/binance50_audit.jsonl` exclusively in JSON Lines format.
+- Uses the `AuditEvent` dataclass to ensure consistent schema.
+- Tracks critical state changes, errors, and safety checks.
+- Features automatic metadata redaction before serialization.
+
+## Error Taxonomy & Binance Classification
+The application uses a deep hierarchy rooted in `Binance50Error`.
+- **General Errors**: ConfigError, SafetyError, SecretLeakError.
+- **Binance API Errors**: Specific classes for rate limits (429 -> `BinanceRateLimitError`), IP bans (418 -> `BinanceIpBanError`), execution status unknowns (5XX -> `BinanceUnknownExecutionStatusError`).
+- The `error_classifier` maps HTTP statuses and Binance error codes to these specific Python classes.
+- *Note: In Phase 3, no actual API calls are made. This architecture is established in preparation for the connector implementation in Phase 4.*
+
+## Correlation ID Lifecycle
+- Created at the start of a logical operation (e.g., app init, scheduled job run).
+- Stored using `contextvars` to flow through all async and sync calls seamlessly.
+- Included automatically in both application and audit logs.
+
+## Runtime Context Propagation
+- Similar to Correlation ID, the active environment profile, trading mode, and market scope are stored in `contextvars`.
+- This ensures every log and audit event is permanently tagged with the context it ran under, preventing confusion when reviewing logs from mixed environments.
