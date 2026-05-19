@@ -30,6 +30,7 @@ _logging_configured = False
 
 def setup_logging(config_path: str = "config/logging.yaml", app_config: Any = None) -> None:
     from typing import cast
+
     global _logging_configured
     if _logging_configured:
         return
@@ -68,7 +69,9 @@ def setup_logging(config_path: str = "config/logging.yaml", app_config: Any = No
 
     if cast(dict[str, Any], logging_config.get("console", {})).get("enabled", True):
         console_handler = logging.StreamHandler(sys.stdout)
-        console_handler.setLevel(cast(dict[str, Any], logging_config.get("console", {})).get("level", "INFO"))
+        console_handler.setLevel(
+            cast(dict[str, Any], logging_config.get("console", {})).get("level", "INFO")
+        )
         fmt_str = cast(dict[str, Any], logging_config.get("format", {})).get(
             "console_format", "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         )
@@ -124,7 +127,9 @@ def setup_logging(config_path: str = "config/logging.yaml", app_config: Any = No
 
         audit_handler = logging.handlers.RotatingFileHandler(
             audit_file,
-            maxBytes=cast(dict[str, Any], logging_config.get("file", {})).get("max_bytes", 10485760),
+            maxBytes=cast(dict[str, Any], logging_config.get("file", {})).get(
+                "max_bytes", 10485760
+            ),
             backupCount=cast(dict[str, Any], logging_config.get("file", {})).get("backup_count", 5),
             encoding="utf-8",
         )
