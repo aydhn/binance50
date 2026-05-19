@@ -1,3 +1,4 @@
+import logging
 import sys
 
 import typer
@@ -5,7 +6,11 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
+from binance50.audit.writer import audit_event
 from binance50.config.loader import load_config
+from binance50.core.exception_handler import handle_exception
+from binance50.core.exceptions import BinanceRateLimitError, ConfigError
+from binance50.logging.setup import setup_logging
 from binance50.safety.environment_guard import (
     build_environment_safety_report,
     validate_environment_matrix,
@@ -55,6 +60,27 @@ def doctor() -> None:
             table.add_row("Environment Matrix", "[green]Passed[/green]")
         except Exception as e:
             table.add_row("Environment Matrix", f"[red]Failed: {str(e)}[/red]")
+
+    # Check Logging Setup
+    try:
+        setup_logging()
+        table.add_row("Logging Setup", "[green]Passed[/green]")
+    except Exception as e:
+        table.add_row("Logging Setup", f"[red]Failed: {str(e)}[/red]")
+
+    # Check Audit Writer
+    try:
+        audit_event("app_start", "cli", "doctor", message="Doctor check")
+        table.add_row("Audit Writer", "[green]Passed[/green]")
+    except Exception as e:
+        table.add_row("Audit Writer", f"[red]Failed: {str(e)}[/red]")
+
+    # Check Exception Handler & Redaction
+    try:
+        handle_exception(ConfigError("Fake key=12345 secret=XYZ"), component="cli", action="doctor")
+        table.add_row("Exception Handler", "[green]Passed[/green]")
+    except Exception as e:
+        table.add_row("Exception Handler", f"[red]Failed: {str(e)}[/red]")
 
     console.print(table)
 
@@ -209,6 +235,69 @@ def safety_check() -> None:
     except Exception as e:
         console.print(f"\n[red]Safety check failed: {e}[/red]")
         sys.exit(1)
+
+
+@app.command()
+def log_test() -> None:
+    """Test logging output and redaction capabilities."""
+    setup_logging()
+    logger = logging.getLogger("binance50.cli")
+
+    console.print("[yellow]Running Log Test...[/yellow]")
+    logger.info("This is a normal info message.")
+    logger.warning("This is a warning message.")
+    logger.error("This is an error message.")
+
+    # Fake secret test
+    logger.info(
+        "Testing redaction: api_key=FAKE_TEST_SECRET_SHOULD_BE_REDACTED_1234567890 and secret=ANOTHER_FAKE_SECRET_THAT_IS_LONG_ENOUGH"
+    )
+    logger.info(
+        "Testing JSON redaction: {'telegram_bot_token': '1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789'}"
+    )
+
+    console.print("[green]Log test complete. Check your console and logs/binance50.log.[/green]")
+
+
+@app.command()
+def audit_test() -> None:
+    """Test audit log writing."""
+    setup_logging()
+    console.print("[yellow]Running Audit Test...[/yellow]")
+
+    audit_event(
+        "app_start",
+        "cli",
+        "audit_test",
+        message="This is a test audit event",
+        metadata={"test_api_key": "FAKE_SECRET_THAT_SHOULD_BE_REDACTED"},
+    )
+
+    console.print("[green]Audit test complete. Check logs/binance50_audit.jsonl.[/green]")
+
+
+@app.command()
+def error_test() -> None:
+    """Test error handling and classification."""
+    setup_logging()
+    logger = logging.getLogger("binance50.cli")
+    console.print("[yellow]Running Error Test...[/yellow]")
+
+    try:
+        raise BinanceRateLimitError(
+            "Too many requests from this IP", metadata={"endpoint": "/api/v3/order"}
+        )
+    except Exception as e:
+        handle_exception(e, component="cli", action="error_test", logger=logger)
+
+    try:
+        raise ConfigError("Invalid configuration for api_secret=FAKE_SECRET_SHOULD_BE_REDACTED")
+    except Exception as e:
+        handle_exception(e, component="cli", action="error_test", logger=logger)
+
+    console.print(
+        "[green]Error test complete. Exceptions were caught and handled safely. Check console and error logs.[/green]"
+    )
 
 
 if __name__ == "__main__":

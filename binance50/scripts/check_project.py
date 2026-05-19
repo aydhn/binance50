@@ -21,6 +21,7 @@ def check_project():
         "README.md",
         "config/default.yaml",
         "config/environments.yaml",
+        "config/logging.yaml",
     ]
 
     all_passed = True
@@ -37,10 +38,14 @@ def check_project():
     if not has_tests:
         all_passed = False
 
-    # Check config loadability and environment profiles
+    # Check Phase 3 additions
     try:
         sys.path.insert(0, str(Path("src").resolve()))
+        from binance50.audit.writer import audit_event
         from binance50.config.loader import load_config
+        from binance50.core.error_classifier import classify_http_status
+        from binance50.logging.redaction import redact_text
+        from binance50.logging.setup import setup_logging
         from binance50.safety.environment_guard import build_environment_safety_report
 
         config = load_config()
@@ -66,8 +71,28 @@ def check_project():
         if not has_report:
             all_passed = False
 
+        # Check Logging Setup
+        setup_logging()
+        print_result("Logging setup", True)
+
+        # Check Audit Writer
+        audit_event("app_start", "health_check", "test")
+        print_result("Audit writer", True)
+
+        # Check Redaction
+        redacted = redact_text("api_key=FAKE_SECRET_KEY")
+        print_result("Secret redaction", "***REDACTED***" in redacted)
+        if "***REDACTED***" not in redacted:
+            all_passed = False
+
+        # Check Error Classifier
+        err_cls = classify_http_status(429)
+        print_result("Error classifier (429)", err_cls.__name__ == "BinanceRateLimitError")
+        if err_cls.__name__ != "BinanceRateLimitError":
+            all_passed = False
+
     except Exception as e:
-        print_result("Config loading/validation", False, f"- Error: {e}")
+        print_result("Config/Logging/Audit validation", False, f"- Error: {e}")
         all_passed = False
 
     print("\nSummary:")

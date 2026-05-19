@@ -1,36 +1,48 @@
 version: 1
 disable_existing_loggers: false
+root_level: INFO
 
-formatters:
-  standard:
-    format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    datefmt: "%Y-%m-%d %H:%M:%S"
-  detailed:
-    format: "%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s"
-    datefmt: "%Y-%m-%d %H:%M:%S"
-
-handlers:
-  console:
-    class: logging.StreamHandler
-    level: INFO
-    formatter: standard
-    stream: ext://sys.stdout
-
-  file:
-    class: logging.handlers.RotatingFileHandler
-    level: DEBUG
-    formatter: detailed
-    filename: logs/binance50.log
-    maxBytes: 10485760 # 10MB
-    backupCount: 5
-    encoding: utf8
-
-loggers:
-  binance50:
-    level: DEBUG
-    handlers: [console, file]
-    propagate: false
-
-root:
+console:
+  enabled: true
   level: INFO
-  handlers: [console, file]
+  use_rich: true
+
+file:
+  enabled: true
+  level: DEBUG
+  log_dir: logs
+  app_log_file: binance50.log
+  error_log_file: binance50_error.log
+  audit_log_file: binance50_audit.jsonl
+  max_bytes: 10485760 # 10MB
+  backup_count: 5
+
+format:
+  console_format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file_format: "%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s"
+  json_enabled: true
+  include_correlation_id: true
+  include_profile: true
+  include_trading_mode: true
+
+redaction:
+  enabled: true
+  mask: "***REDACTED***"
+  strict_secret_detection: true
+  redact_fields:
+    - api_key
+    - secret
+    - password
+    - token
+
+audit:
+  enabled: true
+  audit_dir: logs
+  audit_file: binance50_audit.jsonl
+  jsonl_enabled: true
+  rotate: true
+
+exception:
+  include_traceback: true
+  collapse_repeated_errors: true
+  repeated_error_window_seconds: 60
