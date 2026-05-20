@@ -49,14 +49,22 @@ credentials:
 
 connector:
   connection_enabled: false
+  mock_enabled: false
+  order_gateway_enabled: false
   websocket_enabled: false
   user_data_stream_enabled: false
-  order_gateway_enabled: false
   request_timeout_seconds: 10
   recv_window_ms: 5000
   max_retry_attempts: 3
   backoff_initial_seconds: 0.5
   backoff_max_seconds: 8.0
+  max_connection_lifetime_hours: 24
+  websocket_ping_timeout_seconds: 60
+  websocket_reconnect_before_disconnect_minutes: 10
+  max_incoming_messages_per_second: 10
+  rate_limit_backoff_enabled: true
+  circuit_breaker_enabled: true
+  allow_real_network_in_phase5: false
 
 logging:
   level: "INFO"

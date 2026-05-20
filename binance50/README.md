@@ -43,3 +43,18 @@ Binance50 is designed with security as its primary concern:
 - [Phase Plan](docs/PHASE_PLAN.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Security Guidelines](docs/SECURITY.md)
+
+
+## Connector Commands (Phase 5)
+
+The connector layer is completely disabled by default and lacks real network implementations in this phase. Live trading is still strictly impossible.
+
+Explore the connector status and capabilities using the CLI:
+```bash
+python -m binance50.cli connector-status
+python -m binance50.cli connector-health
+python -m binance50.cli connector-endpoints
+python -m binance50.cli connector-capabilities
+python -m binance50.cli connector-stream-url-test --symbol BTCUSDT --stream kline --interval 1m --combined true
+python -m binance50.cli sdk-check
+```

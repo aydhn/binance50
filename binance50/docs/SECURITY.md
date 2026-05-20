@@ -84,3 +84,26 @@
 ### Why not a single flag for live trading?
 - A single flag (like `IS_LIVE=true`) is too easy to flip accidentally, especially via bulk environment variable loads or quick testing.
 - Requiring distinct, explicit flags alongside long, complex strings guarantees the user has consciously decided to deploy live capital.
+
+## Connector Security
+
+### Default Disabled State
+All connections are strictly disabled by default. If `connection_enabled` is false, only the disabled client variant is instantiated, enforcing an air-gapped simulation environment.
+
+### Phase 5 Explicit Network Block
+In Phase 5, real network implementations are absent from the clients. `allow_real_network_in_phase5` defaults to false and will trigger a safety error if flipped to true, ensuring we build structural safety before implementing live I/O.
+
+### Order Gateway Constraints
+The order gateway defaults to `DisabledOrderGateway`. Attempts to execute an order in Phase 5 will explicitly throw an `OrderPathDisabledError`.
+
+### Credentials Policy
+`user_data_stream_enabled` cannot be true unless appropriate API keys and secrets are present in the configuration.
+
+### Logging & Auditing
+All connector factory events (enabled, mock, disabled) are strictly audited. API responses, headers, and signatures (once implemented) are redacted in log dumps.
+
+### Official SDK Recommendations
+We detect and warn against unofficial packages like `python-binance`. The environment relies natively on explicit `websockets` and `httpx` abstractions, allowing adoption of the official `binance-connector-python` seamlessly in later phases.
+
+### Connection Resilience & Routing
+WebSocket reconnections (e.g., Binance's 24-hour limit) and routed endpoint logic (USDM public/market/private) are accounted for at the metadata level to guide implementation and guardrails when fully active in subsequent phases.

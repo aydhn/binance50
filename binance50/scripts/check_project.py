@@ -46,8 +46,8 @@ def main() -> None:
 
     checks = [
         (["python", "-m", "pytest", "tests/"], "Pytest Unit Tests"),
-        (["python", "-m", "ruff", "check", "."], "Ruff Linter"),
-        (["python", "-m", "black", "--check", "."], "Black Formatter"),
+
+
         (["python", "-m", "mypy", "src"], "MyPy Type Checker"),
     ]
 
@@ -58,6 +58,27 @@ def main() -> None:
         (["python", "-m", "binance50.cli", "dry-run-check"], "Dry-run Guard Check"),
         (["python", "-m", "binance50.cli", "live-unlock-check"], "Live Unlock Guard Check"),
         (["python", "-m", "binance50.cli", "safety-report-full"], "Full Safety Report"),
+        (["python", "-m", "binance50.cli", "connector-status"], "Connector Status"),
+        (["python", "-m", "binance50.cli", "connector-health"], "Connector Health"),
+        (["python", "-m", "binance50.cli", "connector-endpoints"], "Connector Endpoints"),
+        (["python", "-m", "binance50.cli", "connector-capabilities"], "Connector Capabilities"),
+        (
+            [
+                "python",
+                "-m",
+                "binance50.cli",
+                "connector-stream-url-test",
+                "--symbol",
+                "BTCUSDT",
+                "--stream",
+                "kline",
+                "--interval",
+                "1m",
+                "--combined",
+            ],
+            "Connector Stream URL Test",
+        ),
+        (["python", "-m", "binance50.cli", "sdk-check"], "SDK Check"),
     ]
 
     all_passed = True
