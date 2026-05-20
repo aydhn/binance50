@@ -1,0 +1,17 @@
+--- src/binance50/network/clock.py
++++ src/binance50/network/clock.py
+@@ -58,9 +58,11 @@
+             raise ClockDriftError("Clock drift is too high or unknown for a signed request")
+
+     def to_report(self) -> dict:
++        enabled = self.config.binance_timing.clock_sync_enabled
++        offset = self.get_current_offset_ms()
+         with self.lock:
+             return {
+-                "enabled": self.config.binance_timing.clock_sync_enabled,
+-                "current_offset_ms": self.get_current_offset_ms(),
++                "enabled": enabled,
++                "current_offset_ms": offset,
+                 "snapshot_valid": self._current_snapshot.valid if self._current_snapshot else False,
+                 "measured_at": self._current_snapshot.measured_at_utc.isoformat() if self._current_snapshot else None
+             }

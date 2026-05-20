@@ -1,0 +1,28 @@
+--- src/binance50/core/error_classifier.py
++++ src/binance50/core/error_classifier.py
+@@ -3,6 +3,9 @@
+ from binance50.core.exceptions import (
+     BinanceApiError,
+     BinanceRequestError,
++    BinanceRateLimitError,
++    BinanceIpBanError,
++    BinanceServerError,
+     BinanceUnknownExecutionStatusError,
+ )
+
+@@ -35,6 +38,15 @@
+
+     error_msg = str(error).lower()
+
++    if status_code == 429:
++        return BinanceRateLimitError("Rate limit exceeded", status_code=status_code, details={"reason": "HTTP 429"})
++
++    if status_code == 418:
++        return BinanceIpBanError("IP Auto-Banned by Binance", status_code=status_code, details={"reason": "HTTP 418"})
++
++    if status_code and 500 <= status_code < 600:
++        return BinanceServerError(f"Binance Server Error {status_code}", status_code=status_code)
++
+     if "timeout" in error_msg:
+         return BinanceUnknownExecutionStatusError(
+             f"Connection timeout: {error}",

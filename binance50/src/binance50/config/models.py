@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel, Field, SecretStr, model_validator
 
 from binance50.core.enums import (
@@ -185,6 +187,89 @@ class EnvironmentProfileConfig(BaseModel):
         return self
 
 
+class NetworkConfig(BaseModel):
+    real_network_enabled: bool = False
+    request_timeout_seconds: float = Field(default=10, gt=0)
+    connect_timeout_seconds: float = Field(default=5, gt=0)
+    read_timeout_seconds: float = Field(default=10, gt=0)
+    write_timeout_seconds: float = Field(default=10, gt=0)
+    pool_timeout_seconds: float = Field(default=5, gt=0)
+    max_retry_attempts: int = Field(default=3, ge=0, le=10)
+    retry_enabled: bool = True
+    retry_jitter_enabled: bool = True
+    retry_multiplier: float = Field(default=2.0, ge=1.0)
+    retry_max_delay_seconds: float = Field(default=30.0, gt=0)
+    retry_on_5xx: bool = True
+    retry_on_429: bool = False
+    retry_on_418: bool = False
+    retry_on_timeout: bool = True
+    circuit_breaker_enabled: bool = True
+    circuit_breaker_failure_threshold: int = Field(default=5, ge=1)
+    circuit_breaker_cooldown_seconds: float = Field(default=60, gt=0)
+
+    @model_validator(mode="after")
+    def validate_network(self) -> "NetworkConfig":
+        if self.real_network_enabled:
+            from binance50.core.exceptions import SafetyError
+
+            raise SafetyError("Real network is blocked in Phase 6")
+        return self
+
+
+class BinanceTimingConfig(BaseModel):
+    recv_window_ms: int = Field(default=5000, ge=1000, le=60000)
+    recv_window_max_ms: int = Field(default=60000, ge=1000, le=60000)
+    timestamp_unit: Literal["milliseconds", "microseconds"] = "milliseconds"
+    clock_sync_enabled: bool = False
+    max_allowed_clock_drift_ms: int = Field(default=1000, ge=0, le=5000)
+    clock_sync_interval_seconds: int = Field(default=300, gt=0)
+    reject_if_clock_drift_unknown_for_signed: bool = True
+
+    @model_validator(mode="after")
+    def validate_timing(self) -> "BinanceTimingConfig":
+        if self.recv_window_ms > self.recv_window_max_ms:
+            raise ValueError("recv_window_ms cannot be greater than recv_window_max_ms")
+        return self
+
+
+class RateLimitConfig(BaseModel):
+    enabled: bool = True
+    mode: Literal["conservative", "balanced", "aggressive"] = "conservative"
+    request_weight_limit_per_minute: int = 6000
+    raw_request_limit_per_5_minutes: int = 61000
+    order_count_limit_10s: int = 50
+    order_count_limit_1m: int = 160000
+    hard_stop_on_418: bool = True
+    cooldown_on_429_seconds: int = Field(default=60, gt=0)
+    cooldown_on_418_min_seconds: int = Field(default=120, gt=0)
+    cooldown_on_418_max_seconds: int = Field(default=259200, gt=0)
+    respect_retry_after_header: bool = True
+    safety_usage_threshold_pct: float = Field(default=80.0, ge=0.0, le=100.0)
+    critical_usage_threshold_pct: float = Field(default=95.0, ge=0.0, le=100.0)
+
+    @model_validator(mode="after")
+    def validate_rate_limit(self) -> "RateLimitConfig":
+        if self.safety_usage_threshold_pct >= self.critical_usage_threshold_pct:
+            raise ValueError(
+                "safety_usage_threshold_pct must be less than critical_usage_threshold_pct"
+            )
+        if self.cooldown_on_418_max_seconds < self.cooldown_on_418_min_seconds:
+            raise ValueError("cooldown_on_418_max_seconds must be >= cooldown_on_418_min_seconds")
+        return self
+
+
+class WebSocketLimitsConfig(BaseModel):
+    spot_max_incoming_messages_per_second: int = Field(default=5, ge=1, le=5)
+    spot_max_streams_per_connection: int = Field(default=1024, ge=1, le=1024)
+    spot_max_connection_attempts_per_5m_per_ip: int = Field(default=300, gt=0)
+    usdm_max_incoming_messages_per_second: int = Field(default=10, ge=1, le=10)
+    usdm_max_streams_per_connection: int = Field(default=200, ge=1, le=200)
+    max_connection_lifetime_hours: int = Field(default=24, ge=1, le=24)
+    reconnect_before_disconnect_minutes: int = Field(default=10, ge=1, le=60)
+    subscribe_batch_size: int = Field(default=50, gt=0)
+    control_message_budget_per_second: int = Field(default=3, gt=0)
+
+
 class ConnectorConfig(BaseModel):
     connection_enabled: bool = False
     mock_enabled: bool = False
@@ -229,6 +314,10 @@ class AppConfig(BaseModel):
     data: DataConfig = DataConfig()
     reports: ReportsConfig = ReportsConfig()
     connector: ConnectorConfig = ConnectorConfig()
+    network: NetworkConfig = NetworkConfig()
+    binance_timing: BinanceTimingConfig = BinanceTimingConfig()
+    rate_limit: RateLimitConfig = RateLimitConfig()
+    websocket_limits: WebSocketLimitsConfig = WebSocketLimitsConfig()
     environment_matrix: EnvironmentMatrixConfig = EnvironmentMatrixConfig()
 
     @model_validator(mode="after")

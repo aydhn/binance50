@@ -32,6 +32,7 @@ def classify_http_status(
             # In trading context 5xx means unknown execution status
             return BinanceUnknownExecutionStatusError
         return BinanceServerError
+
     return BinanceApiError
 
 

@@ -1,0 +1,33 @@
+--- src/binance50/connectors/rest_client.py
++++ src/binance50/connectors/rest_client.py
+@@ -5,6 +5,10 @@
+ from binance50.connectors.endpoint_resolver import EndpointInfo
+ from binance50.connectors.response_models import ConnectorHealth
+ from binance50.core.exceptions import ConnectorDisabledError, UnsupportedFeatureError
++from binance50.network.timeout_policy import build_timeout_policy
++from binance50.network.circuit_breaker import CircuitBreaker
++from binance50.network.retry_policy import RetryController
++from binance50.rate_limit.limiter import RateLimiter
+
+
+ class BinanceRestClient:
+@@ -19,6 +23,10 @@
+         self.capabilities = capabilities
+         self.policy = policy
+         self.httpx_client = httpx_client
++        self.timeout_policy = build_timeout_policy(config)
++        self.circuit_breaker = CircuitBreaker(config)
++        self.retry_controller = RetryController(config)
++        self.rate_limiter = RateLimiter(config)
+
+     def is_enabled(self) -> bool:
+         return self.policy.connection_enabled
+@@ -49,6 +57,8 @@
+
+     def send_request(self, *args: Any, **kwargs: Any) -> Any:
+         if not self.is_enabled():
+             raise ConnectorDisabledError()
++        if self.config.network.real_network_enabled:
++            from binance50.core.exceptions import RealNetworkDisabledError
++            raise RealNetworkDisabledError()
+         raise UnsupportedFeatureError("Real REST calls are not implemented in Phase 5")

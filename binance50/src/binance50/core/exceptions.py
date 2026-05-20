@@ -303,3 +303,59 @@ class UnsupportedPermissionError(ApiPermissionError):
 class ConnectorDisabledError(UnsupportedFeatureError):
     def __init__(self, message: str = "Connector is disabled", **kwargs: Any) -> None:
         super().__init__(message, **kwargs)
+
+
+class RateLimitError(Binance50Error):
+    pass
+
+
+class RateLimitExceededError(RateLimitError):
+    pass
+
+
+class RateLimitCooldownError(RateLimitError):
+    pass
+
+
+class IpBanCooldownError(RateLimitError):
+    pass
+
+
+class RetryPolicyError(Binance50Error):
+    pass
+
+
+class BackoffPolicyError(Binance50Error):
+    pass
+
+
+class TimeoutPolicyError(Binance50Error):
+    pass
+
+
+class ClockSyncError(Binance50Error):
+    pass
+
+
+class ClockDriftError(ClockSyncError):
+    pass
+
+
+class RecvWindowError(Binance50Error):
+    pass
+
+
+class CircuitBreakerOpenError(Binance50Error):
+    pass
+
+
+class WebSocketLimitError(Binance50Error):
+    pass
+
+
+class RequestBudgetError(Binance50Error):
+    pass
+
+
+class RealNetworkDisabledError(SafetyError):
+    pass

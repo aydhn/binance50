@@ -1,0 +1,12 @@
+--- docs/PHASE_PLAN.md
++++ docs/PHASE_PLAN.md
+@@ -10,7 +10,7 @@
+ - [x] **Phase 3**: Configuration module with YAML parsing, env overrides, validation, and multi-environment profiles.
+ - [x] **Phase 4**: Security and safety guards (API key handling, dry-run by default, testnet boundaries, secrets redaction).
+ - [x] **Phase 5**: Connector factory interface, capability matrix, and skeleton HTTP/WebSocket clients (no real requests yet).
+-- [ ] **Phase 6**: Rate limit, retry, backoff, timeout, recvWindow, clock-sync, circuit breaker ve WebSocket limit altyapısı kurulur.
++- [x] **Phase 6**: Rate limit, retry, backoff, timeout, recvWindow, clock-sync, circuit breaker ve WebSocket limit altyapısı kurulur.
+
+ ### Part 2: Connectors and Data
+-- [ ] **Phase 7**: Symbol & Universe Selection Model
++- [ ] **Phase 7**: Market universe seçimi: sembol filtreleri, likidite, spread ve hacim ön-eleme modeli kurulacak.

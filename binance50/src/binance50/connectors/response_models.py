@@ -46,6 +46,15 @@ class ConnectorHealth(BaseModel):
     message: str
     last_check_utc: str
     capabilities: ConnectorCapabilities
+    rate_limit_status: str = "ok"
+    cooldown_active: bool = False
+    circuit_breaker_state: str = "closed"
+    clock_drift_status: str = "ok"
+    recv_window_ms: int = 5000
+    websocket_limit_status: str = "ok"
+    real_network_enabled: bool = False
+    real_network_blocked_in_phase6: bool = True
+
     blocking_reasons: list[str] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
 
