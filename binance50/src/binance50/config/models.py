@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, SecretStr, model_validator
 
 from binance50.core.enums import (
     AccountDomain,
@@ -37,12 +37,47 @@ class SafetyConfig(BaseModel):
     require_manual_live_unlock: bool = True
     require_mainnet_confirmation: bool = True
     readonly_mainnet_allowed: bool = True
+    dry_run: bool = True
+    force_paper_mode: bool = True
+    disable_all_orders: bool = True
+    live_unlock_phrase_required: str = "I_UNDERSTAND_REAL_MONEY_RISK"
+    live_risk_ack_required: str = "I_ACCEPT_FULL_RESPONSIBILITY"
+    max_daily_loss_pct: float = Field(default=1.0, ge=0.0, le=10.0)
+    max_position_risk_pct: float = Field(default=0.25, ge=0.0, le=5.0)
+    max_open_positions: int = Field(default=3, ge=1, le=50)
+    max_orders_per_hour: int = Field(default=20, ge=1, le=500)
 
     @model_validator(mode="after")
-    def validate_quote_asset(self) -> "SafetyConfig":
+    def validate_safety(self) -> "SafetyConfig":
         if not self.default_quote_asset:
             raise ValueError("Quote asset cannot be empty")
+        if self.allow_live_orders and not (self.enable_live_trading and self.confirm_live_trading):
+            raise ValueError(
+                "allow_live_orders requires enable_live_trading and confirm_live_trading"
+            )
         return self
+
+
+class BinanceCredentialConfig(BaseModel):
+    api_key: SecretStr | None = None
+    api_secret: SecretStr | None = None
+    api_key_label: str | None = None
+    permission_read: bool = False
+    permission_spot_trade: bool = False
+    permission_futures_trade: bool = False
+    permission_margin_trade: bool = False
+    ip_restricted: bool = False
+    allowed_ips: list[str] = Field(default_factory=list)
+
+
+class TelegramCredentialConfig(BaseModel):
+    bot_token: SecretStr | None = None
+    chat_id: SecretStr | None = None
+
+
+class CredentialsConfig(BaseModel):
+    binance: BinanceCredentialConfig = Field(default_factory=BinanceCredentialConfig)
+    telegram: TelegramCredentialConfig = Field(default_factory=TelegramCredentialConfig)
 
 
 class LoggingConfig(BaseModel):
@@ -63,6 +98,26 @@ class EndpointConfig(BaseModel):
     rest_fallback_urls: list[str] = Field(default_factory=list)
     websocket_market_base_url: str | None = None
     websocket_user_base_url: str | None = None
+
+
+class CredentialPolicyConfig(BaseModel):
+    requires_credentials: bool = False
+    allows_empty_credentials: bool = True
+    forbids_credentials: bool = False
+
+
+class PermissionPolicyConfig(BaseModel):
+    requires_read_permission: bool = False
+    requires_spot_trade_permission: bool = False
+    requires_futures_trade_permission: bool = False
+    requires_margin_trade_permission: bool = False
+    requires_ip_restriction: bool = False
+
+
+class OrderPolicyConfig(BaseModel):
+    allows_simulated_orders: bool = True
+    allows_testnet_orders: bool = False
+    allows_live_orders: bool = False
 
 
 class EnvironmentProfileConfig(BaseModel):
@@ -86,6 +141,13 @@ class EnvironmentProfileConfig(BaseModel):
     supports_order_placement: bool
     permission_level: PermissionLevel
     notes: str | None = None
+
+    credential_policy: CredentialPolicyConfig = Field(default_factory=CredentialPolicyConfig)
+    permission_policy: PermissionPolicyConfig = Field(default_factory=PermissionPolicyConfig)
+    order_policy: OrderPolicyConfig = Field(default_factory=OrderPolicyConfig)
+    allowed_when_dry_run: bool = True
+    allowed_when_force_paper: bool = True
+    compatible_with_disable_all_orders: bool = True
 
     @model_validator(mode="after")
     def validate_profile(self) -> "EnvironmentProfileConfig":
@@ -150,6 +212,7 @@ class AppConfig(BaseModel):
     project: ProjectConfig = ProjectConfig()
     runtime: RuntimeConfig = RuntimeConfig()
     safety: SafetyConfig = SafetyConfig()
+    credentials: CredentialsConfig = CredentialsConfig()
     logging: LoggingConfig = LoggingConfig()
     data: DataConfig = DataConfig()
     reports: ReportsConfig = ReportsConfig()
@@ -164,6 +227,16 @@ class AppConfig(BaseModel):
             raise ValueError(
                 "Live trading requires enable_live_trading and confirm_live_trading to be true"
             )
+
+        if self.safety.force_paper_mode and self.runtime.trading_mode == TradingMode.LIVE:
+            raise ValueError("Trading mode cannot be live when force_paper_mode is true")
+
+        if self.safety.disable_all_orders and self.connector.order_gateway_enabled:
+            raise ValueError("Order gateway cannot be enabled when disable_all_orders is true")
+
+        if self.safety.dry_run and self.runtime.trading_mode == TradingMode.LIVE:
+            raise ValueError("Trading mode cannot be live when dry_run is true")
+
         return self
 
     @property

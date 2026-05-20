@@ -1,83 +1,81 @@
-import logging
+from typing import Any
 
 from binance50.config.models import AppConfig
 from binance50.core.enums import TradingMode
-from binance50.core.exceptions import ConfigError, InvalidTradingModeError
-
-logger = logging.getLogger(__name__)
+from binance50.core.exceptions import SafetyError
 
 
-def check_mode_consistency(config: AppConfig) -> None:
-    """Check consistency between trading mode and runtime environment."""
-    # Keep for backward compatibility with existing tests
-    validate_environment_profile_consistency(config)
-
-
-def validate_environment_profile_consistency(config: AppConfig) -> None:
-    """Validate that the selected profile is consistent with the runtime trading mode."""
+def validate_mode_consistency(config: AppConfig) -> None:
+    """
+    Ensure the runtime trading mode matches the capabilities of the selected profile
+    and does not violate Phase 4 safety flags.
+    """
     mode = config.runtime.trading_mode
     profile = config.selected_environment_profile
 
-    # Testnet mode needs testnet env profile
-    if mode == TradingMode.TESTNET and not profile.is_testnet:
-        raise InvalidTradingModeError(
-            f"Testnet trading mode requires testnet profile, got {profile.profile_name}"
+    # Phase 4 Mode Safety Overrides
+    if config.safety.force_paper_mode and mode != TradingMode.PAPER:
+        raise SafetyError(
+            f"force_paper_mode is true, but trading_mode is {mode.value}. Mode must be paper."
         )
 
-    # Demo mode is considered paper mode for validation
-    if mode == TradingMode.DEMO and not profile.is_testnet:
-        raise InvalidTradingModeError(
-            f"Demo trading mode requires testnet profile, got {profile.profile_name}"
-        )
+    if config.safety.disable_all_orders and config.connector.order_gateway_enabled:
+        raise SafetyError("disable_all_orders is true, but order_gateway_enabled is true.")
 
-    # Live mode needs mainnet env
-    if mode == TradingMode.LIVE and not profile.is_mainnet:
-        raise InvalidTradingModeError(
-            f"Live trading mode requires mainnet profile, got {profile.profile_name}"
-        )
-
-    # Live mode needs live profile
+    # General Consistency
     if mode == TradingMode.LIVE and not profile.is_live:
-        raise InvalidTradingModeError(
-            f"Live trading mode requires live profile, got {profile.profile_name}"
+        raise SafetyError(
+            f"Trading mode is {mode.value} but profile {profile.profile_name.value} "
+            "does not support live trading"
         )
 
-    # Testnet profile with Live mode
-    if profile.is_testnet and mode == TradingMode.LIVE:
-        raise InvalidTradingModeError(
-            f"Testnet profile {profile.profile_name} cannot be used with live trading mode"
+    if mode == TradingMode.TESTNET and not profile.is_testnet:
+        raise SafetyError(
+            f"Trading mode is {mode.value} but profile {profile.profile_name.value} "
+            "is not a testnet profile"
         )
 
-    # Live profile with Paper mode
-    if profile.is_live and mode in (TradingMode.PAPER, TradingMode.BACKTEST):
-        raise InvalidTradingModeError(
-            f"Live profile {profile.profile_name} cannot be used with paper/backtest trading mode"
-        )
+    if mode == TradingMode.PAPER and not profile.is_paper:
+        # Paper mode can run against testnet/live profiles if we don't send orders
+        # But we must verify that order_gateway is completely disabled in this configuration
+        if config.connector.order_gateway_enabled:
+            raise SafetyError(
+                "Paper trading mode cannot be used with an enabled order gateway "
+                f"on non-paper profile {profile.profile_name.value}"
+            )
+
+    # Phase 4 specific flags for testnet/demo
+    if mode == TradingMode.TESTNET and not config.safety.allow_testnet_orders:
+        if config.connector.order_gateway_enabled:
+            raise SafetyError(
+                "Testnet trading is active, but allow_testnet_orders is false while order_gateway is enabled."
+            )
+
+    # Readonly profile verification
+    if profile.profile_name.value.endswith("_readonly"):
+        creds = config.credentials.binance
+        if creds.permission_spot_trade or creds.permission_futures_trade:
+            raise SafetyError(
+                f"Profile {profile.profile_name.value} is readonly but trade permissions are configured"
+            )
+        if config.connector.order_gateway_enabled:
+            raise SafetyError(
+                f"Profile {profile.profile_name.value} is readonly but order_gateway is enabled"
+            )
 
 
-def validate_connector_flags(config: AppConfig) -> None:
-    """Validate connector flags against the selected profile."""
-    if not config.connector.connection_enabled:
-        logger.info(
-            "Connector is disabled globally via connection_enabled=false. "
-            "No connections will be made."
-        )
-        return
+def build_mode_guard_report(config: AppConfig) -> dict[str, Any]:
+    """Build a report of mode consistency without throwing exceptions."""
+    issues = []
 
-    if config.connector.order_gateway_enabled:
-        assert_order_gateway_allowed(config)
+    try:
+        validate_mode_consistency(config)
+    except SafetyError as e:
+        issues.append(str(e))
+    except Exception as e:
+        issues.append(f"Unexpected error in mode guard: {str(e)}")
 
-
-def assert_order_gateway_allowed(config: AppConfig) -> None:
-    """Assert that the order gateway is allowed for the current profile."""
-    profile = config.selected_environment_profile
-    if not profile.supports_order_placement:
-        raise ConfigError(
-            f"Profile {profile.profile_name} does not support order placement, "
-            "but order_gateway_enabled is true."
-        )
-    if profile.is_paper:
-        raise ConfigError(
-            f"Paper profile {profile.profile_name} does not support order placement, "
-            "but order_gateway_enabled is true."
-        )
+    return {
+        "status": "unsafe" if issues else "safe",
+        "issues": issues,
+    }

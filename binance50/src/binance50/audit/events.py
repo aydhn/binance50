@@ -1,13 +1,13 @@
 import uuid
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from binance50.logging.redaction import redact_mapping
 
 
-class AuditEventType(str, Enum):
+class AuditEventType(StrEnum):
     app_start = "app_start"
     app_stop = "app_stop"
     config_loaded = "config_loaded"

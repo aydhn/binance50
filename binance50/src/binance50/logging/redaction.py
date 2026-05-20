@@ -59,11 +59,7 @@ def contains_potential_secret(text: str) -> bool:
             return True
 
     # Check patterns
-    for pattern in SECRET_PATTERNS:
-        if pattern.search(text):
-            return True
-
-    return False
+    return any(pattern.search(text) for pattern in SECRET_PATTERNS)
 
 
 def assert_no_secret_leak(text: str) -> None:
