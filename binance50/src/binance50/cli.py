@@ -299,7 +299,8 @@ def live_unlock_check() -> None:
         console.print(json.dumps(report, indent=2))
         if not report["live_blocked_by_unlock_guard"]:
             console.print(
-                "\n[bold red]HIGH RISK: Live unlock guard is OPEN. Live trading is structurally allowed by unlock locks![/bold red]"
+                "\n[bold red]HIGH RISK: Live unlock guard is OPEN. " \
+                "Live trading is structurally allowed by unlock locks![/bold red]"
             )
         else:
             console.print("\n[green]Live unlock guard is blocked as expected.[/green]")

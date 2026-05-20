@@ -13,7 +13,8 @@ def assert_connector_allowed(config: AppConfig) -> None:
         )
     if config.connector.allow_real_network_in_phase5:
         raise SafetyError(
-            "Phase 5 explicitly blocks real network calls. allow_real_network_in_phase5 must be false."
+            "Phase 5 explicitly blocks real network calls. "
+            "allow_real_network_in_phase5 must be false."
         )
 
 

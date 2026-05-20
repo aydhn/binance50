@@ -57,8 +57,8 @@ def assert_readonly_profile_has_no_trade_permissions(config: AppConfig) -> None:
     profile = config.selected_environment_profile
     creds = config.credentials.binance
 
-    if profile.profile_name.value.endswith("_readonly"):
-        if creds.permission_spot_trade or creds.permission_futures_trade:
+    if profile.profile_name.value.endswith("_readonly") and \
+       (creds.permission_spot_trade or creds.permission_futures_trade):
             raise ApiPermissionError("Readonly profile should not be used with trading permissions")
 
 
@@ -79,8 +79,10 @@ def assert_ip_restriction_policy(config: AppConfig) -> None:
     creds = config.credentials.binance
 
     if profile.permission_policy.requires_ip_restriction and not creds.ip_restricted:
-        # According to requirements: "live profilde IP restriction false ise bu fazda hard error yerine blocking warning üret"
-        # However, we only have Exceptions here. We'll raise a custom check but we might bypass it in live guard.
+        # According to requirements: "live profilde IP restriction false ise "
+        # "bu fazda hard error yerine blocking warning üret"
+        # However, we only have Exceptions here. We'll raise a custom check
+        # but we might bypass it in live guard.
         pass
 
 

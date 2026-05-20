@@ -26,7 +26,8 @@ def handle_exception(
     # Log error
     if logger:
         # Avoid leaking secrets in the log message
-        log_msg = f"[{component}] {action} failed: {safe_dict['message']} (Code: {safe_dict['error_code']})"
+        log_msg = (f"[{component}] {action} failed: {safe_dict['message']} "
+                   f"(Code: {safe_dict['error_code']})")
         if safe_dict.get("severity") == "critical":
             logger.critical(log_msg, exc_info=error)
         else:

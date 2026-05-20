@@ -220,9 +220,11 @@ def load_config(config_dir: str = "config") -> AppConfig:
 
         if "BINANCE50_LIVE_UNLOCK" in os.environ:
             # We don't map it directly into the config model itself if it's not a field,
-            # but wait, it is NOT in the model according to the specs... wait, we only check OS env in live_guard!
+            # but wait, it is NOT in the model according to the specs... wait,
+            # we only check OS env in live_guard!
             # Or we can put it in config... Wait, spec says:
-            # safety.require_manual_live_unlock: true ise env BINANCE50_LIVE_UNLOCK tam olarak required phrase olmalı.
+            # safety.require_manual_live_unlock: true ise env BINANCE50_LIVE_UNLOCK \
+            # tam olarak required phrase olmalı.
             pass  # Checked in live_guard.py from os.environ
 
         if "BINANCE50_LIVE_RISK_ACK" in os.environ:

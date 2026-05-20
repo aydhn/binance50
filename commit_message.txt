@@ -1,0 +1,11 @@
+Phase 6: Rate limit, retry, backoff, timeout, recvWindow and clock-sync
+
+- Created comprehensive rate limit models, parser, tracker, and decision engine (limiter)
+- Developed robust cooldown management handling soft 429 delays and hard 418 bans
+- Integrated WS limit modeling checking stream caps (1024 spot, 200 usdm) and message velocity
+- Implemented network backoff calculations integrating jitter and max attempts
+- Drafted generic generic circuit breaker for iterative network failure protection
+- Built mock-capable clock-sync evaluation service monitoring allowable drift limits
+- Verified safety guard limits via updated `rate_limit_guard` and `clock_guard` configurations
+- Integrated components securely into connection policies, confirming network logic defaults to disabled
+- Extended project architecture, security, and phase plan documentation successfully

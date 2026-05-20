@@ -52,7 +52,8 @@ def init_app() -> None:
             raise SafetyError(f"Environment safety check failed: {report['warnings']}")
 
         # We don't raise here if live is blocked unless we are in live mode.
-        # This logic is handled inside environment_guard build_environment_safety_report / validate_environment_matrix
+        # This logic is handled inside environment_guard build_environment_safety_report \
+        # / validate_environment_matrix
 
         audit_event("safety_check_passed", "app", "safety_check")
 

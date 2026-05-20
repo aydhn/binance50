@@ -23,7 +23,8 @@ SENSITIVE_KEYS = {
 }
 
 # Regex for finding things that look like secrets even without keys
-# E.g., very long alphanumeric strings that might be tokens or keys (Binance keys are typically 64 chars)
+# E.g., very long alphanumeric strings that might be tokens or keys
+# (Binance keys are typically 64 chars)
 SECRET_PATTERNS = [
     re.compile(r"([A-Za-z0-9_-]{64,})"),  # Binance keys
     re.compile(r"(Bearer\s+[A-Za-z0-9\-._~+/]+=*)", re.IGNORECASE),  # Bearer tokens

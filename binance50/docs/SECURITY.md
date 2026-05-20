@@ -107,3 +107,14 @@ We detect and warn against unofficial packages like `python-binance`. The enviro
 
 ### Connection Resilience & Routing
 WebSocket reconnections (e.g., Binance's 24-hour limit) and routed endpoint logic (USDM public/market/private) are accounted for at the metadata level to guide implementation and guardrails when fully active in subsequent phases.
+
+## Network Safety (Phase 6)
+- **429 handling policy:** Explicit soft cooldown to avoid automated repeat bans.
+- **418 IP ban hard stop policy:** Direct halt if encountered, requires manual clear.
+- **Retry-After policy:** Strictly respected if provided.
+- **5XX unknown execution status policy:** They are caught as retryable in general, but order submission states are carefully flagged.
+- **recvWindow ve timestamp güvenliği:** Checked locally before generating a request payload.
+- **Clock drift guard:** High clock drift will reject signed order paths.
+- **WebSocket incoming message limit güvenliği:** Connections rejecting streams exceeding docs max (e.g. 1024 or 200).
+- **Request budget ve aggressive polling yasağı:** Budget usage is projected to block early before real 429.
+- **Rate limit aşımında botun nasıl sakinleşeceği:** Uses the local CooldownManager and Circuit Breaker.
