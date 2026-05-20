@@ -59,6 +59,10 @@ class BinanceRestClient:
     def send_request(self, *args: Any, **kwargs: Any) -> Any:
         if not self.is_enabled():
             raise ConnectorDisabledError()
+        if self.config.network.real_network_enabled:
+            from binance50.core.exceptions import RealNetworkDisabledError
+
+            raise RealNetworkDisabledError()
         raise UnsupportedFeatureError("Real REST calls are not implemented in Phase 5")
 
     def close(self) -> None:

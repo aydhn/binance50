@@ -1,0 +1,20 @@
+--- src/binance50/cli.py
++++ src/binance50/cli.py
+@@ -107,6 +107,17 @@
+         from binance50.safety.live_guard import assert_live_config_safe
+         assert_live_config_safe(config)
+         console.print("  [green]✓[/green] Live guard config safe")
++
++        from binance50.safety.rate_limit_guard import assert_rate_limit_config_safe, validate_websocket_limits_safe
++        assert_rate_limit_config_safe(config)
++        validate_websocket_limits_safe(config)
++        console.print("  [green]✓[/green] Rate limit & WebSocket config safe")
++
++        from binance50.safety.clock_guard import assert_clock_config_safe
++        assert_clock_config_safe(config)
++        console.print("  [green]✓[/green] Clock sync & timing config safe")
++        if config.network.real_network_enabled:
++            raise Exception("Real network enabled in Phase 6")
+     except Exception as e:
+         console.print(f"  [red]✗[/red] Safety checks failed: {e}")
+         has_errors = True

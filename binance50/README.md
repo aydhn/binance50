@@ -58,3 +58,17 @@ python -m binance50.cli connector-capabilities
 python -m binance50.cli connector-stream-url-test --symbol BTCUSDT --stream kline --interval 1m --combined true
 python -m binance50.cli sdk-check
 ```
+
+## Network Safety (Phase 6)
+- **Status:** Real network calls remain strictly disabled (`real_network_enabled: false`).
+- Implemented **Rate Limit Models** tracking weights and limits dynamically without true traffic via simulated mock requests.
+- Validated **Clock Sync & Recv Window** models preventing latency and sequence abuse.
+- Set restrictions for `418` hard bans, cooldown responses, and circuit breaking mechanics natively integrated across the execution stack.
+- To view statuses, use commands like:
+  - `python -m binance50.cli rate-limit-status`
+  - `python -m binance50.cli rate-limit-simulate --status-code 429`
+  - `python -m binance50.cli rate-limit-simulate --status-code 418`
+  - `python -m binance50.cli recv-window-check`
+  - `python -m binance50.cli clock-sync-status`
+  - `python -m binance50.cli websocket-limits-check spot 10 1`
+  - `python -m binance50.cli network-safety-report`

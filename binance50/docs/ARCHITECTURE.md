@@ -131,3 +131,10 @@ Stream routing varies heavily across Binance's ecosystem. Spot typically uses co
 ### Phase 5 Constraints
 - **Real Network Blocked:** Actual HTTP and WebSocket requests are strictly unimplemented and intercepted in this phase to harden the structural safety before moving to live execution.
 - **Order Gateway:** The `OrderGatewayProtocol` acts only as an interface right now, defaulting to a `DisabledOrderGateway` that denies all order submissions. This guarantees zero chance of capital loss until full live integration is completed.
+
+## Network Safety (Phase 6)
+- **Rate Limit Architecture**: Contains an in-memory tracker, header parser, and cooldown manager to evaluate `429` and `418` responses and proactively rate limit based on endpoint weights.
+- **Circuit Breaker**: Evaluates repeated connection errors and breaks circuits preventing downstream flood.
+- **Clock Sync**: Ensures local time vs. Binance server time difference doesn't exceed `max_allowed_clock_drift_ms` to avoid `recvWindow` rejection.
+- **WebSocket Limits**: Evaluates and asserts stream count constraints and incoming message rate boundaries.
+- **Real Network Disabled**: Default `False` since all interactions in Phase 6 act as pure simulations.

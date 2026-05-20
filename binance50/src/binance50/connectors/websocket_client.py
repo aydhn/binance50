@@ -4,6 +4,9 @@ from binance50.connectors.connection_policy import ConnectionPolicy
 from binance50.connectors.endpoint_resolver import EndpointInfo
 from binance50.connectors.stream_names import build_combined_stream_path, build_raw_stream_path
 from binance50.core.exceptions import ConnectorDisabledError, UnsupportedFeatureError
+from binance50.rate_limit.websocket_limits import (
+    validate_stream_count,
+)
 
 
 class BinanceWebSocketClient:
@@ -18,6 +21,13 @@ class BinanceWebSocketClient:
         self.endpoint_info = endpoint_info
         self.capabilities = capabilities
         self.policy = policy
+
+    def validate_streams(self, stream_count: int) -> None:
+        decision = validate_stream_count(self.config, stream_count)
+        if not decision.allowed:
+            from binance50.core.exceptions import WebSocketLimitError
+
+            raise WebSocketLimitError(decision.reason)
 
     def is_enabled(self) -> bool:
         return self.policy.websocket_enabled

@@ -1,0 +1,27 @@
+--- src/binance50/connectors/health.py
++++ src/binance50/connectors/health.py
+@@ -10,3 +10,13 @@
+ def build_disabled_health(config: AppConfig) -> ConnectorHealth:
+     from binance50.connectors.capabilities import ConnectorCapabilities
+
+     return ConnectorHealth(
+         enabled=False,
+         connected=False,
+         connector_type="none",
+         exchange=config.runtime.exchange,
+         environment_profile=config.selected_environment_profile,
+         account_domain=config.runtime.account_domain,
+         market_scope=config.runtime.market_scope,
+         status="disabled",
+         message="Connector is disabled by policy",
+         last_check_utc="1970-01-01T00:00:00Z",
+         capabilities=ConnectorCapabilities(),
++        rate_limit_status="ok",
++        cooldown_active=False,
++        circuit_breaker_state="closed",
++        clock_drift_status="ok",
++        recv_window_ms=config.binance_timing.recv_window_ms,
++        websocket_limit_status="ok",
++        real_network_enabled=config.network.real_network_enabled,
++        real_network_blocked_in_phase6=True
+     )

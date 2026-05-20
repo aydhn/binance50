@@ -2,6 +2,11 @@ from pydantic import BaseModel
 
 from binance50.config.models import AppConfig
 from binance50.core.exceptions import ConfigValidationError, SafetyError
+from binance50.safety.clock_guard import assert_clock_config_safe
+from binance50.safety.rate_limit_guard import (
+    assert_rate_limit_config_safe,
+    validate_websocket_limits_safe,
+)
 
 
 class ConnectionPolicy(BaseModel):
@@ -25,6 +30,14 @@ class ConnectionPolicy(BaseModel):
 def build_connection_policy(config: AppConfig) -> ConnectionPolicy:
     if config.connector.allow_real_network_in_phase5:
         raise SafetyError("allow_real_network_in_phase5 cannot be true in Phase 5")
+    if config.network.real_network_enabled:
+        from binance50.core.exceptions import RealNetworkDisabledError
+
+        raise RealNetworkDisabledError("real_network_enabled cannot be true in Phase 6")
+
+    assert_rate_limit_config_safe(config)
+    validate_websocket_limits_safe(config)
+    assert_clock_config_safe(config)
 
     return ConnectionPolicy(
         connection_enabled=config.connector.connection_enabled,

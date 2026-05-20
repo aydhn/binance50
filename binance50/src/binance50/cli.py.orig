@@ -17,19 +17,6 @@ from binance50.connectors.stream_names import (
 from binance50.core.exception_handler import handle_exception
 from binance50.core.exceptions import ConfigError
 from binance50.logging.setup import setup_logging
-from binance50.network.backoff import compute_retry_delay
-from binance50.network.clock import ClockSyncService
-from binance50.network.recv_window import (
-    validate_recv_window,
-    validate_timestamp_against_server_time,
-)
-from binance50.network.timeout_policy import build_timeout_policy
-from binance50.rate_limit.limiter import RateLimiter
-from binance50.rate_limit.tracker import RateLimitTracker
-from binance50.rate_limit.websocket_limits import (
-    validate_control_message_rate,
-    validate_stream_count,
-)
 from binance50.safety.api_key_guard import build_api_key_safety_report
 from binance50.safety.dry_run_guard import build_dry_run_report
 from binance50.safety.environment_guard import (
@@ -450,13 +437,13 @@ def sdk_check() -> None:
         sys.exit(1)
 
 
+
 @app.command()
 def rate_limit_status():
     """Show current rate limit status."""
     config = load_config()
     tracker = RateLimitTracker(config)
     console.print(tracker.to_report())
-
 
 @app.command()
 def rate_limit_simulate(status_code: int, used_weight_1m: int = 0, retry_after: float = 0.0):
@@ -472,13 +459,11 @@ def rate_limit_simulate(status_code: int, used_weight_1m: int = 0, retry_after: 
     decision = limiter.after_response("/api/v3/klines", status_code, headers)
     console.print(decision.model_dump())
 
-
 @app.command()
 def retry_policy_show():
     """Show retry policy."""
     config = load_config()
     console.print(config.network.model_dump())
-
 
 @app.command()
 def backoff_test(status_code: int, attempt: int):
@@ -487,14 +472,12 @@ def backoff_test(status_code: int, attempt: int):
     decision = compute_retry_delay(status_code, attempt, config)
     console.print(decision.model_dump())
 
-
 @app.command()
 def timeout_policy_show():
     """Show timeout policy."""
     config = load_config()
     policy = build_timeout_policy(config)
     console.print(policy.model_dump())
-
 
 @app.command()
 def recv_window_check():
@@ -508,14 +491,12 @@ def recv_window_check():
     except Exception as e:
         console.print(f"[red]Invalid recvWindow: {e}[/red]")
 
-
 @app.command()
 def clock_sync_status():
     """Show clock sync status."""
     config = load_config()
     service = ClockSyncService(config)
     console.print(service.to_report())
-
 
 @app.command()
 def clock_sync_simulate(server_time_ms: int, local_before_ms: int, local_after_ms: int):
@@ -525,30 +506,26 @@ def clock_sync_simulate(server_time_ms: int, local_before_ms: int, local_after_m
     snapshot = service.update_from_server_time(server_time_ms, local_before_ms, local_after_ms)
     console.print(snapshot.model_dump())
 
-
 @app.command()
 def websocket_limits_check(scope: str, stream_count: int, messages_per_second: int):
     """Check websocket limits."""
     config = load_config()
     from binance50.core.enums import MarketScope
-
     config.runtime.market_scope = MarketScope(scope)
     d1 = validate_stream_count(config, stream_count)
     d2 = validate_control_message_rate(config, messages_per_second)
     console.print("Stream check:", d1.model_dump())
     console.print("Message rate check:", d2.model_dump())
 
-
 @app.command()
 def network_safety_report():
     """Show network safety report."""
-    from binance50.safety.clock_guard import build_clock_safety_report
     from binance50.safety.rate_limit_guard import build_rate_limit_safety_report
-
+    from binance50.safety.clock_guard import build_clock_safety_report
     config = load_config()
     console.print("Rate limit safety:", build_rate_limit_safety_report(config))
     console.print("Clock safety:", build_clock_safety_report(config))
 
-
 if __name__ == "__main__":
+
     app()

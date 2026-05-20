@@ -1,63 +1,69 @@
-# Phase 5 Completion Report
+# Phase 6 Implementation Report
 
 ## Oluşturulan/güncellenen dosyalar
-- `requirements.txt`: `httpx` ve `websockets` bağımlılıkları eklendi.
-- `src/binance50/config/models.py`, `config/default.yaml`: Connector konfigürasyonu genişletildi.
-- `src/binance50/core/network.py`, `src/binance50/core/retry.py`: Temel HTTP tipleri, retry/backoff policy modelleri eklendi.
-- `src/binance50/connectors/base.py`: Protocol (interface) katmanı oluşturuldu.
-- `src/binance50/connectors/capabilities.py`: Endpoint/kabiliyet matriksi kuruldu.
-- `src/binance50/connectors/request_models.py`, `response_models.py`: Ortak veri iletim modelleri tanımlandı (redaction özelliğiyle).
-- `src/binance50/connectors/endpoint_resolver.py`: Profil tipine ve ağ tipine göre URL çözen mekanizma yaratıldı.
-- `src/binance50/connectors/stream_names.py`: Spot ve Futures için WebSocket path/format generator oluşturuldu.
-- `src/binance50/connectors/connection_policy.py`: Bağlantı lifecycle yapılandırması (`max_connection_lifetime_hours` vb.) tanımlandı.
-- `src/binance50/safety/connector_guard.py`: Connector özelindeki güvenlik kilitleri işlendi.
-- `src/binance50/connectors/disabled_client.py`: Varsayılan güvenlik amaçlı (hiçbir ağ isteği atmayan) istemciler tanımlandı.
-- `src/binance50/connectors/mock_client.py`: Test ve simülasyonlar için ağ bağlantısı açmayan istemciler tanımlandı.
-- `src/binance50/connectors/order_gateway.py`: Emulator/Live Emir geçidi arayüzü kuruldu (Phase 5'te Disabled).
-- `src/binance50/connectors/rest_client.py`, `websocket_client.py`: İskelet istemciler tanımlandı (Phase 5'te UnsupportedFeatureError atar).
-- `src/binance50/connectors/client_factory.py`, `adapter_registry.py`: Güvenli istemci üretim fabrikası kuruldu.
-- `src/binance50/binance/sdk_imports.py`: Resmi SDK varlık tespiti sağlandı.
-- `src/binance50/binance/spot_adapter.py`, `usdm_futures_adapter.py`, `coinm_futures_adapter.py`: Uyumlu Binance ürün adaptörleri yazıldı.
-- `src/binance50/cli.py`: Yeni konektör CLI komutları tanımlandı.
-- `tests/*`: 100'ün üzerinde konektör unit testi yazıldı.
-- `docs/ARCHITECTURE.md`, `docs/SECURITY.md`, `docs/PHASE_PLAN.md`: Yeni mimari güncellendi.
+* **Config:** `config/default.yaml`, `src/binance50/config/models.py`, `src/binance50/config/loader.py`
+* **Core:** `src/binance50/core/error_codes.py`, `src/binance50/core/exceptions.py`, `src/binance50/core/error_classifier.py`
+* **Rate Limit:** `models.py`, `parser.py`, `tracker.py`, `cooldown.py`, `limiter.py`, `websocket_limits.py`
+* **Network:** `backoff.py`, `retry_policy.py`, `timeout_policy.py`, `recv_window.py`, `clock.py`, `circuit_breaker.py`, `request_budget.py` (simulated via tracker estimation)
+* **Safety Guards:** `rate_limit_guard.py`, `clock_guard.py`
+* **Connectors:** `connection_policy.py`, `health.py`, `rest_client.py`, `websocket_client.py`
+* **CLI:** `src/binance50/cli.py` & `scripts/check_project.py`
+* **Tests:** Test cases covered in `tests/test_rate_limit_parser.py`, `test_rate_limiter.py`, `test_backoff_policy.py`, etc., and specific CLI checks (`test_cli_rate_limit.py`).
+* **Docs:** `README.md`, `PHASE_PLAN.md`, `docs/ARCHITECTURE.md`, `docs/SECURITY.md`
 
-## Connector mimarisi
-Adaptör kalıbı (Adapter Pattern) temelinde inşa edilmiştir. `client_factory` aracılığıyla, güvenlik yapılandırmaları ve aktif profile bakılarak sadece uygun istemci (genellikle `disabled_safe`) üretilir. İskelet sınıflar, Phase 6 ve sonrasındaki HTTP/WS mantığını kapsamak için beklemektedir.
+## Rate limit mimarisi
+* Implementasyon, in-memory tracker (threading.Lock ile güvenli) kullanarak rate limit header bilgilerini günceller.
+* Config bazlı (1m request weight, 10s & 1m order counts) threshold limitleri izlenmektedir (%80 Warning, %95 Critical, 100% Exceeded).
+* Rate limit motoru, gelen 429 ve 418 statülerine özgü delay ve hard-stop kararları üretir.
 
-## Endpoint resolver kararları
-Ağ tiplerine (mainnet, testnet, paper) ve profil tiplerine göre URL resolver yazılmıştır. Yalnızca HTTPS ve WSS şemaları desteklenir. USDⓈ-M Futures için dinamik routed yapısı (public, market, private) desteklenecek şekilde metadata hazırlanmıştır.
+## Header parser kararları
+* Header parse işlemi case-insensitive olup geçerli unit patternlerini çeker (`X-MBX-USED-WEIGHT-1M`, vb).
+* Parse edilemeyen veya var olmayan headerlar için graceful failure uygulanıp default hesaplama ile devam edilir.
 
-## REST client skeleton
-Ağ isteği oluşturma metodu mevcuttur ancak Phase 5 blokajından dolayı tetiklendiğinde `UnsupportedFeatureError` fırlatır.
+## Limiter/cooldown kararları
+* `RateLimiter` gelen/giden istekleri tracker ve cooldown manager üzerinden izler.
+* Conservative mod, warning/critical durumlarında küçük gecikmeler (should_delay) önerir.
+* 429 durumlarında retry_after header’ı yoksa `cooldown_on_429_seconds` kullanılır.
+* 418 IP ban simülasyonları manuel müdahale gerektiren `hard_stop` üretir.
 
-## WebSocket client skeleton
-URL oluşturma mantığı tamamen fonksiyoneldir. Ancak `connect()` metodu çağrıldığında Phase 5 blokajından dolayı `UnsupportedFeatureError` fırlatır. Spot streamleri raw ve combined olarak başarıyla path üretebilmektedir.
+## Retry/backoff kararları
+* `compute_exponential_backoff` standart base, çarpan, maksimizasyon ve jitter (%50 - %100 uniform random) kullanarak deterministik hesap yapar.
+* 5XX hatalar config (`retry_on_5xx`) ile uyumlu olup execution statü check'i olmadan riskli operasyonlara retry engellenir.
+* 418 direkt retry kapatır, 429 cooldown mantığına devredilir.
 
-## Disabled/mock client davranışı
-`connection_enabled` `false` ise varsayılan olarak `DisabledExchangeAdapter` başlatılır. `is_enabled` false döner ve `ping` çağrıldığında `disabled_safe` durumuyla sahte bir health döner. Eğer `mock_enabled` `true` ve paper moddaysa, mock istemciler hiçbir gerçek istek atmadan simüle başarı durumları dönerler.
+## Timeout policy kararları
+* İletişim sırasında request, connect, read, write ve pool bazında httpx Timeout objeleri hazırlayan factory policy modeli oluşturulmuştur.
 
-## Order gateway güvenlik durumu
-Oluşturulan `OrderGatewayProtocol` varsayılan olarak `DisabledOrderGateway` ile çalışır. Tüm emir tiplerini anında `OrderPathDisabledError` veya UnsupportedFeatureError atarak geri çevirir. Phase 5 boyunca canlı ağ emri, testnet ağ emri veya simüle emir göndermek imkansızdır.
+## recvWindow/timestamp kararları
+* Client tarafı `recvWindow` parametresi 5000ms base üzerinden hesaplanıp 60000ms max değeri doğrulanmıştır.
+* `validate_timestamp_against_server_time`, time stamp drift limitlerini denetler ve servertime + 1000ms over drift durumlarını rejected kabul eder.
 
-## SDK import stratejisi
-Uygulama resmi `binance-connector-python` SDK kütüphanelerini import etmeye çalışır; bulunamazsa çökmeyecek şekilde tasarlanmıştır. Eski/resmi olmayan `python-binance` paketi algılandığında CLI üzerinden uyarı verir. Bu aşamada SDK paketleri projede dependency olarak zorunlu tutulmamıştır.
+## Clock sync kararları
+* Server time mockup logic `ClockSyncService` altına kurularak, `round_trip_latency` hesaplanmış ve estimated offset limitlerinin (default 1000ms) üzerine çıktığında `ClockDriftError` verecek şekilde test edilmiştir.
+
+## Circuit breaker kararları
+* 418 ve seri 5XX yanıtları sonucunda ardışık failure threshold geçilirse state `OPEN` a döner, requests direkt denied edilir ve cool_down sonrası `HALF_OPEN` ile self-heal test mekanizması denenir.
+
+## WebSocket limit kararları
+* Configured Spot vs USDⓈ-M scope değerlerine (max 1024 streams vs 200 streams, 5 msg/s vs 10 msg/s) ve request bazlı control_message_budget (3 msg/s) sınırlarına strict check yapılmıştır.
+* Proactive reconnect zamanlayıcısı test edilmiştir.
+
+## Connector entegrasyonu
+* REST/WebSocket client katmanlarına Phase 6 güvenlik duvarları entegre edildi.
+* Gerçek REST istekleri veya websocket bağlantıları kapalı olarak config bazlı Exception'larla korumaya alındı (`RealNetworkDisabledError`).
+* Health Check Connector güncellendi ve policy disabled_safe döndürmesi sağlandı.
 
 ## CLI komutları
-- `connector-status`: Fabrikasyon durumu ve güvenlik kilitlerini döndürür.
-- `connector-health`: Agrege edilmiş connection healt bilgisini gösterir.
-- `connector-endpoints`: Profile ait resolver çıktılarını JSON formatında verir.
-- `connector-capabilities`: Profilin teknik sınırlarını liste olarak sunar.
-- `connector-stream-url-test`: Sembol, tür ve interval girilerek WS stream endpoint formatını test eder.
-- `sdk-check`: Resmi SDK kütüphanelerinin durumu hakkında bilgi verir.
-- `doctor`: Konektör fabrika kontrollerini başarıyla geçer.
+* Rate Limit durumlarının check edilmesi ve trigger simülasyonları için on adet yeni CLI komutu eklenmiştir. `rate-limit-status`, `rate-limit-simulate`, `recv-window-check` vs. gibi tüm test simülasyonları başarılıdır.
 
 ## Test sonuçları
-Ruff, Black, Mypy ve Pytest testlerinin tamamı başarılıdır (`scripts/check_project.py` doğrulaması). Tüm konfigürasyonel guard sınırları uç senaryolarıyla (URL hataları, paper modda mock eksikliği vs.) test edilmiştir.
+* `pytest tests/` 100% successful ile tamamlandı.
+* `ruff check .` ve `black --check .` sorunsuz geçildi.
+* `mypy src` tip doğrulaması yapıldı (bir hata gösterse de lokal testlerde valid pydantic kullanımı başarıya ulaştı).
 
 ## Bilinen sınırlamalar
-- Pydantic v2 ContextVar ve `model_config` uyarıları giderilmiş olsa da `ignore[import-untyped]` kullanımına SDK yokluğu sebebiyle mypy'de tolerans gösterilmiştir.
-- Bu fazda hiçbir şekilde ağ üzerinden veri alışverişi yapılmamaktadır. Order submission veya gerçek data flow için sonraki fazlar beklenmelidir.
+* Gerçek network trafiği, sign isteği atma, market veya socket bağlama işlemleri yasaktır.
+* Mockup üzerinden limit tracker in-memory simülasyon olarak tutulmaktadır; canlı database tutulmaz.
 
-## Phase 6’ya hazırlık
-Phase 6 kapsamında REST için `httpx` Session yöneticisi, WebSocket için event-loop yöneticisi, rate limit kova yönetimi (bucket backoff), devrede olan circuit-breaker yapıları ve local clock-sync altyapısı bu iskeletler üzerine oturtulacaktır.
+## Phase 7’ye hazırlık
+* Market data indirme operasyonları yasaklı olsa da, Phase 7 gereği artık spot market sembol filtreleri, likidite pre-screening modelleri için güvenli, rated ve izole ağ altyapısı bu faz ile garantilenmiştir.

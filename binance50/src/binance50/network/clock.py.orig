@@ -1,0 +1,80 @@
+import threading
+from datetime import datetime, timezone
+from typing import Optional
+
+from pydantic import BaseModel
+
+from binance50.config.models import AppConfig
+from binance50.core.exceptions import ClockDriftError
+
+
+class ClockSnapshot(BaseModel):
+    local_time_ms: int
+    server_time_ms: int
+    measured_at_utc: datetime
+    round_trip_latency_ms: float
+    estimated_offset_ms: float
+    drift_status: str
+    source: str
+    valid: bool
+
+
+class ClockSyncService:
+    def __init__(self, config: AppConfig):
+        self.config = config
+        self.lock = threading.Lock()
+        self._current_snapshot: Optional[ClockSnapshot] = None
+
+    def update_from_server_time(
+        self, server_time_ms: int, local_before_ms: int, local_after_ms: int
+    ) -> ClockSnapshot:
+        round_trip_latency = local_after_ms - local_before_ms
+        local_time_at_server = local_before_ms + (round_trip_latency / 2)
+        offset = server_time_ms - local_time_at_server
+
+        drift_status = "ok"
+        valid = True
+        if abs(offset) > self.config.binance_timing.max_allowed_clock_drift_ms:
+            drift_status = "high_drift"
+            valid = False
+
+        snapshot = ClockSnapshot(
+            local_time_ms=local_after_ms,
+            server_time_ms=server_time_ms,
+            measured_at_utc=datetime.now(timezone.utc),
+            round_trip_latency_ms=round_trip_latency,
+            estimated_offset_ms=offset,
+            drift_status=drift_status,
+            source="mock_server_time" if not self.config.binance_timing.clock_sync_enabled else "binance_server_time",
+            valid=valid,
+        )
+
+        with self.lock:
+            self._current_snapshot = snapshot
+
+        return snapshot
+
+    def get_current_offset_ms(self) -> Optional[float]:
+        with self.lock:
+            if not self._current_snapshot:
+                return None
+            return self._current_snapshot.estimated_offset_ms
+
+    def is_drift_acceptable(self, config: AppConfig) -> bool:
+        offset = self.get_current_offset_ms()
+        if offset is None:
+            return not config.binance_timing.reject_if_clock_drift_unknown_for_signed
+        return abs(offset) <= config.binance_timing.max_allowed_clock_drift_ms
+
+    def require_valid_clock_for_signed_request(self, config: AppConfig) -> None:
+        if not self.is_drift_acceptable(config):
+            raise ClockDriftError("Clock drift is too high or unknown for a signed request")
+
+    def to_report(self) -> dict:
+        with self.lock:
+            return {
+                "enabled": self.config.binance_timing.clock_sync_enabled,
+                "current_offset_ms": self.get_current_offset_ms(),
+                "snapshot_valid": self._current_snapshot.valid if self._current_snapshot else False,
+                "measured_at": self._current_snapshot.measured_at_utc.isoformat() if self._current_snapshot else None
+            }
