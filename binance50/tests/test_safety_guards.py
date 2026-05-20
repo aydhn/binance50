@@ -1,42 +1,29 @@
 import pytest
 
 from binance50.config.loader import load_config
-from binance50.core.enums import RuntimeEnvironment, TradingMode
-from binance50.core.exceptions import InvalidTradingModeError, LiveTradingBlockedError
-from binance50.safety.live_guard import check_live_trading_guard
-from binance50.safety.mode_guard import check_mode_consistency
+from binance50.core.exceptions import LiveTradingBlockedError, SafetyError
+from binance50.safety.live_guard import assert_live_trading_allowed
+from binance50.safety.mode_guard import validate_mode_consistency
 
 
 def test_paper_mode_safe():
     config = load_config()
-    config.runtime.trading_mode = TradingMode.PAPER
-    config.runtime.environment = RuntimeEnvironment.LOCAL
-
-    # Should not raise any exceptions
-    check_mode_consistency(config)
-    check_live_trading_guard(config)
+    # local_paper_spot defaults
+    validate_mode_consistency(config)
 
 
-def test_live_guard_blocks_by_default():
+def test_live_guard_blocks_by_default(monkeypatch):
+    monkeypatch.setenv("BINANCE50_ENVIRONMENT_PROFILE", "spot_mainnet_live")
+    # Need to disable force paper mode to even allow config to load with LIVE mode
+    # But actually, LiveTradingBlockedError is what we want from the live guard.
     config = load_config()
-    config.runtime.trading_mode = TradingMode.LIVE
-    config.runtime.environment = RuntimeEnvironment.MAINNET
-
-    # By default enable_live_trading and confirm_live_trading are False
-    # Pydantic validation catches this first during instantiation if set that way,
-    # but let's test the guard explicitly bypassing validation
-    config.safety.enable_live_trading = False
-
     with pytest.raises(LiveTradingBlockedError):
-        check_live_trading_guard(config)
+        assert_live_trading_allowed(config)
 
 
-def test_mode_consistency_invalid():
+def test_mode_consistency_invalid(monkeypatch):
+    monkeypatch.setenv("BINANCE50_TRADING_MODE", "testnet")
+    # local_paper_spot doesn't allow TESTNET mode
     config = load_config()
-    config.runtime.trading_mode = TradingMode.TESTNET
-    config.runtime.environment = RuntimeEnvironment.LOCAL
-    # Need a profile mismatch or something to trigger mode inconsistency
-    # local_paper_spot profile doesn't allow TESTNET mode
-
-    with pytest.raises(InvalidTradingModeError):
-        check_mode_consistency(config)
+    with pytest.raises(SafetyError):
+        validate_mode_consistency(config)

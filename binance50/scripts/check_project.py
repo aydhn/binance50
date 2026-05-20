@@ -1,108 +1,79 @@
 #!/usr/bin/env python3
+
+import os
+import subprocess
 import sys
 from pathlib import Path
 
 
-def print_result(check_name: str, passed: bool, msg: str = "") -> None:
-    status = "PASSED" if passed else "FAILED"
-    color = "\033[92m" if passed else "\033[91m"
-    endc = "\033[0m"
-    print(f"[{color}{status}{endc}] {check_name} {msg}")
+def run_command(cmd: list[str], description: str) -> bool:
+    print(f"\n--- Running: {description} ---")
+    try:
+        env = os.environ.copy()
+        env["PYTHONPATH"] = str(Path(__file__).resolve().parent.parent / "src")
+        result = subprocess.run(
+            cmd,
+            env=env,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
+        print(result.stdout)
+        print(f"✓ {description} passed.")
+        return True
+    except subprocess.CalledProcessError as e:
+        print(e.stdout)
+        print(f"✗ {description} failed with exit code {e.returncode}.")
+        return False
 
 
-def check_project():
-    print("Running Project Health Check...")
+def main() -> None:
+    repo_root = Path(__file__).resolve().parent.parent
 
-    # Check critical files
-    critical_files = [
-        "pyproject.toml",
-        "requirements.txt",
-        ".env.example",
-        "README.md",
-        "config/default.yaml",
-        "config/environments.yaml",
-        "config/logging.yaml",
+    # File checks
+    env_example = repo_root / ".env.example"
+    if not env_example.exists():
+        print("✗ .env.example is missing.")
+        sys.exit(1)
+
+    gitignore = repo_root / ".gitignore"
+    if not gitignore.exists():
+        print("✗ .gitignore is missing.")
+        sys.exit(1)
+
+    print("\n--- Running Code Quality Checks ---")
+
+    checks = [
+        (["python", "-m", "pytest", "tests/"], "Pytest Unit Tests"),
+        (["python", "-m", "ruff", "check", "."], "Ruff Linter"),
+        (["python", "-m", "black", "--check", "."], "Black Formatter"),
+        (["python", "-m", "mypy", "src"], "MyPy Type Checker"),
+    ]
+
+    cli_checks = [
+        (["python", "-m", "binance50.cli", "doctor"], "Binance50 Doctor"),
+        (["python", "-m", "binance50.cli", "secrets-check"], "Secrets Guard Check"),
+        (["python", "-m", "binance50.cli", "api-key-check"], "API Key Guard Check"),
+        (["python", "-m", "binance50.cli", "dry-run-check"], "Dry-run Guard Check"),
+        (["python", "-m", "binance50.cli", "live-unlock-check"], "Live Unlock Guard Check"),
+        (["python", "-m", "binance50.cli", "safety-report-full"], "Full Safety Report"),
     ]
 
     all_passed = True
 
-    for f in critical_files:
-        exists = Path(f).exists()
-        print_result(f"File exists: {f}", exists)
-        if not exists:
+    for cmd, desc in checks + cli_checks:
+        if not run_command(cmd, desc):
             all_passed = False
 
-    # Check tests folder
-    has_tests = Path("tests").is_dir()
-    print_result("Directory exists: tests/", has_tests)
-    if not has_tests:
-        all_passed = False
-
-    # Check Phase 3 additions
-    try:
-        sys.path.insert(0, str(Path("src").resolve()))
-        from binance50.audit.writer import audit_event
-        from binance50.config.loader import load_config
-        from binance50.core.error_classifier import classify_http_status
-        from binance50.logging.redaction import redact_text
-        from binance50.logging.setup import setup_logging
-        from binance50.safety.environment_guard import build_environment_safety_report
-
-        config = load_config()
-        print_result("Config loading", True)
-
-        # Check default profile
-        profile = config.selected_environment_profile
-        has_default_profile = profile is not None
-        print_result("Default profile resolves", has_default_profile)
-        if not has_default_profile:
-            all_passed = False
-
-        # Check live blocked
-        is_live_blocked = not profile.is_live and config.runtime.trading_mode.value != "live"
-        print_result("Live trading blocked by default", is_live_blocked)
-        if not is_live_blocked:
-            all_passed = False
-
-        # Check safety report works
-        report = build_environment_safety_report(config)
-        has_report = report is not None and "safety_status" in report
-        print_result("Safety report generates", has_report)
-        if not has_report:
-            all_passed = False
-
-        # Check Logging Setup
-        setup_logging()
-        print_result("Logging setup", True)
-
-        # Check Audit Writer
-        audit_event("app_start", "health_check", "test")
-        print_result("Audit writer", True)
-
-        # Check Redaction
-        redacted = redact_text("api_key=FAKE_SECRET_KEY")
-        print_result("Secret redaction", "***REDACTED***" in redacted)
-        if "***REDACTED***" not in redacted:
-            all_passed = False
-
-        # Check Error Classifier
-        err_cls = classify_http_status(429)
-        print_result("Error classifier (429)", err_cls.__name__ == "BinanceRateLimitError")
-        if err_cls.__name__ != "BinanceRateLimitError":
-            all_passed = False
-
-    except Exception as e:
-        print_result("Config/Logging/Audit validation", False, f"- Error: {e}")
-        all_passed = False
-
-    print("\nSummary:")
+    print("\n=========================================")
     if all_passed:
-        print("\033[92mProject structure is healthy.\033[0m")
+        print("🎉 All checks passed! Project is healthy and safe.")
         sys.exit(0)
     else:
-        print("\033[91mProject structure has issues.\033[0m")
+        print("💥 Some checks failed. Please review the output above.")
         sys.exit(1)
 
 
 if __name__ == "__main__":
-    check_project()
+    main()

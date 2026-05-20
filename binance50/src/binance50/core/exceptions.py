@@ -238,3 +238,63 @@ class BinanceWebSocketError(BinanceApiError):
 
 class BinanceUserDataStreamError(BinanceApiError):
     pass
+
+
+class CredentialError(Binance50Error):
+    """Base class for credential-related errors."""
+
+    pass
+
+
+class CredentialPairError(CredentialError):
+    """Raised when a credential pair is incomplete (e.g., API key provided without secret)."""
+
+    default_code = "CREDENTIAL_PAIR_INCOMPLETE"
+
+
+class ApiPermissionError(Binance50Error):
+    """Raised when API permissions do not match the required policy."""
+
+    default_code = "API_PERMISSION_INVALID"
+
+
+class DryRunViolationError(SafetyError):
+    """Raised when an operation attempts to bypass the dry-run guard."""
+
+    default_code = "DRY_RUN_VIOLATION"
+
+
+class OrderPathDisabledError(SafetyError):
+    """Raised when an operation attempts to use the order gateway while it is disabled."""
+
+    default_code = "ORDER_PATH_DISABLED"
+
+
+class UnsafeConfigurationError(SafetyError):
+    """Raised when the configuration is deemed unsafe for the intended operation."""
+
+    default_code = "UNSAFE_CONFIGURATION"
+
+
+class GitIgnorePolicyError(SafetyError):
+    """Raised when the .gitignore file does not adequately protect environment files."""
+
+    default_code = "GITIGNORE_ENV_MISSING"
+
+
+class EnvFilePolicyError(SafetyError):
+    """Raised for violations related to the .env or .env.example files."""
+
+    default_code = "ENV_EXAMPLE_SECRET_DETECTED"
+
+
+class LiveUnlockError(SafetyError):
+    """Raised when the live trading unlock phrase or risk acknowledgment is missing or incorrect."""
+
+    default_code = "LIVE_UNLOCK_MISSING"
+
+
+class UnsupportedPermissionError(ApiPermissionError):
+    """Raised when an unsupported permission is detected (e.g., margin trading)."""
+
+    default_code = "UNSUPPORTED_PERMISSION"

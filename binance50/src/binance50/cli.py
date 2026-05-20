@@ -1,27 +1,35 @@
-import logging
+import json
 import sys
+from pathlib import Path
 
 import typer
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from binance50.audit.writer import audit_event
 from binance50.config.loader import load_config
 from binance50.core.exception_handler import handle_exception
-from binance50.core.exceptions import BinanceRateLimitError, ConfigError
+from binance50.core.exceptions import ConfigError
 from binance50.logging.setup import setup_logging
+from binance50.safety.api_key_guard import build_api_key_safety_report
+from binance50.safety.dry_run_guard import build_dry_run_report
 from binance50.safety.environment_guard import (
     build_environment_safety_report,
     validate_environment_matrix,
 )
 from binance50.safety.secrets_guard import (
+    build_secret_safety_report,
     check_for_leaked_secrets,
     verify_no_secrets_in_example_env,
 )
+from binance50.security.live_unlock import build_live_unlock_report
 
 app = typer.Typer(help="binance50 CLI tool")
 console = Console()
+
+
+def _get_repo_root() -> Path:
+    return Path(__file__).resolve().parent.parent.parent
 
 
 @app.command()
@@ -48,7 +56,7 @@ def doctor() -> None:
 
     # Check .env.example
     try:
-        verify_no_secrets_in_example_env()
+        verify_no_secrets_in_example_env(str(_get_repo_root() / ".env.example"))
         table.add_row(".env.example Safety", "[green]Passed[/green]")
     except Exception as e:
         table.add_row(".env.example Safety", f"[red]Failed: {str(e)}[/red]")
@@ -68,13 +76,6 @@ def doctor() -> None:
     except Exception as e:
         table.add_row("Logging Setup", f"[red]Failed: {str(e)}[/red]")
 
-    # Check Audit Writer
-    try:
-        audit_event("app_start", "cli", "doctor", message="Doctor check")
-        table.add_row("Audit Writer", "[green]Passed[/green]")
-    except Exception as e:
-        table.add_row("Audit Writer", f"[red]Failed: {str(e)}[/red]")
-
     # Check Exception Handler & Redaction
     try:
         handle_exception(ConfigError("Fake key=12345 secret=XYZ"), component="cli", action="doctor")
@@ -91,12 +92,8 @@ def show_config() -> None:
     try:
         config = load_config()
         console.print(Panel("Current Configuration", style="bold green"))
-
-        import json
-
-        config_dict = config.model_dump()
+        config_dict = config.model_dump(mode="json")
         console.print(json.dumps(config_dict, indent=2))
-
     except Exception as e:
         console.print(f"[red]Failed to load config: {e}[/red]")
 
@@ -153,7 +150,6 @@ def show_environment(profile: str = typer.Option(None, help="The profile to show
     if profile is None:
         p = config.selected_environment_profile
     else:
-        # Avoid passing raw string through model
         for p_name, p_config in config.environment_matrix.profiles.items():
             if p_name.value == profile:
                 p = p_config
@@ -163,10 +159,7 @@ def show_environment(profile: str = typer.Option(None, help="The profile to show
             sys.exit(1)
 
     console.print(Panel(f"Environment Profile: {p.profile_name.value}", style="bold cyan"))
-
-    import json
-
-    p_dict = p.model_dump()
+    p_dict = p.model_dump(mode="json")
     console.print(json.dumps(p_dict, indent=2))
 
 
@@ -187,8 +180,6 @@ def environment_safety_report() -> None:
             style="bold yellow",
         )
     )
-    import json
-
     console.print(json.dumps(report, indent=2))
 
     if report["blocking_reasons"]:
@@ -210,15 +201,20 @@ def safety_check() -> None:
     try:
         config = load_config()
 
-        # 1. Secrets guard
         warnings = check_for_leaked_secrets()
         if warnings:
             for w in warnings:
                 console.print(f"[yellow]{w}[/yellow]")
         else:
-            console.print("[green]✓ Secrets Guard passed[/green]")
+            console.print("[green]✓ Env Secrets Guard passed[/green]")
 
-        # 2. Environment Matrix Guard (includes mode and live guards)
+        report = build_secret_safety_report(config, _get_repo_root())
+        if report["status"] == "unsafe":
+            console.print(f"[red]✗ File Secrets Guard failed: {report['issues']}[/red]")
+            sys.exit(1)
+        else:
+            console.print("[green]✓ File Secrets Guard passed[/green]")
+
         try:
             validate_environment_matrix(config)
             console.print("[green]✓ Environment Matrix Guard passed[/green]")
@@ -238,66 +234,80 @@ def safety_check() -> None:
 
 
 @app.command()
-def log_test() -> None:
-    """Test logging output and redaction capabilities."""
-    setup_logging()
-    logger = logging.getLogger("binance50.cli")
-
-    console.print("[yellow]Running Log Test...[/yellow]")
-    logger.info("This is a normal info message.")
-    logger.warning("This is a warning message.")
-    logger.error("This is an error message.")
-
-    # Fake secret test
-    logger.info(
-        "Testing redaction: api_key=FAKE_TEST_SECRET_SHOULD_BE_REDACTED_1234567890 and secret=ANOTHER_FAKE_SECRET_THAT_IS_LONG_ENOUGH"
-    )
-    logger.info(
-        "Testing JSON redaction: {'telegram_bot_token': '1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789'}"
-    )
-
-    console.print("[green]Log test complete. Check your console and logs/binance50.log.[/green]")
+def secrets_check() -> None:
+    try:
+        config = load_config()
+        report = build_secret_safety_report(config, _get_repo_root())
+        console.print(Panel("Secrets Check", style="bold cyan"))
+        console.print(json.dumps(report, indent=2))
+        if report["status"] == "unsafe":
+            sys.exit(1)
+    except Exception as e:
+        console.print(f"[red]Failed: {e}[/red]")
+        sys.exit(1)
 
 
 @app.command()
-def audit_test() -> None:
-    """Test audit log writing."""
-    setup_logging()
-    console.print("[yellow]Running Audit Test...[/yellow]")
-
-    audit_event(
-        "app_start",
-        "cli",
-        "audit_test",
-        message="This is a test audit event",
-        metadata={"test_api_key": "FAKE_SECRET_THAT_SHOULD_BE_REDACTED"},
-    )
-
-    console.print("[green]Audit test complete. Check logs/binance50_audit.jsonl.[/green]")
+def api_key_check() -> None:
+    try:
+        config = load_config()
+        report = build_api_key_safety_report(config)
+        console.print(Panel("API Key Check", style="bold cyan"))
+        console.print(json.dumps(report, indent=2))
+        if report["status"] == "unsafe":
+            sys.exit(1)
+    except Exception as e:
+        console.print(f"[red]Failed: {e}[/red]")
+        sys.exit(1)
 
 
 @app.command()
-def error_test() -> None:
-    """Test error handling and classification."""
-    setup_logging()
-    logger = logging.getLogger("binance50.cli")
-    console.print("[yellow]Running Error Test...[/yellow]")
-
+def dry_run_check() -> None:
     try:
-        raise BinanceRateLimitError(
-            "Too many requests from this IP", metadata={"endpoint": "/api/v3/order"}
-        )
+        config = load_config()
+        report = build_dry_run_report(config)
+        console.print(Panel("Dry Run Check", style="bold cyan"))
+        console.print(json.dumps(report, indent=2))
+        if report["status"] == "unsafe":
+            sys.exit(1)
     except Exception as e:
-        handle_exception(e, component="cli", action="error_test", logger=logger)
+        console.print(f"[red]Failed: {e}[/red]")
+        sys.exit(1)
 
+
+@app.command()
+def live_unlock_check() -> None:
     try:
-        raise ConfigError("Invalid configuration for api_secret=FAKE_SECRET_SHOULD_BE_REDACTED")
+        config = load_config()
+        report = build_live_unlock_report(config)
+        console.print(Panel("Live Unlock Check", style="bold cyan"))
+        console.print(json.dumps(report, indent=2))
+        if not report["live_blocked_by_unlock_guard"]:
+            console.print(
+                "\n[bold red]HIGH RISK: Live unlock guard is OPEN. Live trading is structurally allowed by unlock locks![/bold red]"
+            )
+        else:
+            console.print("\n[green]Live unlock guard is blocked as expected.[/green]")
     except Exception as e:
-        handle_exception(e, component="cli", action="error_test", logger=logger)
+        console.print(f"[red]Failed: {e}[/red]")
+        sys.exit(1)
 
-    console.print(
-        "[green]Error test complete. Exceptions were caught and handled safely. Check console and error logs.[/green]"
-    )
+
+@app.command()
+def safety_report_full() -> None:
+    try:
+        config = load_config()
+        report = build_environment_safety_report(config)
+        report["secrets_report"] = build_secret_safety_report(config, _get_repo_root())
+
+        console.print(Panel("Full Safety Report", style="bold cyan"))
+        console.print(json.dumps(report, indent=2))
+
+        if report["safety_status"] == "unsafe" or report["secrets_report"]["status"] == "unsafe":
+            sys.exit(1)
+    except Exception as e:
+        console.print(f"[red]Failed: {e}[/red]")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

@@ -3,10 +3,10 @@ import logging
 from binance50.audit.writer import audit_event
 from binance50.config.loader import load_config
 from binance50.core.exception_handler import handle_exception
+from binance50.core.exceptions import SafetyError
 from binance50.logging.context import set_correlation_id, set_runtime_context
 from binance50.logging.setup import setup_logging
-from binance50.safety.live_guard import check_live_trading_guard
-from binance50.safety.mode_guard import check_mode_consistency
+from binance50.safety.environment_guard import build_environment_safety_report
 from binance50.safety.secrets_guard import check_for_leaked_secrets
 
 
@@ -47,8 +47,12 @@ def init_app() -> None:
         for w in warnings:
             logger.warning(w)
 
-        check_mode_consistency(config)
-        check_live_trading_guard(config)
+        report = build_environment_safety_report(config)
+        if report["safety_status"] == "unsafe":
+            raise SafetyError(f"Environment safety check failed: {report['warnings']}")
+
+        # We don't raise here if live is blocked unless we are in live mode.
+        # This logic is handled inside environment_guard build_environment_safety_report / validate_environment_matrix
 
         audit_event("safety_check_passed", "app", "safety_check")
 
@@ -60,7 +64,7 @@ def init_app() -> None:
             "connector_disabled",
             "app",
             "connector_initialization",
-            message="Connector is disabled in Phase 3",
+            message="Connector is disabled in Phase 4",
         )
 
     except Exception as e:

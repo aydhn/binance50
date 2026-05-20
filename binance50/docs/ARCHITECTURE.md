@@ -85,3 +85,25 @@ The application uses a deep hierarchy rooted in `Binance50Error`.
 ## Runtime Context Propagation
 - Similar to Correlation ID, the active environment profile, trading mode, and market scope are stored in `contextvars`.
 - This ensures every log and audit event is permanently tagged with the context it ran under, preventing confusion when reviewing logs from mixed environments.
+
+## Phase 4: Safety Layer Architecture
+
+In Phase 4, the system was hardened with an extensive Safety Layer ensuring live-trading logic cannot be circumvented accidentally.
+
+### Credential Guard
+Manages API keys and Telegram tokens using `SecretStr` exclusively. Config loads are actively evaluated and intercepted before exposure. Redaction rules apply not just to simple fields but perform deep inspection over mappings.
+
+### API Permission Guard
+Implements an **offline validation model**. Before connecting to Binance, the application validates the `.env` metadata describing the permissions of the local API key against the declared requirements of the chosen `EnvironmentProfile`.
+
+### Dry-Run Guard
+Enforces restrictions globally when running in non-live modes. If dry-run is enabled, any activation of the order gateway causes an immediate crash (`DryRunViolationError`), guaranteeing simulated actions never reach real execution pathways.
+
+### Live Unlock Guard
+A fail-safe specifically for Live environments. It scans memory specifically for exact match confirmation strings ("I_UNDERSTAND_REAL_MONEY_RISK", etc.). The application blocks initialization if any character deviates.
+
+### Effective Trading Mode
+A computed concept derived from combining `runtime.trading_mode` and Phase 4 locks (like `force_paper_mode`). While runtime mode declares intention, **Effective Trading Mode** determines actual permission levels inside the guard architecture.
+
+### Order Path Disabled Model
+`disable_all_orders` is an absolute kill-switch acting universally across all domains. Even if specific `supports_order_placement` variables are technically true inside testnet matrices, this global toggle fundamentally amputates the functionality at a structural level.

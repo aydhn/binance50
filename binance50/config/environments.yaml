@@ -25,6 +25,23 @@ profiles:
     supports_order_placement: false
     permission_level: no_credentials
     notes: "Default local paper trading profile for spot"
+    allowed_when_dry_run: true
+    allowed_when_force_paper: true
+    compatible_with_disable_all_orders: true
+    credential_policy:
+      requires_credentials: false
+      allows_empty_credentials: true
+      forbids_credentials: false
+    permission_policy:
+      requires_read_permission: false
+      requires_spot_trade_permission: false
+      requires_futures_trade_permission: false
+      requires_margin_trade_permission: false
+      requires_ip_restriction: false
+    order_policy:
+      allows_simulated_orders: true
+      allows_testnet_orders: false
+      allows_live_orders: false
 
   local_paper_usdm_futures:
     profile_name: local_paper_usdm_futures
@@ -51,6 +68,23 @@ profiles:
     supports_order_placement: false
     permission_level: no_credentials
     notes: "Local paper trading profile for usdm futures"
+    allowed_when_dry_run: true
+    allowed_when_force_paper: true
+    compatible_with_disable_all_orders: true
+    credential_policy:
+      requires_credentials: false
+      allows_empty_credentials: true
+      forbids_credentials: false
+    permission_policy:
+      requires_read_permission: false
+      requires_spot_trade_permission: false
+      requires_futures_trade_permission: false
+      requires_margin_trade_permission: false
+      requires_ip_restriction: false
+    order_policy:
+      allows_simulated_orders: true
+      allows_testnet_orders: false
+      allows_live_orders: false
 
   spot_testnet:
     profile_name: spot_testnet
@@ -77,6 +111,23 @@ profiles:
     supports_order_placement: true
     permission_level: test_order
     notes: "Spot testnet with real testnet order placement allowed"
+    allowed_when_dry_run: false
+    allowed_when_force_paper: false
+    compatible_with_disable_all_orders: false
+    credential_policy:
+      requires_credentials: true
+      allows_empty_credentials: false
+      forbids_credentials: false
+    permission_policy:
+      requires_read_permission: true
+      requires_spot_trade_permission: true
+      requires_futures_trade_permission: false
+      requires_margin_trade_permission: false
+      requires_ip_restriction: false
+    order_policy:
+      allows_simulated_orders: false
+      allows_testnet_orders: true
+      allows_live_orders: false
 
   usdm_futures_testnet:
     profile_name: usdm_futures_testnet
@@ -103,6 +154,23 @@ profiles:
     supports_order_placement: true
     permission_level: test_order
     notes: "USDM futures testnet with real testnet order placement allowed"
+    allowed_when_dry_run: false
+    allowed_when_force_paper: false
+    compatible_with_disable_all_orders: false
+    credential_policy:
+      requires_credentials: true
+      allows_empty_credentials: false
+      forbids_credentials: false
+    permission_policy:
+      requires_read_permission: true
+      requires_spot_trade_permission: false
+      requires_futures_trade_permission: true
+      requires_margin_trade_permission: false
+      requires_ip_restriction: false
+    order_policy:
+      allows_simulated_orders: false
+      allows_testnet_orders: true
+      allows_live_orders: false
 
   spot_mainnet_readonly:
     profile_name: spot_mainnet_readonly
@@ -134,6 +202,23 @@ profiles:
     supports_order_placement: false
     permission_level: no_credentials
     notes: "Readonly access to mainnet for paper trading with live market data"
+    allowed_when_dry_run: true
+    allowed_when_force_paper: true
+    compatible_with_disable_all_orders: true
+    credential_policy:
+      requires_credentials: true
+      allows_empty_credentials: true
+      forbids_credentials: false
+    permission_policy:
+      requires_read_permission: true
+      requires_spot_trade_permission: false
+      requires_futures_trade_permission: false
+      requires_margin_trade_permission: false
+      requires_ip_restriction: false
+    order_policy:
+      allows_simulated_orders: true
+      allows_testnet_orders: false
+      allows_live_orders: false
 
   usdm_futures_mainnet_readonly:
     profile_name: usdm_futures_mainnet_readonly
@@ -160,6 +245,23 @@ profiles:
     supports_order_placement: false
     permission_level: no_credentials
     notes: "Readonly access to USDM futures mainnet with live market data"
+    allowed_when_dry_run: true
+    allowed_when_force_paper: true
+    compatible_with_disable_all_orders: true
+    credential_policy:
+      requires_credentials: true
+      allows_empty_credentials: true
+      forbids_credentials: false
+    permission_policy:
+      requires_read_permission: true
+      requires_spot_trade_permission: false
+      requires_futures_trade_permission: false
+      requires_margin_trade_permission: false
+      requires_ip_restriction: false
+    order_policy:
+      allows_simulated_orders: true
+      allows_testnet_orders: false
+      allows_live_orders: false
 
   spot_mainnet_live:
     profile_name: spot_mainnet_live
@@ -191,6 +293,23 @@ profiles:
     supports_order_placement: true
     permission_level: live_order
     notes: "Full live trading access on Binance Spot mainnet"
+    allowed_when_dry_run: false
+    allowed_when_force_paper: false
+    compatible_with_disable_all_orders: false
+    credential_policy:
+      requires_credentials: true
+      allows_empty_credentials: false
+      forbids_credentials: false
+    permission_policy:
+      requires_read_permission: true
+      requires_spot_trade_permission: true
+      requires_futures_trade_permission: false
+      requires_margin_trade_permission: false
+      requires_ip_restriction: true
+    order_policy:
+      allows_simulated_orders: false
+      allows_testnet_orders: false
+      allows_live_orders: true
 
   usdm_futures_mainnet_live:
     profile_name: usdm_futures_mainnet_live
@@ -217,6 +336,23 @@ profiles:
     supports_order_placement: true
     permission_level: live_order
     notes: "Full live trading access on Binance USDM futures mainnet"
+    allowed_when_dry_run: false
+    allowed_when_force_paper: false
+    compatible_with_disable_all_orders: false
+    credential_policy:
+      requires_credentials: true
+      allows_empty_credentials: false
+      forbids_credentials: false
+    permission_policy:
+      requires_read_permission: true
+      requires_spot_trade_permission: false
+      requires_futures_trade_permission: true
+      requires_margin_trade_permission: false
+      requires_ip_restriction: true
+    order_policy:
+      allows_simulated_orders: false
+      allows_testnet_orders: false
+      allows_live_orders: true
 
   coinm_futures_placeholder:
     profile_name: coinm_futures_placeholder
@@ -243,3 +379,20 @@ profiles:
     supports_order_placement: false
     permission_level: no_credentials
     notes: "Placeholder profile for COINM futures"
+    allowed_when_dry_run: true
+    allowed_when_force_paper: true
+    compatible_with_disable_all_orders: true
+    credential_policy:
+      requires_credentials: false
+      allows_empty_credentials: true
+      forbids_credentials: false
+    permission_policy:
+      requires_read_permission: false
+      requires_spot_trade_permission: false
+      requires_futures_trade_permission: false
+      requires_margin_trade_permission: false
+      requires_ip_restriction: false
+    order_policy:
+      allows_simulated_orders: true
+      allows_testnet_orders: false
+      allows_live_orders: false

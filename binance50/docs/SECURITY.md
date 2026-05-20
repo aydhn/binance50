@@ -36,3 +36,51 @@
 - **429 (Rate Limit)**: Triggers an automatic circuit breaker or backoff, audited as `rate_limit_warning`.
 - **418 (IP Ban)**: Triggers an immediate halt (`BinanceIpBanError`), requires manual intervention.
 - **5XX (Unknown Execution Status)**: Treated critically. We assume the order state is unknown and halt trading to prevent duplicate orders or unintended exposure.
+
+## Phase 4 Security Enhancements
+
+### `.env` and `.env.example` Policy
+- **Never commit `.env` to the repository.** `.gitignore` strictly protects `.env` and `.env.*`.
+- **No real secrets in `.env.example`.** The example template must leave sensitive variables blank. Long, secret-like strings in `.env.example` will trigger a `SecretLeakError`.
+
+### Secret Redaction Guarantee
+- The application guarantees that secret values (e.g., API keys, telegram tokens) are aggressively redacted before hitting any output mechanism.
+- Dumps, logs, exceptions, and safety reports will consistently mask secrets with `***redacted***` or similar, ensuring absolute protection against accidental leakage.
+
+### API Key Permission Policy
+- The project implements an **offline permission model**. Binance API credentials metadata (e.g., `BINANCE_API_PERMISSION_SPOT_TRADE`) is provided by the user in `.env`.
+- The `api_key_guard` evaluates this metadata against the selected `EnvironmentProfile`. Read-only profiles strictly block trading permissions. Live profiles dynamically verify the corresponding market permission (spot vs. futures).
+
+### Readonly Profile Security
+- `spot_mainnet_readonly` and `usdm_futures_mainnet_readonly` are strictly for ingesting live market data without the ability to place orders.
+- If these profiles are used alongside an enabled `order_gateway`, or if they declare trade-enabled API credentials, the system blocks execution.
+
+### Dry-Run Mode
+- **Dry-run is enabled by default (`BINANCE50_DRY_RUN=true`).**
+- When dry-run is active, the order gateway is strictly blocked, preventing simulated environments from accidentally sending real orders.
+
+### Force Paper Mode
+- **Force paper mode is enabled by default (`BINANCE50_FORCE_PAPER_MODE=true`).**
+- This globally overrides the trading mode to `paper`. Changing the runtime environment to `live` or `testnet` is impossible while this flag remains active.
+
+### Disable All Orders Flag
+- **Disable all orders is enabled by default (`BINANCE50_DISABLE_ALL_ORDERS=true`).**
+- Serves as the ultimate kill-switch. When true, the order path is universally disabled, regardless of dry-run or force-paper mode states.
+
+### Live Unlock Phrase
+- Live trading is guarded by a manual phrase confirmation (`BINANCE50_LIVE_UNLOCK`). The exact text must be provided (e.g., `"I_UNDERSTAND_REAL_MONEY_RISK"`). If it does not strictly match, live trading is blocked.
+
+### Live Risk Acknowledgement
+- Mainnet confirmation involves a secondary lock (`BINANCE50_LIVE_RISK_ACK`). The user must supply the exact acknowledgment phrase (e.g., `"I_ACCEPT_FULL_RESPONSIBILITY"`) to confirm the risk.
+
+### Mainnet/Live Transition Checklist
+- Disable `BINANCE50_DRY_RUN`, `BINANCE50_FORCE_PAPER_MODE`, and `BINANCE50_DISABLE_ALL_ORDERS`.
+- Set `BINANCE50_ENABLE_LIVE_TRADING` and `BINANCE50_CONFIRM_LIVE_TRADING` to `true`.
+- Supply exact phrases for `BINANCE50_LIVE_UNLOCK` and `BINANCE50_LIVE_RISK_ACK`.
+- Enable connector and order gateway explicitly (`BINANCE50_CONNECTION_ENABLED`, `BINANCE50_ORDER_GATEWAY_ENABLED`).
+- Configure exact Live Mainnet profile in `environments.yaml` and `.env`.
+- Supply valid, strictly-scoped API credentials.
+
+### Why not a single flag for live trading?
+- A single flag (like `IS_LIVE=true`) is too easy to flip accidentally, especially via bulk environment variable loads or quick testing.
+- Requiring distinct, explicit flags alongside long, complex strings guarantees the user has consciously decided to deploy live capital.

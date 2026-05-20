@@ -41,7 +41,7 @@ format:
     assert len(logging.getLogger().handlers) == root_handlers_count
 
     # Set context
-    cid = set_correlation_id("test-corr-id")
+    set_correlation_id("test-corr-id")
     set_runtime_context("test_profile", "test_mode", "test_scope")
 
     # Log something

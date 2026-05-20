@@ -1,33 +1,45 @@
-# binance50
+# Binance50
 
-A secure, disciplined, Python-based cryptocurrency algorithmic trading bot designed exclusively for Binance.
+A secure, multi-environment algorithmic trading system for Binance.
 
-## Purpose
-This project aims to build a realistic, low/medium frequency trading system that works in typical home environments (like a standard Windows PC with wired internet). It is not High-Frequency Trading (HFT). The focus is on finding a limited number of high-quality trading opportunities with strict risk management.
+## Security First Approach
 
-**Key Design Choices:**
-- **Binance-only:** Specialized for Binance spot/futures.
-- **Python-only:** Developed purely in Python, without relying on dashboards, HTML/web scraping, or browser automation.
-- **No Paid APIs:** Zero budget operations. No Twitter API, no OpenAI API, no paid data services.
-- **Secure by Default:** Live trading is strictly disabled by default. The progression is always: Backtest → Paper Trading → Testnet/Demo → Live Trading.
-- **Telegram Notifications:** Operational updates and alerts will be sent via Telegram.
-- **Audit & Discipline:** No black boxes. Every critical action is logged safely.
+Binance50 is designed with security as its primary concern:
+- **Default Paper/Dry-Run Mode**: The system strictly operates in safe simulation mode by default.
+- **Never Share Secrets**: You can copy `.env.example` to `.env` but **never** add real secrets to the template or commit `.env` to Git.
+- **Multi-Lock Live Trading**: Activating live trading requires multiple conscious steps and environment variable overrides to unlock the order gateway. A single flag is not enough to accidentally spend live capital.
 
-## Quickstart
+## Quick Start
 
-1. Set up the virtual environment:
-   `python -m venv .venv`
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/yourusername/binance50.git
+    cd binance50
+    ```
 
-2. Activate the virtual environment:
-   - On Windows: `.venv\Scripts\activate`
-   - On macOS/Linux: `source .venv/bin/activate`
+2.  **Create your local environment configuration:**
+    ```bash
+    cp .env.example .env
+    ```
+    *Ensure you only input actual secrets into `.env` and never into `.env.example`.*
 
-3. Install dependencies:
-   `pip install -r requirements.txt`
-   `pip install -r requirements-dev.txt`
+3.  **Run Health & Safety Checks (Crucial before starting):**
+    ```bash
+    python -m binance50.cli doctor
+    python -m binance50.cli secrets-check
+    python -m binance50.cli dry-run-check
+    python -m binance50.cli live-unlock-check
+    python -m binance50.cli safety-report-full
+    ```
 
-4. Run the project doctor to verify the setup:
-   `python -m binance50.cli doctor`
+4.  **Explore the Configuration:**
+    ```bash
+    python -m binance50.cli show-config
+    python -m binance50.cli list-environments
+    python -m binance50.cli show-environment
+    ```
 
-5. Run tests:
-   `pytest`
+## Documentation
+- [Phase Plan](docs/PHASE_PLAN.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Security Guidelines](docs/SECURITY.md)

@@ -6,7 +6,9 @@ from binance50.audit.events import AuditEventType
 from binance50.audit.writer import audit_error, audit_event
 
 
-def audited_action(event_type: AuditEventType | str, component: str, action: str) -> Callable[..., Any]:
+def audited_action(
+    event_type: AuditEventType | str, component: str, action: str
+) -> Callable[..., Any]:
     """
     Decorator to automatically audit the start, success, and failure of a function.
     """
