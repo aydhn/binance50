@@ -298,3 +298,8 @@ class UnsupportedPermissionError(ApiPermissionError):
     """Raised when an unsupported permission is detected (e.g., margin trading)."""
 
     default_code = "UNSUPPORTED_PERMISSION"
+
+
+class ConnectorDisabledError(UnsupportedFeatureError):
+    def __init__(self, message: str = "Connector is disabled", **kwargs: Any) -> None:
+        super().__init__(message, **kwargs)

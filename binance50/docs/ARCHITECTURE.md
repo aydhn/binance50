@@ -107,3 +107,27 @@ A computed concept derived from combining `runtime.trading_mode` and Phase 4 loc
 
 ### Order Path Disabled Model
 `disable_all_orders` is an absolute kill-switch acting universally across all domains. Even if specific `supports_order_placement` variables are technically true inside testnet matrices, this global toggle fundamentally amputates the functionality at a structural level.
+
+## Connector Layer (Phase 5)
+
+### Connector Architecture
+The Binance connector layer acts as the bridge between the core trading engine and the external exchange endpoints. It is designed to be completely modular and environment-aware, preventing accidental mainnet calls during paper trading.
+
+### Adapter Pattern
+We utilize an adapter pattern via `ExchangeAdapterProtocol`. This encapsulates environment specifics (Spot vs USDⓈ-M Futures) and returns correctly configured REST and WebSocket clients for the selected network. Supported adapters include `binance:spot`, `binance:usdm_futures`, and a placeholder for `binance:coinm_futures`.
+
+### Client Factory
+The `client_factory` is the sole entry point for acquiring connection objects. It automatically consults the safety guards, reads the connection policies, and outputs a `ConnectorBundle`.
+
+### Disabled & Mock Clients
+To ensure "secure by default" behavior, the client factory produces a `DisabledExchangeAdapter` if the `connection_enabled` flag is false. This prevents any external network requests. A `MockExchangeAdapter` can be created if `mock_enabled` is true, which supports testing the connector lifecycle without real network I/O.
+
+### Endpoint Resolver & REST/WS Separation
+`endpoint_resolver` dynamically fetches the correct base URLs (e.g., testnet vs mainnet, routed vs raw) depending on the active `EnvironmentProfile`. REST and WebSocket clients are distinctly modeled (e.g., `RestConnectorProtocol` and `WebSocketConnectorProtocol`).
+
+### Stream URL Builders
+Stream routing varies heavily across Binance's ecosystem. Spot typically uses combined stream payloads (`/stream?streams=x/y`), while USDⓈ-M uses routed endpoints (`/public`, `/market`, `/private`). The client and `stream_names` helper generate safe, properly formatted strings for these contexts.
+
+### Phase 5 Constraints
+- **Real Network Blocked:** Actual HTTP and WebSocket requests are strictly unimplemented and intercepted in this phase to harden the structural safety before moving to live execution.
+- **Order Gateway:** The `OrderGatewayProtocol` acts only as an interface right now, defaulting to a `DisabledOrderGateway` that denies all order submissions. This guarantees zero chance of capital loss until full live integration is completed.

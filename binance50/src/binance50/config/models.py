@@ -187,6 +187,7 @@ class EnvironmentProfileConfig(BaseModel):
 
 class ConnectorConfig(BaseModel):
     connection_enabled: bool = False
+    mock_enabled: bool = False
     order_gateway_enabled: bool = False
     websocket_enabled: bool = False
     user_data_stream_enabled: bool = False
@@ -195,11 +196,22 @@ class ConnectorConfig(BaseModel):
     max_retry_attempts: int = Field(default=3, ge=0)
     backoff_initial_seconds: float = Field(default=0.5, gt=0)
     backoff_max_seconds: float = Field(default=8.0)
+    max_connection_lifetime_hours: int = Field(default=24, ge=1, le=24)
+    websocket_ping_timeout_seconds: int = Field(default=60, ge=5, le=600)
+    websocket_reconnect_before_disconnect_minutes: int = Field(default=10, ge=1, le=60)
+    max_incoming_messages_per_second: int = Field(default=10, ge=1, le=100)
+    rate_limit_backoff_enabled: bool = True
+    circuit_breaker_enabled: bool = True
+    allow_real_network_in_phase5: bool = False
 
     @model_validator(mode="after")
     def validate_backoff(self) -> "ConnectorConfig":
         if self.backoff_max_seconds < self.backoff_initial_seconds:
             raise ValueError("backoff_max_seconds must be >= backoff_initial_seconds")
+        if self.allow_real_network_in_phase5:
+            from binance50.core.exceptions import ConfigValidationError
+
+            raise ConfigValidationError("Real network is blocked in Phase 5")
         return self
 
 

@@ -7,7 +7,13 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
+from binance50.binance.sdk_imports import build_sdk_availability_report
 from binance50.config.loader import load_config
+from binance50.connectors.client_factory import create_connector_bundle
+from binance50.connectors.health import build_connector_health_report
+from binance50.connectors.stream_names import (
+    build_kline_stream,
+)
 from binance50.core.exception_handler import handle_exception
 from binance50.core.exceptions import ConfigError
 from binance50.logging.setup import setup_logging
@@ -83,6 +89,15 @@ def doctor() -> None:
     except Exception as e:
         table.add_row("Exception Handler", f"[red]Failed: {str(e)}[/red]")
 
+    # Check Connector Build
+    try:
+        if config:
+            from binance50.connectors.client_factory import create_connector_bundle
+
+            create_connector_bundle(config)
+            table.add_row("Connector Factory", "[green]Passed[/green]")
+    except Exception as e:
+        table.add_row("Connector Factory", f"[red]Failed: {str(e)}[/red]")
     console.print(table)
 
 
@@ -305,6 +320,118 @@ def safety_report_full() -> None:
 
         if report["safety_status"] == "unsafe" or report["secrets_report"]["status"] == "unsafe":
             sys.exit(1)
+    except Exception as e:
+        console.print(f"[red]Failed: {e}[/red]")
+        sys.exit(1)
+
+
+@app.command()
+def connector_status() -> None:
+    try:
+        config = load_config()
+        bundle = create_connector_bundle(config)
+        console.print(Panel("Connector Status", style="bold cyan"))
+
+        table = Table(show_header=False)
+        table.add_row("Selected Adapter", bundle.adapter.exchange_name.value)
+        table.add_row("REST Enabled", str(config.connector.connection_enabled))
+        table.add_row("WebSocket Enabled", str(config.connector.websocket_enabled))
+        table.add_row("Order Gateway Enabled", str(config.connector.order_gateway_enabled))
+        table.add_row("Mock Enabled", str(config.connector.mock_enabled))
+        table.add_row("Real Network Allowed", str(config.connector.allow_real_network_in_phase5))
+
+        console.print(table)
+    except Exception as e:
+        console.print(f"[red]Failed: {e}[/red]")
+        sys.exit(1)
+
+
+@app.command()
+def connector_health() -> None:
+    try:
+        config = load_config()
+        bundle = create_connector_bundle(config)
+        report = build_connector_health_report(bundle)
+        console.print(Panel("Connector Health", style="bold cyan"))
+        console.print(json.dumps(report, indent=2))
+    except Exception as e:
+        console.print(f"[red]Failed: {e}[/red]")
+        sys.exit(1)
+
+
+@app.command()
+def connector_endpoints() -> None:
+    try:
+        config = load_config()
+        bundle = create_connector_bundle(config)
+        info = bundle.rest.get_endpoint_info()
+        console.print(Panel("Connector Endpoints", style="bold cyan"))
+        console.print(json.dumps(info.model_dump(), indent=2))
+        if info.is_paper:
+            console.print(
+                "[yellow]Note: Paper profile endpoints are not active network connections.[/yellow]"
+            )
+    except Exception as e:
+        console.print(f"[red]Failed: {e}[/red]")
+        sys.exit(1)
+
+
+@app.command()
+def connector_capabilities() -> None:
+    try:
+        config = load_config()
+        bundle = create_connector_bundle(config)
+        caps = bundle.rest.get_capabilities()
+        console.print(Panel("Connector Capabilities", style="bold cyan"))
+
+        table = Table(show_header=True)
+        table.add_column("Capability")
+        table.add_column("Supported")
+
+        for k, v in caps.model_dump().items():
+            table.add_row(k, str(v))
+
+        console.print(table)
+    except Exception as e:
+        console.print(f"[red]Failed: {e}[/red]")
+        sys.exit(1)
+
+
+@app.command()
+def connector_stream_url_test(
+    symbol: str = typer.Option("BTCUSDT", help="Symbol to test"),
+    stream: str = typer.Option("kline", help="Stream type"),
+    interval: str = typer.Option("1m", help="Kline interval"),
+    combined: bool = typer.Option(True, help="Use combined stream format"),
+) -> None:
+    try:
+        config = load_config()
+        bundle = create_connector_bundle(config)
+
+        stream_name = ""
+        if stream == "kline":
+            stream_name = build_kline_stream(symbol, interval)
+        else:
+            console.print(f"[red]Stream type {stream} not implemented for test command yet.[/red]")
+            sys.exit(1)
+
+        url = bundle.websocket.build_stream_url([stream_name], combined)
+        console.print(Panel("Stream URL Test", style="bold cyan"))
+        console.print(f"Generated URL: {url}")
+        if bundle.adapter.account_domain.value == "usdm_futures":
+            console.print("Note: Route classification metadata would be used here in the future.")
+
+    except Exception as e:
+        console.print(f"[red]Failed: {e}[/red]")
+        sys.exit(1)
+
+
+@app.command()
+def sdk_check() -> None:
+    try:
+        report = build_sdk_availability_report()
+        console.print(Panel("SDK Check", style="bold cyan"))
+        console.print(json.dumps(report, indent=2))
     except Exception as e:
         console.print(f"[red]Failed: {e}[/red]")
         sys.exit(1)
