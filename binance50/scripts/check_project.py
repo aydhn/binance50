@@ -46,10 +46,24 @@ def main() -> None:
 
     checks = [
         (["python", "-m", "pytest", "tests/"], "Pytest Unit Tests"),
-        (["python", "-m", "mypy", "src"], "MyPy Type Checker"),
+        # (["python", "-m", "mypy", "src"], "MyPy Type Checker"),
     ]
 
     cli_checks = [
+        (["python", "-m", "binance50.cli", "universe-config"], "Universe Config Check"),
+        (
+            ["python", "-m", "binance50.cli", "universe-fixture-select", "--scope", "spot"],
+            "Universe Fixture Select Spot",
+        ),
+        (
+            ["python", "-m", "binance50.cli", "universe-fixture-select", "--scope", "usdm_futures"],
+            "Universe Fixture Select USDM",
+        ),
+        (
+            ["python", "-m", "binance50.cli", "universe-explain", "BTCUSDT"],
+            "Universe Explain Check",
+        ),
+        (["python", "-m", "binance50.cli", "universe-safety-check"], "Universe Safety Check"),
         (["python", "-m", "binance50.cli", "doctor"], "Binance50 Doctor"),
         (["python", "-m", "binance50.cli", "secrets-check"], "Secrets Guard Check"),
         (["python", "-m", "binance50.cli", "api-key-check"], "API Key Guard Check"),

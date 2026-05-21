@@ -35,21 +35,27 @@ def validate_mode_consistency(config: AppConfig) -> None:
             "is not a testnet profile"
         )
 
-    if mode == TradingMode.PAPER and not profile.is_paper:
+    if (
+        mode == TradingMode.PAPER
+        and not profile.is_paper
+        and config.connector.order_gateway_enabled
+    ):
         # Paper mode can run against testnet/live profiles if we don't send orders
         # But we must verify that order_gateway is completely disabled in this configuration
-        if config.connector.order_gateway_enabled:
-            raise SafetyError(
-                "Paper trading mode cannot be used with an enabled order gateway "
-                f"on non-paper profile {profile.profile_name.value}"
-            )
+        raise SafetyError(
+            "Paper trading mode cannot be used with an enabled order gateway "
+            f"on non-paper profile {profile.profile_name.value}"
+        )
 
     # Phase 4 specific flags for testnet/demo
-    if mode == TradingMode.TESTNET and not config.safety.allow_testnet_orders:
-        if config.connector.order_gateway_enabled:
-            raise SafetyError(
-                "Testnet trading is active, but allow_testnet_orders is false while order_gateway is enabled."
-            )
+    if (
+        mode == TradingMode.TESTNET
+        and not config.safety.allow_testnet_orders
+        and config.connector.order_gateway_enabled
+    ):
+        raise SafetyError(
+            "Testnet trading is active, but allow_testnet_orders is false while order_gateway is enabled."
+        )
 
     # Readonly profile verification
     if profile.profile_name.value.endswith("_readonly"):

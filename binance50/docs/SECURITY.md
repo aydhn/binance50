@@ -114,3 +114,14 @@ WebSocket reconnections (e.g., Binance's 24-hour limit) and routed endpoint logi
 - **recvWindow and Time Drift**: Prevents requests if local clock drifts further than Binance bounds. Rejects timestamp manipulations preventing timing attacks.
 - **WebSocket Budgets**: Connection policies block stream creations beyond official Binance limits (1024 spot, 200 usdm) and 5/10 message limits per second per connection.
 - **5XX Handling**: Safely evaluates retry bounds and gracefully delegates execution resolution to upcoming Phase capabilities.
+
+## Symbol Selection Security (Phase 7)
+The universe selection limits the operational space of the bot to safe, known bounds:
+- **Low Liquidity Risk:** Symbols with low 24h quote volume or trade counts are categorically excluded to prevent slippage traps.
+- **Wide Spread Risk:** Enforces max spread basis points (bps) to prevent trades on illiquid books.
+- **Notional and Lot Size Risk:** Verifies that minimum trade requirements (`minNotional`) are not unsafely high and `stepSize`/`tickSize` fit acceptable granularities.
+- **Stablecoin Pair Default Exclusion:** Disallows trading USD/USDT style stable-pairs by default to prevent stuck capital in stationary markets.
+- **Leveraged Token Default Exclusion:** By default, patterns like "UP", "DOWN", "BULL", "BEAR" are rejected to avoid compounding decay products.
+- **Blacklist Priority:** The blacklist is absolute. A symbol matched on the blacklist is rejected, even if present on the whitelist.
+- **Whitelist Non-Auto-Acceptance:** Whitelist presence provides a score preference boost but does not bypass critical liquidity, spread, or status filters.
+- **Selection is Not Execution:** Inclusion in the universe does not equal an order execution decision. The universe simply defines the candidate pool for the trading strategy.
