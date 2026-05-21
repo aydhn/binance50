@@ -1,16 +1,14 @@
 project:
-  name: "binance50"
-  version: "0.1.0"
-
+  name: binance50
+  version: 0.1.0
 runtime:
-  environment_profile: "local_paper_spot"
-  exchange: "binance"
-  environment: "local"
-  trading_mode: "paper"
-  market_scope: "spot"
-  account_domain: "spot"
-  timezone: "UTC"
-
+  environment_profile: local_paper_spot
+  exchange: binance
+  environment: local
+  trading_mode: paper
+  market_scope: spot
+  account_domain: spot
+  timezone: UTC
 safety:
   dry_run: true
   force_paper_mode: true
@@ -22,16 +20,15 @@ safety:
   confirm_live_trading: false
   require_manual_live_unlock: true
   require_mainnet_confirmation: true
-  live_unlock_phrase_required: "I_UNDERSTAND_REAL_MONEY_RISK"
-  live_risk_ack_required: "I_ACCEPT_FULL_RESPONSIBILITY"
+  live_unlock_phrase_required: I_UNDERSTAND_REAL_MONEY_RISK
+  live_risk_ack_required: I_ACCEPT_FULL_RESPONSIBILITY
   max_daily_loss_pct: 1.0
   max_position_risk_pct: 0.25
   max_open_positions: 3
   max_orders_per_hour: 20
   max_symbols_initial: 5
-  default_quote_asset: "USDT"
+  default_quote_asset: USDT
   readonly_mainnet_allowed: true
-
 credentials:
   binance:
     api_key: null
@@ -46,7 +43,6 @@ credentials:
   telegram:
     bot_token: null
     chat_id: null
-
 connector:
   connection_enabled: false
   mock_enabled: false
@@ -65,13 +61,91 @@ connector:
   rate_limit_backoff_enabled: true
   circuit_breaker_enabled: true
   allow_real_network_in_phase5: false
-
 logging:
-  level: "INFO"
-  log_dir: "logs"
-
+  level: INFO
+  log_dir: logs
 data:
-  root_dir: "data"
-
+  root_dir: data
 reports:
-  root_dir: "reports"
+  root_dir: reports
+market_data:
+  enabled: true
+  real_fetch_enabled: false
+  source: binance_public
+  prefer_market_data_only_endpoint: true
+  base_data_endpoint: https://data-api.binance.vision
+  spot_klines_path: /api/v3/klines
+  usdm_klines_path: /fapi/v1/klines
+  default_intervals:
+  - 1m
+  - 5m
+  - 15m
+  - 1h
+  - 4h
+  - 1d
+  allowed_intervals:
+  - 1m
+  - 3m
+  - 5m
+  - 15m
+  - 30m
+  - 1h
+  - 2h
+  - 4h
+  - 6h
+  - 8h
+  - 12h
+  - 1d
+  - 3d
+  - 1w
+  - 1M
+  default_history_days:
+    1m: 30
+    3m: 60
+    5m: 90
+    15m: 180
+    30m: 365
+    1h: 730
+    2h: 730
+    4h: 1095
+    6h: 1095
+    8h: 1095
+    12h: 1095
+    1d: 1825
+    3d: 1825
+    1w: 3650
+    1M: 3650
+  spot_max_limit: 1000
+  usdm_max_limit: 1500
+  request_limit_safety_margin_pct: 90
+  exclude_incomplete_last_candle: true
+  require_closed_candles: true
+  allow_partial_candle_cache: false
+  cache_enabled: true
+  cache_format: parquet
+  cache_dir: data/ohlcv
+  metadata_dir: data/ohlcv/metadata
+  export_dir: data/ohlcv/exports
+  cache_partitioning:
+    by_market_scope: true
+    by_symbol: true
+    by_interval: true
+  incremental_enabled: true
+  overlap_candles_on_update: 2
+  max_gap_fill_attempts: 3
+  validate_after_fetch: true
+  validate_after_cache_load: true
+  min_rows_required: 100
+  max_rows_per_symbol_interval: 2000000
+  quality:
+    reject_duplicate_open_time: true
+    reject_out_of_order: true
+    reject_negative_prices: true
+    reject_zero_or_negative_close: true
+    reject_high_low_inconsistency: true
+    reject_negative_volume: true
+    warn_zero_volume: true
+    detect_gaps: true
+    max_gap_ratio_pct: 1.0
+    allow_weekend_crypto_continuity: true
+    timezone: UTC

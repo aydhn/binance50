@@ -87,3 +87,24 @@ python -m binance50.cli universe-fixture-select --scope usdm_futures
 python -m binance50.cli universe-explain BTCUSDT
 python -m binance50.cli universe-safety-check
 ```
+
+## Market Data (Phase 8)
+The OHLCV Market Data Layer safely processes historical kline (candlestick) data for analytical use.
+
+- **Real Fetch Disabled**: Default settings prohibit real network requests. You must manually unlock the fetch flags to reach Binance.
+- **Fixtures & Mocks**: You can test the entire pipeline safely using local JSON fixtures.
+- **Cache & Incremental**: Data is persisted in fast Parquet files. Incremental logic guarantees only missing ranges are updated, safely managing minor overlaps and rejecting incomplete current candles.
+- **Quality Checks**: Critical data anomalies (gaps, duplicates, unordered bars, negative volumes) are surfaced immediately to prevent backtest leaks.
+
+Commands:
+```bash
+python -m binance50.cli market-data-config
+python -m binance50.cli ohlcv-fixture-load --symbol BTCUSDT --scope spot --interval 1m --fixture ohlcv_spot_btcusdt_1m_sample.json
+python -m binance50.cli ohlcv-quality-check --symbol BTCUSDT --scope spot --interval 1m --fixture ohlcv_spot_btcusdt_1m_sample.json
+python -m binance50.cli ohlcv-fetch-plan --symbol BTCUSDT --scope spot --interval 1m --days 7
+python -m binance50.cli ohlcv-cache-save-fixture --symbol BTCUSDT --scope spot --interval 1m --fixture ohlcv_spot_btcusdt_1m_sample.json
+python -m binance50.cli ohlcv-cache-load --symbol BTCUSDT --scope spot --interval 1m
+python -m binance50.cli ohlcv-incremental-plan --symbol BTCUSDT --scope spot --interval 1m
+python -m binance50.cli market-data-safety-check
+python -m binance50.cli market-data-health
+```

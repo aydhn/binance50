@@ -48,7 +48,4 @@ def is_symbol_blacklisted(symbol: str, policy: SymbolListPolicy, config: Univers
     if matches_excluded_pattern(symbol, policy.patterns):
         return True
 
-    if matches_excluded_pattern(symbol, config.exclude_symbol_patterns):
-        return True
-
-    return False
+    return bool(matches_excluded_pattern(symbol, config.exclude_symbol_patterns))
