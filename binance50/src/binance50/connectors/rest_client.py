@@ -53,6 +53,41 @@ class BinanceRestClient:
             capabilities=self.capabilities,
         )
 
+    def build_public_kline_request(
+        self,
+        symbol: str,
+        market_scope: "MarketScope",
+        interval: str,
+        start_time_ms: int | None = None,
+        end_time_ms: int | None = None,
+        limit: int | None = None,
+    ) -> Any:
+        from binance50.connectors.request_models import ConnectorRequest, HttpMethod
+        from binance50.core.enums import MarketScope
+
+        path = (
+            self.config.market_data.spot_klines_path
+            if market_scope == MarketScope.SPOT
+            else self.config.market_data.usdm_klines_path
+        )
+
+        params = {"symbol": symbol.upper(), "interval": interval}
+        if start_time_ms is not None:
+            params["startTime"] = start_time_ms
+        if end_time_ms is not None:
+            params["endTime"] = end_time_ms
+        if limit is not None:
+            params["limit"] = limit
+
+        return ConnectorRequest(
+            method=HttpMethod.GET,
+            path=path,
+            params=params,
+            is_signed=False,
+            weight=1,
+            market_scope=market_scope,
+        )
+
     def build_request(self, *args: Any, **kwargs: Any) -> Any:
         pass
 

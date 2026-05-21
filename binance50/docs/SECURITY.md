@@ -125,3 +125,26 @@ The universe selection limits the operational space of the bot to safe, known bo
 - **Blacklist Priority:** The blacklist is absolute. A symbol matched on the blacklist is rejected, even if present on the whitelist.
 - **Whitelist Non-Auto-Acceptance:** Whitelist presence provides a score preference boost but does not bypass critical liquidity, spread, or status filters.
 - **Selection is Not Execution:** Inclusion in the universe does not equal an order execution decision. The universe simply defines the candidate pool for the trading strategy.
+
+## Market Data Safety (Phase 8)
+
+### Public Market Data Security Boundaries
+Market data fetching operates completely strictly on public endpoints (`/api/v3/klines`, `/fapi/v1/klines`). No API keys or signatures are ever injected into these queries.
+
+### Real Fetch Guard
+In Phase 8, `real_fetch_enabled` defaults to `false`. The `assert_market_data_config_safe` check ensures that the initial environment runs safely without emitting real HTTP requests, returning mock or fixture data instead.
+
+### Rate Limit Compliance
+Fetch chunks are dynamically created not to exceed exact API endpoint limits (e.g., 1000 for Spot). Each planned chunk estimates request weights compatible with the Phase 6 rate limit budgets.
+
+### Cache Path Safety
+`assert_cache_path_safe` guarantees that dynamic symbols or intervals cannot exploit path traversal (e.g. `../../etc/passwd`) by enforcing cache resolutions within the specific configured root project data directory.
+
+### Incomplete Candle Risk
+Caching incomplete (currently open) candles leads to severe predictive leaks and distorted indicators in offline usage. Configuration like `exclude_incomplete_last_candle` strictly eliminates this risk by dropping unclosed candles before committing to parquet stores.
+
+### Duplicate/Gap/Out-of-Order Risk
+A corrupt market data series (e.g. overlapping records or chronological gaps) ruins backtest reality. All loaded cache and network payloads pass through `validate_ohlcv_dataframe` to surface these issues explicitly before consumption.
+
+### Cache Metadata and Secrets
+`OHLCVFrameMetadata` captures data hashes, lengths, and intervals—it explicitly drops all raw API strings and avoids storing API tokens or environments, keeping cache files portable and non-sensitive.

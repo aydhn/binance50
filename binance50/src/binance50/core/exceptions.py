@@ -359,3 +359,75 @@ class RequestBudgetError(Binance50Error):
 
 class RealNetworkDisabledError(SafetyError):
     pass
+
+
+class MarketDataError(Binance50Error):
+    """Base exception for market data operations."""
+
+    pass
+
+
+class MarketDataFetchDisabledError(MarketDataError):
+    """Raised when fetching market data is blocked by configuration."""
+
+    pass
+
+
+class OHLCVParseError(MarketDataError):
+    """Raised when parsing OHLCV data fails."""
+
+    pass
+
+
+class OHLCVValidationError(MarketDataError):
+    """Raised when OHLCV data fails validation."""
+
+    pass
+
+
+class OHLCVQualityError(MarketDataError):
+    """Raised when OHLCV data has quality issues like gaps or duplicates."""
+
+    pass
+
+
+class OHLCVCacheError(MarketDataError):
+    """Raised when reading or writing OHLCV cache fails."""
+
+    pass
+
+
+class OHLCVStoreError(MarketDataError):
+    """Raised when storing or loading OHLCV data fails."""
+
+    pass
+
+
+class OHLCVIncrementalError(MarketDataError):
+    """Raised when incremental updates fail."""
+
+    pass
+
+
+class FetchPlanError(MarketDataError):
+    """Raised when building a fetch plan fails."""
+
+    pass
+
+
+class UnsupportedIntervalError(MarketDataError):
+    """Raised when an unsupported interval is requested."""
+
+    pass
+
+
+class IncompleteCandleError(MarketDataError):
+    """Raised when detecting an incomplete candle."""
+
+    pass
+
+
+class DataGapError(MarketDataError):
+    """Raised when missing data ranges are detected."""
+
+    pass

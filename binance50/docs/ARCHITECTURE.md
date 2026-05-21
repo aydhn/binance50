@@ -150,3 +150,34 @@ The market universe selection layer is responsible for determining which symbols
 - **Universe cache:** JSON-based local caching of universe results to reduce parsing overhead and maintain a stable list over short periods.
 - **Universe explainability:** Detailed rejection reasons or acceptance scores mapped clearly to symbols to allow auditing of universe construction.
 - **Phase 7 Network Separation:** In this phase, true REST/WS calls are not made. The logic depends on comprehensive offline fixture snapshots in order to decouple complex domain validation from external network volatility, guaranteeing structural robustness first.
+
+## OHLCV Market Data Layer (Phase 8)
+
+The OHLCV Market Data Layer is responsible for fetching, parsing, caching, repairing, and incrementally updating kline (candlestick) data for spot and futures markets.
+
+### Kline Parser
+Converts raw lists of values (as returned by Binance endpoints or fixtures) into rich `OHLCVBar` domain models and `pandas.DataFrame` structures for analysis and processing. Ensures basic logical consistency (high >= low, volume >= 0) immediately upon parsing.
+
+### Fetch Plan Architecture
+Due to limitations like `spot_max_limit` (1000) and `usdm_max_limit` (1500), large data ranges must be split into logical chunks. The `fetch_plan.py` module creates an `OHLCVFetchPlan` consisting of multiple `OHLCVFetchChunk` requests to manage API calls safely without overlapping boundaries unnecessarily.
+
+### Incremental Update Strategy
+Updates use `existing_df` (if any cache is loaded) to calculate the `last_complete` candle. Utilizing a user-defined `overlap_candles_on_update`, the next fetch time is padded backwards safely to account for minor revisions on recent candles, ensuring structural integrity without requiring a full re-fetch. Incomplete last candles are typically dropped during caching based on configuration to avoid polluting historical data sets.
+
+### Cache/Store Architecture
+Cache partitions data locally by scope, symbol, and interval, primarily saving data to fast, compressed `parquet` files. Alongside data, `OHLCVFrameMetadata` is saved in JSON, maintaining the row count, generation timestamps, gap statuses, and content hashes.
+
+### Metadata Model
+Every dataframe includes a metadata model specifying data ranges, the source of data (e.g. `FIXTURE`, `BINANCE_SPOT_REST`), and a quality report status, allowing consuming systems (indicators, backtesters) to understand dataset lineage and integrity.
+
+### Data Quality Checks
+Crucial for backtesting leakage prevention. Checks run to detect duplicate timestamps, out-of-order rows, missing expected ranges (gaps), and price or volume inconsistencies (e.g., negative volume or zero closes).
+
+### Repair Strategy
+Repair mechanisms can safely drop duplicate observations based on chronological occurrence or correct minor sorting issues. Detected gaps generate gap-fill fetch plans rather than interpolating fake data.
+
+### Fixture/Mock Testing
+By default, the real network is completely disabled in Phase 8. Offline JSON fixtures replicate raw Binance payload structures. Testing revolves around loading and asserting these fixtures accurately without any live rate limits.
+
+### Why is real network disabled in Phase 8?
+To prevent accidental test script executions consuming API rate limits and because stream buffers, real network pipelines, and final execution guards are yet to be completely wired in Phase 9 and beyond. Phase 8 strictly focuses on the internal modeling and local state generation of historical market data.

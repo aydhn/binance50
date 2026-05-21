@@ -32,10 +32,7 @@ def is_liquidity_acceptable(metrics: LiquidityMetrics, config: UniverseConfig) -
     if metrics.quote_volume_24h < Decimal(str(config.min_quote_volume_24h_usdt)):
         return False
 
-    if metrics.trade_count_24h < config.min_trade_count_24h:
-        return False
-
-    return True
+    return not metrics.trade_count_24h < config.min_trade_count_24h
 
 
 def classify_liquidity(metrics: LiquidityMetrics, config: UniverseConfig) -> str:
