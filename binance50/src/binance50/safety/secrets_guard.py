@@ -60,11 +60,15 @@ def validate_no_secret_in_mapping(mapping: Mapping[str, Any]) -> None:
 
     for k, v in mapping.items():
         k_lower = str(k).lower()
-        if any(p in k_lower for p in secret_patterns):
-            if isinstance(v, str) and not v.startswith("***"):
-                # Make sure it's not actually an empty string
-                if v and len(v) > 0:
-                    raise SecretLeakError(f"Unredacted secret found in mapping for key: {k}")
+        if (
+            any(p in k_lower for p in secret_patterns)
+            and isinstance(v, str)
+            and not v.startswith("***")
+            and v
+            and len(v) > 0
+        ):
+            # Make sure it's not actually an empty string
+            raise SecretLeakError(f"Unredacted secret found in mapping for key: {k}")
         if isinstance(v, dict):
             validate_no_secret_in_mapping(v)
         elif isinstance(v, list):

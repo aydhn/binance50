@@ -305,6 +305,80 @@ class EnvironmentMatrixConfig(BaseModel):
     default_profile: EnvironmentProfileName = EnvironmentProfileName.LOCAL_PAPER_SPOT
 
 
+class UniverseScoringConfig(BaseModel):
+    liquidity_weight: float = 0.35
+    spread_weight: float = 0.30
+    filter_quality_weight: float = 0.20
+    stability_weight: float = 0.10
+    preference_weight: float = 0.05
+    min_score: float = Field(default=60.0, ge=0.0, le=100.0)
+
+    @model_validator(mode="after")
+    def validate_weights(self) -> "UniverseScoringConfig":
+        total_weight = (
+            self.liquidity_weight
+            + self.spread_weight
+            + self.filter_quality_weight
+            + self.stability_weight
+            + self.preference_weight
+        )
+        if not (0.99 <= total_weight <= 1.01):
+            raise ValueError(f"Scoring weights must sum to 1.0 (got {total_weight})")
+        return self
+
+
+class UniverseConfig(BaseModel):
+    enabled: bool = True
+    quote_assets: list[str] = Field(default_factory=lambda: ["USDT"], min_length=1)
+    default_quote_asset: str = "USDT"
+    market_scopes: list[MarketScope] = Field(
+        default_factory=lambda: [MarketScope.SPOT, MarketScope.USDM_FUTURES]
+    )
+    max_symbols_initial: int = Field(default=10, ge=5, le=20)
+    min_symbols_required: int = Field(default=3, ge=1)
+    max_symbols_allowed: int = Field(default=50, ge=5, le=50)
+    prefer_major_symbols: bool = True
+    major_symbols: list[str] = Field(default_factory=list)
+    exclude_assets: list[str] = Field(default_factory=list)
+    exclude_symbol_patterns: list[str] = Field(default_factory=list)
+    allow_stablecoin_pairs: bool = False
+    allow_leveraged_tokens: bool = False
+    allow_fan_tokens: bool = False
+    require_trading_status: bool = True
+    require_quote_volume: bool = True
+    require_book_ticker: bool = True
+    require_filters: bool = True
+    min_quote_volume_24h_usdt: float = Field(default=10000000.0, ge=0.0)
+    min_trade_count_24h: int = Field(default=10000, ge=0)
+    max_spread_bps: float = Field(default=8.0, gt=0.0)
+    warning_spread_bps: float = Field(default=5.0, gt=0.0)
+    min_bid_ask_qty_notional_usdt: float = Field(default=1000.0, ge=0.0)
+    min_notional_ceiling_usdt: float = Field(default=25.0, ge=0.0)
+    max_price_tick_pct: float = Field(default=0.5, gt=0.0)
+    max_qty_step_pct: float = Field(default=1.0, gt=0.0)
+    blacklist_file: str = "config/symbol_blacklist.yaml"
+    whitelist_file: str = "config/symbol_whitelist.yaml"
+    cache_enabled: bool = True
+    cache_dir: str = "data/universe"
+    cache_ttl_seconds: int = Field(default=3600, ge=60, le=86400)
+    snapshot_dir: str = "data/universe/snapshots"
+    scoring: UniverseScoringConfig = Field(default_factory=UniverseScoringConfig)
+
+    @model_validator(mode="after")
+    def validate_universe(self) -> "UniverseConfig":
+        if self.default_quote_asset not in self.quote_assets:
+            raise ValueError(
+                f"default_quote_asset {self.default_quote_asset} must be in quote_assets"
+            )
+        if not (self.min_symbols_required <= self.max_symbols_initial <= self.max_symbols_allowed):
+            raise ValueError(
+                "min_symbols_required <= max_symbols_initial <= max_symbols_allowed condition failed"
+            )
+        if self.warning_spread_bps >= self.max_spread_bps:
+            raise ValueError("warning_spread_bps must be less than max_spread_bps")
+        return self
+
+
 class AppConfig(BaseModel):
     project: ProjectConfig = ProjectConfig()
     runtime: RuntimeConfig = RuntimeConfig()
@@ -319,6 +393,7 @@ class AppConfig(BaseModel):
     rate_limit: RateLimitConfig = RateLimitConfig()
     websocket_limits: WebSocketLimitsConfig = WebSocketLimitsConfig()
     environment_matrix: EnvironmentMatrixConfig = EnvironmentMatrixConfig()
+    universe: UniverseConfig = UniverseConfig()
 
     @model_validator(mode="after")
     def validate_live_trading(self) -> "AppConfig":

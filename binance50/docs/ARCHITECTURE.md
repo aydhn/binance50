@@ -138,3 +138,15 @@ Stream routing varies heavily across Binance's ecosystem. Spot typically uses co
 - **Clock Sync**: Ensures local time vs. Binance server time difference doesn't exceed `max_allowed_clock_drift_ms` to avoid `recvWindow` rejection.
 - **WebSocket Limits**: Evaluates and asserts stream count constraints and incoming message rate boundaries.
 - **Real Network Disabled**: Default `False` since all interactions in Phase 6 act as pure simulations.
+
+## Market Universe Selection (Phase 7)
+The market universe selection layer is responsible for determining which symbols the trading bot is allowed to consider. This involves:
+- **Symbol metadata model:** Standardized models representing symbol characteristics, trading status, base/quote assets.
+- **Binance filters model:** Models for order size rules like `PRICE_FILTER`, `LOT_SIZE`, and `MIN_NOTIONAL`.
+- **Liquidity model:** Evaluation of 24h volume and trade count to ensure sufficient market depth.
+- **Spread model:** Analysis of order book bid/ask metrics to avoid illiquid or wide-spread assets.
+- **Scoring model:** Weighted ranking system based on liquidity, spread, filter quality, stability, and configured preferences.
+- **Blacklist/whitelist policy:** YAML-based rules enforcing exclusion of specific symbols/patterns or prioritizing certain ones.
+- **Universe cache:** JSON-based local caching of universe results to reduce parsing overhead and maintain a stable list over short periods.
+- **Universe explainability:** Detailed rejection reasons or acceptance scores mapped clearly to symbols to allow auditing of universe construction.
+- **Phase 7 Network Separation:** In this phase, true REST/WS calls are not made. The logic depends on comprehensive offline fixture snapshots in order to decouple complex domain validation from external network volatility, guaranteeing structural robustness first.

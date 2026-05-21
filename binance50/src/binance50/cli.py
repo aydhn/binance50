@@ -550,5 +550,189 @@ def network_safety_report():
     console.print("Clock safety:", build_clock_safety_report(config))
 
 
+@app.command()
+def universe_config() -> None:
+    try:
+        config = load_config()
+        console.print(Panel("Universe Config", style="bold cyan"))
+        console.print(json.dumps(config.universe.model_dump(), indent=2))
+    except Exception as e:
+        console.print(f"[red]Failed: {e}[/red]")
+        sys.exit(1)
+
+
+@app.command()
+def universe_fixture_select(
+    scope: str = typer.Option("spot", help="Market scope: spot or usdm_futures"),
+    save_cache: bool = typer.Option(True, help="Save to cache"),
+) -> None:
+    try:
+        from pathlib import Path
+
+        from binance50.core.enums import MarketScope
+        from binance50.universe.blacklist import load_blacklist
+        from binance50.universe.cache import UniverseCache
+        from binance50.universe.selector import UniverseSelector
+        from binance50.universe.snapshots import load_snapshot_from_files
+        from binance50.universe.whitelist import load_whitelist
+
+        config = load_config()
+        market_scope = MarketScope(scope)
+        repo_root = Path(__file__).resolve().parent.parent.parent
+
+        fixture_dir = repo_root / "src" / "binance50" / "data" / "fixtures"
+        if market_scope == MarketScope.SPOT:
+            info_file = fixture_dir / "spot_exchange_info_sample.json"
+            ticker_file = fixture_dir / "spot_ticker_24hr_sample.json"
+            book_file = fixture_dir / "spot_book_ticker_sample.json"
+        else:
+            info_file = fixture_dir / "usdm_exchange_info_sample.json"
+            ticker_file = fixture_dir / "usdm_ticker_24hr_sample.json"
+            book_file = fixture_dir / "usdm_book_ticker_sample.json"
+
+        snapshot = load_snapshot_from_files(info_file, ticker_file, book_file, market_scope)
+        blacklist = load_blacklist(repo_root / config.universe.blacklist_file)
+        whitelist = load_whitelist(repo_root / config.universe.whitelist_file)
+
+        selector = UniverseSelector(config, blacklist, whitelist)
+        result = selector.select_from_snapshot(snapshot)
+
+        if save_cache:
+            cache = UniverseCache(config.universe)
+            cache_path = cache.save_selection(result, scope)
+            console.print(f"[green]Saved cache to {cache_path}[/green]")
+
+        from binance50.universe.reports import format_universe_table
+
+        table_data = format_universe_table(result)
+
+        table = Table(title=f"Selected Universe ({scope})")
+        table.add_column("Symbol", justify="left")
+        table.add_column("Score", justify="right")
+        table.add_column("Quote Vol", justify="right")
+        table.add_column("Spread Bps", justify="right")
+        table.add_column("Warnings", justify="right")
+
+        for row in table_data:
+            table.add_row(
+                row["symbol"],
+                row["score"],
+                row["quote_vol"],
+                row["spread_bps"],
+                str(row["warnings"]),
+            )
+
+        console.print(table)
+
+    except Exception as e:
+        console.print(f"[red]Failed: {e}[/red]")
+        sys.exit(1)
+
+
+@app.command()
+def universe_report(
+    scope: str = typer.Option("spot", help="Market scope: spot or usdm_futures")
+) -> None:
+    try:
+        from binance50.universe.cache import UniverseCache
+
+        config = load_config()
+        cache = UniverseCache(config.universe)
+        result = cache.load_latest_selection(scope)
+
+        if not result:
+            console.print(
+                "[yellow]No valid cache found. Please run universe-fixture-select first.[/yellow]"
+            )
+            sys.exit(0)
+
+        console.print(Panel(f"Universe Health Report ({scope})", style="bold cyan"))
+        console.print(json.dumps(result.report, indent=2))
+
+    except Exception as e:
+        console.print(f"[red]Failed: {e}[/red]")
+        sys.exit(1)
+
+
+@app.command()
+def universe_explain(
+    symbol: str, scope: str = typer.Option("spot", help="Market scope: spot or usdm_futures")
+) -> None:
+    try:
+        from binance50.universe.cache import UniverseCache
+        from binance50.universe.reports import build_symbol_explanation
+
+        config = load_config()
+        cache = UniverseCache(config.universe)
+        result = cache.load_latest_selection(scope)
+
+        if not result:
+            console.print(
+                "[yellow]No valid cache found. Please run universe-fixture-select first.[/yellow]"
+            )
+            sys.exit(0)
+
+        explanation = build_symbol_explanation(symbol.upper(), result)
+        console.print(Panel(f"Symbol Explanation: {symbol.upper()}", style="bold cyan"))
+        console.print(json.dumps(explanation, indent=2))
+
+    except Exception as e:
+        console.print(f"[red]Failed: {e}[/red]")
+        sys.exit(1)
+
+
+@app.command()
+def universe_cache_list() -> None:
+    try:
+        from binance50.universe.cache import UniverseCache
+
+        config = load_config()
+        cache = UniverseCache(config.universe)
+        files = cache.list_cached_selections()
+        console.print("Cached selections:")
+        for f in files:
+            console.print(f" - {f}")
+    except Exception as e:
+        console.print(f"[red]Failed: {e}[/red]")
+        sys.exit(1)
+
+
+@app.command()
+def universe_cache_clear() -> None:
+    try:
+        from binance50.universe.cache import UniverseCache
+
+        config = load_config()
+        cache = UniverseCache(config.universe)
+        cache.clear_cache()
+        console.print("[green]Cache cleared successfully.[/green]")
+    except Exception as e:
+        console.print(f"[red]Failed: {e}[/red]")
+        sys.exit(1)
+
+
+@app.command()
+def universe_safety_check() -> None:
+    try:
+        from binance50.safety.universe_guard import build_universe_safety_report
+        from binance50.universe.cache import UniverseCache
+
+        config = load_config()
+        cache = UniverseCache(config.universe)
+        # Check spot cache as representative
+        result = cache.load_latest_selection("spot")
+        report = build_universe_safety_report(config, result)
+
+        console.print(Panel("Universe Safety Report", style="bold cyan"))
+        console.print(json.dumps(report, indent=2))
+
+        if report["overall_status"] == "unsafe":
+            sys.exit(1)
+
+    except Exception as e:
+        console.print(f"[red]Failed: {e}[/red]")
+        sys.exit(1)
+
+
 if __name__ == "__main__":
     app()

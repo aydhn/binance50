@@ -72,3 +72,18 @@ python -m binance50.cli sdk-check
   - `python -m binance50.cli clock-sync-status`
   - `python -m binance50.cli websocket-limits-check spot 10 1`
   - `python -m binance50.cli network-safety-report`
+
+### Universe Selection
+The universe selection feature identifies safe, tradable pairs based on strict filtering criteria:
+- **Elimination:** It aggressively filters out pairs that have low liquidity, high spread, or belong to risky categories (like stablecoin pairs or leveraged tokens).
+- **Rule Verification:** It verifies Binance filters (like `MIN_NOTIONAL`, `LOT_SIZE`) to ensure the bot can actually construct valid orders for the symbol.
+- **Testing:** Can be tested completely offline utilizing pre-captured JSON fixtures.
+
+Commands:
+```bash
+python -m binance50.cli universe-config
+python -m binance50.cli universe-fixture-select --scope spot
+python -m binance50.cli universe-fixture-select --scope usdm_futures
+python -m binance50.cli universe-explain BTCUSDT
+python -m binance50.cli universe-safety-check
+```
