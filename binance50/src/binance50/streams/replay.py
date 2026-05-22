@@ -89,3 +89,10 @@ class StreamReplayEngine:
         sim = StreamSimulator(self.config)
         events = sim.load_fixture_events(fixture_names, market_scope)
         return self.replay_events(events, speed_multiplier, dispatcher)
+
+
+def save_replay_events_to_warehouse(events: list, config) -> "Any":
+    if not config.storage.enabled:
+        return None
+    from binance50.storage.importers import import_stream_events
+    return import_stream_events(events, config)

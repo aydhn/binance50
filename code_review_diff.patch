@@ -1,0 +1,3 @@
+diff --git a/binance50/src/binance50/storage/schemas.py b/binance50/src/binance50/storage/schemas.py
+--- a/binance50/src/binance50/storage/schemas.py
++++ b/binance50/src/binance50/storage/schemas.py
