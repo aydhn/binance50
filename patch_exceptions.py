@@ -1,77 +1,102 @@
-with open("binance50/src/binance50/core/exceptions.py", "r") as f:
+with open('binance50/src/binance50/core/exceptions.py', 'r') as f:
     content = f.read()
 
-new_exceptions = """
-# Phase 9 Stream Exceptions
-class StreamError(Binance50Error):
+storage_exceptions = """
+# Phase 10 Storage Exceptions
+class StorageError(Binance50Error):
     pass
 
-class StreamConfigError(StreamError):
+class StorageConfigError(StorageError):
     def __init__(self, message: str, **kwargs: Any) -> None:
-        kwargs.setdefault("error_code", error_codes.STREAM_CONFIG_INVALID)
+        kwargs.setdefault("error_code", error_codes.STORAGE_CONFIG_INVALID)
         super().__init__(message, **kwargs)
 
-class StreamConnectionDisabledError(StreamError):
-    def __init__(self, message: str = "Real WebSocket connections are disabled in Phase 9", **kwargs: Any) -> None:
-        kwargs.setdefault("error_code", error_codes.STREAM_REAL_CONNECT_DISABLED)
+class StoragePathError(StorageError):
+    def __init__(self, message: str, **kwargs: Any) -> None:
+        kwargs.setdefault("error_code", error_codes.STORAGE_PATH_INVALID)
         super().__init__(message, **kwargs)
 
-class StreamSubscriptionError(StreamError):
+class StorageSchemaError(StorageError):
     def __init__(self, message: str, **kwargs: Any) -> None:
-        kwargs.setdefault("error_code", error_codes.STREAM_SUBSCRIPTION_INVALID)
+        kwargs.setdefault("error_code", error_codes.STORAGE_SCHEMA_INVALID)
         super().__init__(message, **kwargs)
 
-class StreamParseError(StreamError):
+class StorageCatalogError(StorageError):
     def __init__(self, message: str, **kwargs: Any) -> None:
-        kwargs.setdefault("error_code", error_codes.STREAM_PARSE_FAILED)
+        kwargs.setdefault("error_code", error_codes.STORAGE_CATALOG_FAILED)
         super().__init__(message, **kwargs)
 
-class StreamValidationError(StreamError):
+class StorageMigrationError(StorageError):
     def __init__(self, message: str, **kwargs: Any) -> None:
-        kwargs.setdefault("error_code", error_codes.STREAM_VALIDATION_FAILED)
+        kwargs.setdefault("error_code", error_codes.STORAGE_MIGRATION_FAILED)
         super().__init__(message, **kwargs)
 
-class StreamBufferOverflowError(StreamError):
+class StorageIntegrityError(StorageError):
     def __init__(self, message: str, **kwargs: Any) -> None:
-        kwargs.setdefault("error_code", error_codes.STREAM_BUFFER_OVERFLOW)
+        kwargs.setdefault("error_code", error_codes.STORAGE_INTEGRITY_FAILED)
         super().__init__(message, **kwargs)
 
-class StreamDuplicateEventError(StreamError):
+class StorageManifestError(StorageError):
     def __init__(self, message: str, **kwargs: Any) -> None:
-        kwargs.setdefault("error_code", error_codes.STREAM_DUPLICATE_EVENT)
+        kwargs.setdefault("error_code", error_codes.STORAGE_MANIFEST_INVALID)
         super().__init__(message, **kwargs)
 
-class StreamStaleEventError(StreamError):
+class StoragePartitionError(StorageError):
     def __init__(self, message: str, **kwargs: Any) -> None:
-        kwargs.setdefault("error_code", error_codes.STREAM_STALE_EVENT)
+        kwargs.setdefault("error_code", error_codes.STORAGE_PARTITION_INVALID)
         super().__init__(message, **kwargs)
 
-class StreamOutOfOrderError(StreamError):
+class StorageBackupError(StorageError):
     def __init__(self, message: str, **kwargs: Any) -> None:
-        kwargs.setdefault("error_code", error_codes.STREAM_OUT_OF_ORDER)
+        kwargs.setdefault("error_code", error_codes.STORAGE_BACKUP_FAILED)
         super().__init__(message, **kwargs)
 
-class StreamReplayError(StreamError):
+class StorageRetentionError(StorageError):
     def __init__(self, message: str, **kwargs: Any) -> None:
-        kwargs.setdefault("error_code", error_codes.STREAM_REPLAY_FAILED)
+        kwargs.setdefault("error_code", error_codes.STORAGE_RETENTION_FAILED)
         super().__init__(message, **kwargs)
 
-class StreamRouteError(StreamError):
+class StorageLockError(StorageError):
     def __init__(self, message: str, **kwargs: Any) -> None:
-        kwargs.setdefault("error_code", error_codes.STREAM_ROUTE_INVALID)
+        kwargs.setdefault("error_code", error_codes.STORAGE_LOCK_FAILED)
         super().__init__(message, **kwargs)
 
-class StreamLifecycleError(StreamError):
+class DatasetRegistryError(StorageError):
     def __init__(self, message: str, **kwargs: Any) -> None:
-        kwargs.setdefault("error_code", error_codes.STREAM_LIFECYCLE_INVALID)
+        kwargs.setdefault("error_code", error_codes.DATASET_REGISTRY_FAILED)
         super().__init__(message, **kwargs)
 
-class RealtimeStoreError(Binance50Error):
+class DataIndexError(StorageError):
     def __init__(self, message: str, **kwargs: Any) -> None:
-        kwargs.setdefault("error_code", error_codes.REALTIME_STORE_FAILED)
+        kwargs.setdefault("error_code", error_codes.DATA_INDEX_FAILED)
         super().__init__(message, **kwargs)
+
+class QualityIndexError(StorageError):
+    def __init__(self, message: str, **kwargs: Any) -> None:
+        kwargs.setdefault("error_code", error_codes.QUALITY_INDEX_FAILED)
+        super().__init__(message, **kwargs)
+
+class ParquetWriteError(StorageError):
+    def __init__(self, message: str, **kwargs: Any) -> None:
+        kwargs.setdefault("error_code", error_codes.PARQUET_WRITE_FAILED)
+        super().__init__(message, **kwargs)
+
+class ParquetReadError(StorageError):
+    def __init__(self, message: str, **kwargs: Any) -> None:
+        kwargs.setdefault("error_code", error_codes.PARQUET_READ_FAILED)
+        super().__init__(message, **kwargs)
+
+class SQLiteCatalogError(StorageError):
+    def __init__(self, message: str, **kwargs: Any) -> None:
+        kwargs.setdefault("error_code", error_codes.SQLITE_CATALOG_FAILED)
+        super().__init__(message, **kwargs)
+
+class DestructiveActionBlockedError(SafetyError):
+    def __init__(self, message: str, **kwargs: Any) -> None:
+        kwargs.setdefault("error_code", error_codes.DESTRUCTIVE_ACTION_BLOCKED)
+        super().__init__(message, **kwargs)
+
 """
 
-if "StreamError" not in content:
-    with open("binance50/src/binance50/core/exceptions.py", "w") as f:
-        f.write(content.rstrip() + "\n" + new_exceptions)
+with open('binance50/src/binance50/core/exceptions.py', 'w') as f:
+    f.write(content + "\n" + storage_exceptions)

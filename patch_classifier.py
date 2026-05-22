@@ -1,53 +1,35 @@
-with open("binance50/src/binance50/core/error_classifier.py", "r") as f:
+with open('binance50/src/binance50/core/error_classifier.py', 'r') as f:
     content = f.read()
 
-import_statement = """
-from binance50.core.exceptions import (
-    Binance50Error,
-    BinanceApiError,
-    BinanceAuthenticationError,
-    BinanceInsufficientBalanceError,
-    BinanceIpBanError,
-    BinancePermissionError,
-    BinanceRateLimitError,
-    BinanceServerError,
-    BinanceSymbolFilterError,
-    BinanceTimestampError,
-    BinanceUnknownExecutionStatusError,
-    StreamParseError,
-    StreamStaleEventError,
-    StreamDuplicateEventError,
-    StreamBufferOverflowError,
-    StreamRouteError,
-    StreamConnectionDisabledError,
-)
+storage_classifier = """
+def classify_storage_error(error: Exception) -> type[Binance50Error]:
+    \"\"\"Classify storage related errors.\"\"\"
+    from binance50.core.exceptions import (
+        StorageError, SQLiteCatalogError, ParquetWriteError,
+        ParquetReadError, StoragePathError, StorageSchemaError,
+        StorageIntegrityError, DestructiveActionBlockedError
+    )
+
+    error_str = str(error).lower()
+    error_type = error.__class__.__name__
+
+    if "sqlite3" in error_type.lower() or "database error" in error_str:
+        return SQLiteCatalogError
+    if "pyarrow" in error_type.lower() or "parquet" in error_type.lower():
+        if "read" in error_str:
+            return ParquetReadError
+        return ParquetWriteError
+    if "path traversal" in error_str or "outside" in error_str:
+        return StoragePathError
+    if "schema drift" in error_str or "schema mismatch" in error_str:
+        return StorageSchemaError
+    if "integrity check failed" in error_str:
+        return StorageIntegrityError
+    if "destructive action" in error_str or "delete blocked" in error_str:
+        return DestructiveActionBlockedError
+
+    return StorageError
 """
 
-if "StreamParseError" not in content:
-    # replace imports
-    import re
-    content = re.sub(r'from binance50\.core\.exceptions import \([\s\S]*?\)', import_statement.strip(), content)
-
-    # add stream classification
-    classify_func = """
-def classify_stream_error(msg: str) -> type[Binance50Error]:
-    msg_lower = msg.lower()
-    if "missing" in msg_lower or "invalid numeric" in msg_lower:
-        return StreamParseError
-    if "stale" in msg_lower:
-        return StreamStaleEventError
-    if "duplicate" in msg_lower:
-        return StreamDuplicateEventError
-    if "overflow" in msg_lower or "buffer full" in msg_lower:
-        return StreamBufferOverflowError
-    if "route" in msg_lower or "unsupported" in msg_lower:
-        return StreamRouteError
-    if "real connect disabled" in msg_lower or "disabled in phase 9" in msg_lower:
-        return StreamConnectionDisabledError
-    from binance50.core.exceptions import StreamError
-    return StreamError
-"""
-    content = content + "\n" + classify_func
-
-    with open("binance50/src/binance50/core/error_classifier.py", "w") as f:
-        f.write(content)
+with open('binance50/src/binance50/core/error_classifier.py', 'w') as f:
+    f.write(content + "\n" + storage_classifier)
