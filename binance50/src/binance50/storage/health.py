@@ -1,10 +1,11 @@
+import os
 import shutil
 import tempfile
-import os
-from pathlib import Path
 from typing import Any
+
 from binance50.config.models import AppConfig
-from binance50.storage.paths import get_storage_root, get_parquet_root, get_sqlite_catalog_path
+from binance50.storage.paths import get_parquet_root, get_sqlite_catalog_path, get_storage_root
+
 
 class StorageHealthService:
     def __init__(self, config: AppConfig):

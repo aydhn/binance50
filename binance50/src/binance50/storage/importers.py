@@ -1,13 +1,28 @@
-import pandas as pd
-from binance50.config.models import AppConfig
-from binance50.storage.manifest import DatasetManifest, build_manifest, write_manifest, manifest_to_catalog_records
-from binance50.storage.schemas import get_ohlcv_schema, get_universe_selection_schema, get_stream_events_schema, get_quality_reports_schema, DatasetKind
-from binance50.storage.parquet_store import ParquetDatasetStore
-from binance50.storage.sqlite_catalog import SQLiteCatalog
-from binance50.storage.dataset_registry import DatasetRegistry
-from binance50.storage.data_index import DataIndex
-from binance50.storage.quality_index import QualityIndex
 import uuid
+
+import pandas as pd
+
+from binance50.config.models import AppConfig
+from binance50.indicators.models import IndicatorRunResult
+from binance50.storage.data_index import DataIndex
+from binance50.storage.dataset_registry import DatasetRegistry
+from binance50.storage.manifest import (
+    DatasetManifest,
+    build_manifest,
+    manifest_to_catalog_records,
+    write_manifest,
+)
+from binance50.storage.parquet_store import ParquetDatasetStore
+from binance50.storage.quality_index import QualityIndex
+from binance50.storage.schemas import (
+    DatasetKind,
+    get_ohlcv_schema,
+    get_quality_reports_schema,
+    get_stream_events_schema,
+    get_universe_selection_schema,
+)
+from binance50.storage.sqlite_catalog import SQLiteCatalog
+
 
 def _ensure_dataset(registry: DatasetRegistry, name: str, kind: DatasetKind, schema):
     existing = registry.catalog.get_dataset(name)
@@ -126,6 +141,89 @@ def import_quality_report(report: dict, config: AppConfig) -> DatasetManifest:
     records = manifest_to_catalog_records(manifest)
     for r in records:
          catalog.add_file_manifest(r)
+    registry.activate_version(version_id)
+
+    return manifest
+
+
+def import_indicator_result(result: IndicatorRunResult, config: AppConfig) -> DatasetManifest:
+    import uuid
+
+    from binance50.storage.dataset_registry import DatasetRegistry
+    from binance50.storage.manifest import (
+        build_manifest,
+        manifest_to_catalog_records,
+        write_manifest,
+    )
+    from binance50.storage.parquet_store import ParquetDatasetStore
+    from binance50.storage.schemas import ColumnSchema, DatasetKind, DatasetSchema
+    from binance50.storage.sqlite_catalog import SQLiteCatalog
+
+    if not result.success or result.output_df is None:
+        raise ValueError("Cannot import failed indicator result")
+
+    catalog = SQLiteCatalog(config)
+    registry = DatasetRegistry(config, catalog)
+
+    ds_name = config.indicators.output_dataset_name
+
+    # We must build a dynamic schema for indicators based on the output columns
+    base_cols = [
+        ColumnSchema("market_scope", "string", nullable=False, is_primary_key=True),
+        ColumnSchema("symbol", "string", nullable=False, is_primary_key=True),
+        ColumnSchema("interval", "string", nullable=False, is_primary_key=True),
+        ColumnSchema("open_time", "int64", nullable=False, is_primary_key=True),
+        ColumnSchema("close_time", "int64", nullable=False),
+        ColumnSchema("config_hash", "string", nullable=False, is_primary_key=True),
+        ColumnSchema("is_warmup", "bool", nullable=False)
+    ]
+
+    # Exclude base columns from dynamic discovery
+    base_col_names = {c.name for c in base_cols}
+    dynamic_cols = []
+
+    for col in result.output_df.columns:
+        if col not in base_col_names:
+            dynamic_cols.append(ColumnSchema(col, "float64", nullable=True))
+
+    schema = DatasetSchema(
+        dataset_name=ds_name,
+        dataset_kind=DatasetKind.INDICATORS,
+        version=1,
+        columns=base_cols + dynamic_cols,
+        primary_keys=["market_scope", "symbol", "interval", "open_time", "config_hash"],
+        partition_columns=["market_scope", "symbol", "interval"],
+        timestamp_column="open_time"
+    )
+
+    from binance50.storage.importers import _ensure_dataset
+    _ensure_dataset(registry, ds_name, DatasetKind.INDICATORS, schema)
+
+    store = ParquetDatasetStore(config)
+
+    # Add necessary primary key columns to DF before saving
+    df_to_save = result.output_df.copy()
+    df_to_save["market_scope"] = result.request.market_scope.value
+    df_to_save["symbol"] = result.request.symbol
+    df_to_save["interval"] = result.request.interval
+    df_to_save["config_hash"] = result.metadata.config_hash
+
+    paths = store.write_dataset(df_to_save, ds_name, schema, mode="append")
+
+    version_id = uuid.uuid4().hex
+    metadata = {
+        "source": "indicator_engine",
+        "backend": result.request.backend,
+        "indicator_count": result.metadata.indicator_count
+    }
+    manifest = build_manifest(ds_name, version_id, paths, df_to_save, schema, quality_status="pass", metadata=metadata)
+    write_manifest(manifest, config)
+    registry.register_version(ds_name, manifest, "indicator_engine", "pass")
+
+    records = manifest_to_catalog_records(manifest)
+    for r in records:
+         catalog.add_file_manifest(r)
+
     registry.activate_version(version_id)
 
     return manifest

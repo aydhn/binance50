@@ -1,73 +1,75 @@
-## Phase 7: Market Universe Selection
+## Indicator Engine Phase 11 Report
 
 ### Oluşturulan/Güncellenen Dosyalar
-- `config/default.yaml` - Universe configuration added.
-- `config/symbol_blacklist.yaml` - Symbol blacklist pattern policies.
-- `config/symbol_whitelist.yaml` - Symbol whitelist tracking policies.
-- `src/binance50/config/models.py` - Pydantic models for UniverseConfig and UniverseScoringConfig.
-- `src/binance50/universe/models.py` - Core enums, filters, metadata, and metric models.
-- `src/binance50/universe/parser.py` - Extractor to convert native Binance exchangeInfo payloads to domain models.
-- `src/binance50/universe/spread.py` - Domain logic for spread metric analysis.
-- `src/binance50/universe/liquidity.py` - Domain logic for volume and depth notional calculations.
-- `src/binance50/universe/symbol_rules.py` - Engine handling mapping and evaluations for Binance order rules (PRICE_FILTER, LOT_SIZE, MIN_NOTIONAL).
-- `src/binance50/universe/blacklist.py` & `src/binance50/universe/whitelist.py` - Managers for static symbol exclusion/inclusion processing.
-- `src/binance50/universe/filters.py` - Global symbol evaluators executing rejection clauses based on config.
-- `src/binance50/universe/scoring.py` - Weight-based system assigning candidates scores derived from characteristics.
-- `src/binance50/universe/selector.py` - Main orchestration pipeline that fuses parsers, metrics, and filters to generate a selected universe.
-- `src/binance50/universe/cache.py` - Local filesystem caching mechanism.
-- `src/binance50/universe/snapshots.py` - Tool for loading static, fixture-based responses mimicking network boundaries.
-- `src/binance50/universe/reports.py` - Diagnostics formatting outputs.
-- `src/binance50/universe/validators.py` - Symbol naming schemas and rule conformity validations.
-- `src/binance50/safety/universe_guard.py` - Runtime boundaries that actively prevent loading high-risk operational sets (like allowing ultra-high `max_symbols_initial` or stablecoin pairs without override).
-- `src/binance50/data/fixtures/*` - Mock `exchangeInfo`, `ticker_24hr` and `bookTicker` payloads for both `spot` and `usdm_futures`.
-- `tests/test_*.py` - Extensive unit test coverage on all components.
-- Documentation: `docs/ARCHITECTURE.md`, `docs/SECURITY.md`, `docs/PHASE_PLAN.md`, `README.md`.
+**Modeller ve Config**:
+- `src/binance50/config/models.py` (Yeni domain objeleri `IndicatorsConfig` vb.)
+- `config/default.yaml` (Yüzlerce satırlık yeni trend, momentum, volatility ve indicator configi)
+- `src/binance50/core/exceptions.py`, `src/binance50/core/error_codes.py`, `src/binance50/core/error_classifier.py`
 
-### Universe config kararları
-- Güvenli bir başlangıç sınırı olarak `max_symbols_initial` 10, maksimum kapasite `max_symbols_allowed` 50 olarak belirlendi.
-- Varsayılan `quote_assets` USDT ile kısıtlandı.
-- Configler katı Pydantic validationları içerir. Örneğin ağırlıkların (weights) toplamının ~1.0 olması gerekmektedir.
-- Cache TTL süresi varsayılan olarak 3600 saniye (1 saat) atandı.
+**Indicators Engine Mimarisi (yeni)**:
+- `src/binance50/indicators/models.py`: Domain modelleri (`IndicatorSpec`, `IndicatorRunRequest`, `IndicatorRunResult`)
+- `src/binance50/indicators/context.py`: Engine scope context
+- `src/binance50/indicators/validators.py`: Future column (label) detect eden ve Lookahead-bias koruması yapan input validatorleri
+- `src/binance50/indicators/warmup.py`: Lookup window ve min require row analiz modülü
+- `src/binance50/indicators/transforms.py`: Ortak transformlar (log return vb.)
+- `src/binance50/indicators/trend.py`, `momentum.py`, `volatility.py`, `volume.py`: Native numpy/pandas algoritmaları
+- `src/binance50/indicators/registry.py`: Dinamik register yapısı
+- `src/binance50/indicators/adapters/`: `native.py`, `pandas_ta_adapter.py`, `talib_adapter.py`
+- `src/binance50/indicators/quality.py`, `cache.py`, `engine.py`, `reports.py`
 
-### Binance filter model kararları
-- Pydantic tarafında `SymbolFilterType` Enum'ları oluşturuldu (PRICE_FILTER, LOT_SIZE, vb.)
-- Hatalı/Eksik payload'ların sistemi çökertmemesi adına eksik alanlara tolerance gösteren ve loglayan `safe_decimal` kullanıldı.
+**Guard, Storage ve Features**:
+- `src/binance50/safety/indicator_guard.py`
+- `src/binance50/features/basic_returns.py`
+- `src/binance50/storage/schemas.py`, `importers.py`
+- `src/binance50/cli.py` komutları (örn: `indicator-compute-fixture`)
 
-### Likidite modeli
-- Toplam teklif (bid) ve talep (ask) notional değerleri (price * qty) hesaplanır.
-- 24 Saatlik işlem hacmi kontrol edilir ve `min_quote_volume_24h_usdt` limitini geçmeyen semboller `LOW_QUOTE_VOLUME` ile elenir.
+### Indicator Config Kararları
+`default.yaml` içerisine `enabled`, `prevent_lookahead_bias`, `reject_duplicate_open_time` gibi anahtarlar girilmiştir. Tüm indikatör sınıfları (Trend, Volatility vs.) ayrı konfigürasyonlara bölünmüştür (örneğin SMA, EMA, MACD, RSI period yapılandırmaları). Default olarak strict kurallar ile çalışır.
 
-### Spread modeli
-- Bid/Ask farkı absolute değer ve baz puan (bps) olarak ölçülür.
-- Ask < Bid mantıksız durumları geçersiz (invalid) kabul edilir.
-- Ayarlanan max spread limitinin (`max_spread_bps` 8.0) üstü elenir, uyarı limitinin (`warning_spread_bps` 5.0) üstü uyarı üretir.
+### Native Backend Mimarisi
+Native backend `pandas` ve `numpy` tabanlı tamamen deterministik metodlarla yazılmıştır. Her bir indikatör ayrı bir fonksiyondur ve native adaptörü vasıtasıyla dinamik bir listeye bağlı olarak çağrılır. Testlerin çoğu bu backend'in gücünü ispatlar.
 
-### Blacklist/whitelist politikası
-- Pattern-based yaklaşımla BUSD, USDC vb pariteler ve UP/DOWN/BEAR tokenları (leveraged tokens) elenmektedir.
-- Whitelist kesin bir kabul onay listesi (auto-accept) değildir. Whitelist içerisinde olsa dahi token'in spread, hacim ve filters analizinden güvenle geçmesi zorunludur. Sadece Preference Score'a pozitif etki eder.
+### Optional Backend Adapter Kararları
+`TA-Lib` ve `pandas-ta` bağımlılıkları kasıtlı olarak "zorunlu" tutulmamış (`try-except ImportError`), ve bir adaptör deseniyle sarılarak "Eğer mevcutsa availability report ile belirtilir, değilse fallback sağlanır" olarak yapılmıştır. Böylelikle CI veya lokal ortamda C kütüphanesi olmadan sorunsuz test yapılabilmektedir.
 
-### Scoring ve ranking kararları
-- Likidite (35%), Spread (30%), Filtre Kalitesi (20%), Stabilite (10%), Tercihler (5%) ağırlıklandırma modeli uygulanmıştır.
-- Min score eşiği (60.0) aşılamazsa `SCORE_BELOW_THRESHOLD` rejiği fırlatılır.
+### Trend Indikatörleri
+`sma`, `ema`, `wma`, `dema`, `tema`, `macd`, `adx`, `aroon` yazılmış ve test edilmiştir. EMA Wilders formülünde stabil hale getirilmiştir.
 
-### Fixture snapshot kararları
-- Tüm mock data `/src/binance50/data/fixtures` dizini altında saklanmaktadır. `not_real_market_data` label'ı bulunmaktadır.
-- Fixture'ların içerisindeki hacim miktarları bilerek `evaluate_candidate`'den geçecek kadar hacimli/makul seviyede mock edilmiştir.
+### Momentum Indikatörleri
+`rsi`, `stochastic`, `stoch_rsi`, `roc`, `momentum`, `cci`, `williams_r` yazılmıştır. RSI için internal simple moving average bazlı bir formül kullanılmıştır.
 
-### CLI komutları
-- `python -m binance50.cli universe-config`
-- `python -m binance50.cli universe-fixture-select --scope spot`
-- `python -m binance50.cli universe-explain BTCUSDT`
-- `python -m binance50.cli universe-report`
-- `python -m binance50.cli universe-cache-list`
-- `python -m binance50.cli universe-safety-check`
+### Volatilite Indikatörleri
+`atr`, `natr`, `bollinger_bands`, `bollinger_bandwidth`, `keltner_channels`, `donchian_channels`, `rolling_std`, `realized_volatility` tamamen uygulanmıştır.
 
-### Test sonuçları
-- Tüm Python testleri ve CLI bütünlük checkleri (%100) geçmiştir (157 Test).
-- `ruff`, `black` testleri çözülmüştür, mypy sadece universe ve safety klasörlerindeki testleri geçmiş, `scripts/check_project.py` scriptinde ignore/warning olarak commentlenmiştir.
+### Hacim Indikatörleri
+`obv`, `volume_sma`, `volume_ema`, `vwap`, `mfi`, `cmf`, `accumulation_distribution_line` oluşturulmuştur.
 
-### Bilinen sınırlamalar
-- Modül hiçbir gerçek Binance REST/WS bağlantısı açmamaktadır. Sadece json parsing mantığını oturtur.
+### Transform / Helper Özellikleri
+`typical_price`, `median_price`, `weighted_close`, `returns`, `log_returns`, `rolling_zscore`, `safe_divide` gibi işlemler oluşturulmuştur. Future leakage önlemek adına future parametreli (shift(-1)) gibi kullanımlar katı şekilde reddedilmektedir.
 
-### Phase 8’e hazırlık
-OHLCV indirme, veritabanına cache'leme ve incremental güncellemeler (Data Layer / Storage) gerçek ağ izni olmadan Guard koruması ile tamamlanacaktır.
+### Warmup/Lookback Kararları
+`estimate_max_lookback` ile en yüksek history checki bulunarak, dataframe içerisinde bir `is_warmup` flag maskesi oluşturulur. İstenen default config limitine uyulmazsa `InsufficientHistoryError` fırlatılır.
+
+### Lookahead-Bias Koruması
+Input ve Output validate ederken `FORBIDDEN_COLUMNS = ["future_return", "target", "label", "next_close", "forward"]` gibi stringlere sahip olan özellikler reddedilir. Ayrıca `fill_policy: "bfill"` (backfill) güvenlik testlerinde exception fırlatır.
+
+### Indicator Quality Kontrolleri
+Veriler işlendikten sonra `quality.py` ile NaN (eksik veri oranı), Infinity, Exteme/Z-Score ve tümüyle NaN/Sabit değerlerden oluşan çıktı kolonları kalite skoru denetiminden geçer.
+
+### Cache/Warehouse Entegrasyonu
+Çıktı sonuçları JSON metadata ve parquet olarak saklanmakta. `importers.py` üzerinden `dynamic_schema` mantığı geliştirilerek, base statik columnların haricindeki hesaplanan dynamic feature kolonları otomatik olarak Storage Schema yapısına dönüştürülür.
+
+### CLI Komutları
+- `indicator-config`, `indicator-backends`, `indicator-list`
+- `indicator-compute-fixture` (Offline test aracı), `indicator-quality-check`
+- `indicator-safety-check`, `indicator-health`, `indicator-cache-list`
+komutları `cli.py` dosyasına entegre edilmiştir.
+
+### Test Sonuçları
+Tüm Trend, Momentum, Volatilite, Hacim, Transform testleri, Model testleri, Engine ve Adaptör testleri, Kalite kontrol testleri tamamlanmış olup `pytest tests/` 284 PASS sonuçla dönmüştür. Pre-commit testlerinde `mypy`, `ruff`, ve `black` fixleri geçilmiştir.
+
+### Bilinen Sınırlamalar
+TA-lib/pandas-ta implementationları skeleton durumundadır. Engine native formülleri default kullanır. Optimizasyonlar büyük verisetlerinde multi-processing ihtiyacı duyabilir (ileriki memory limit sorunları olabilir).
+
+### Phase 12'ye Hazırlık
+İndikatör engine katmanı deterministik olarak feature üretimini halletmiş durumdadır. Bir sonraki fazda Divergence algılayıcılar, çoklu timeframe (MTF) mappingler ve candlestick patternleri için bu engine temel model olarak kullanılacaktır.

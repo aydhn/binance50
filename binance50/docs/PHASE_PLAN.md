@@ -16,3 +16,6 @@
 - Phase 9'da WebSocket market stream hattı, kline/ticker/orderbook stream modelleri ve stream buffer mimarisi kurulacak; gerçek bağlantı yine guard kontrollü ilerleyecek.
 
 - Phase 10: [Pending] Lokal veri ambarı, parquet/sqlite partition yönetimi, veri katalogu ve veri kalite indeksleri kurulacak.
+
+- Phase 11: Indicator engine v1; trend, momentum, volatilite, hacim ve temel transform indikatörleri native pandas/numpy backend ile kurulur.
+- Phase 12: Indicator engine v2 genişletilecek: divergence, multi-timeframe alignment, pattern/candlestick hazırlıkları ve feature grouping modeli kurulacak.

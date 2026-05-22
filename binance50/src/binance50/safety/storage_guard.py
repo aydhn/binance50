@@ -1,8 +1,14 @@
 from pathlib import Path
+
 import pandas as pd
+
 from binance50.config.models import AppConfig
-from binance50.core.exceptions import UnsafeConfigurationError, DestructiveActionBlockedError, StoragePathError
+from binance50.core.exceptions import (
+    DestructiveActionBlockedError,
+    UnsafeConfigurationError,
+)
 from binance50.storage.schemas import DatasetSchema
+
 
 def assert_storage_config_safe(config: AppConfig) -> None:
     if not config.storage.enabled:

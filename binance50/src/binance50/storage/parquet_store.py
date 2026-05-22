@@ -1,16 +1,23 @@
-import pyarrow as pa
-import pyarrow.parquet as pq
-import pyarrow.dataset as ds
-import pandas as pd
 import hashlib
 import uuid
 from pathlib import Path
 from typing import Literal
 
+import pandas as pd
+import pyarrow as pa
+import pyarrow.dataset as ds
+import pyarrow.parquet as pq
+
 from binance50.config.models import AppConfig
-from binance50.core.exceptions import ParquetWriteError, ParquetReadError, StorageSchemaError, DestructiveActionBlockedError
-from binance50.storage.schemas import DatasetSchema, validate_dataframe_schema, schema_to_pyarrow
+from binance50.core.exceptions import (
+    DestructiveActionBlockedError,
+    ParquetReadError,
+    ParquetWriteError,
+    StorageSchemaError,
+)
 from binance50.storage.partitions import group_dataframe_by_partitions, partition_filter_to_pyarrow
+from binance50.storage.schemas import DatasetSchema, schema_to_pyarrow, validate_dataframe_schema
+
 
 class ParquetDatasetStore:
     def __init__(self, config: AppConfig):
@@ -135,7 +142,7 @@ class ParquetDatasetStore:
         return {"status": "not_implemented"}
 
     def validate_written_files(self, paths: list[Path], schema: DatasetSchema) -> None:
-        pa_schema = schema_to_pyarrow(schema)
+        schema_to_pyarrow(schema)
         for p in paths:
              try:
                  pq.read_schema(p)

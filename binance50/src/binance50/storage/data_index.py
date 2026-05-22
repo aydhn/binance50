@@ -1,8 +1,11 @@
 import uuid
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+
 import pandas as pd
+
 from binance50.storage.sqlite_catalog import SQLiteCatalog
+
 
 @dataclass
 class DataCoverageRecord:
@@ -28,7 +31,7 @@ class DataIndex:
             return []
 
         records = []
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
 
         # Group by scope, symbol, interval
         for name, group in df.groupby(['market_scope', 'symbol', 'interval']):
@@ -54,21 +57,6 @@ class DataIndex:
         return records
 
     def upsert_coverage(self, records: list[DataCoverageRecord]) -> None:
-        sql = """
-            INSERT INTO data_index (
-                coverage_id, dataset_name, market_scope, symbol, interval,
-                start_time_ms, end_time_ms, row_count, gap_count, quality_status,
-                version_id, updated_at_utc
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(dataset_name, market_scope, symbol, interval) DO UPDATE SET
-                start_time_ms=excluded.start_time_ms,
-                end_time_ms=excluded.end_time_ms,
-                row_count=excluded.row_count,
-                gap_count=excluded.gap_count,
-                quality_status=excluded.quality_status,
-                version_id=excluded.version_id,
-                updated_at_utc=excluded.updated_at_utc
-        """
         # Note: Added ON CONFLICT requires a UNIQUE index which we should add to migration.
         # But for now we just do a simpler query or assume standard usage.
 

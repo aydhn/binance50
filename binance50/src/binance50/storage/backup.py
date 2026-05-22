@@ -1,8 +1,10 @@
 import shutil
+from datetime import UTC, datetime
 from pathlib import Path
-from datetime import datetime, timezone
+
 from binance50.config.models import AppConfig
-from binance50.storage.paths import get_backups_dir, get_sqlite_catalog_path, get_manifest_dir
+from binance50.storage.paths import get_backups_dir, get_manifest_dir, get_sqlite_catalog_path
+
 
 class StorageBackupManager:
     def __init__(self, config: AppConfig):
@@ -10,7 +12,7 @@ class StorageBackupManager:
         self.backup_dir = get_backups_dir(config)
 
     def _generate_backup_path(self, prefix: str, reason: str) -> Path:
-        ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        ts = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
         safe_reason = reason.replace(" ", "_").replace("/", "_")
         return self.backup_dir / f"{prefix}_{ts}_{safe_reason}"
 
@@ -31,12 +33,12 @@ class StorageBackupManager:
         return backup_path
 
     def backup_storage_metadata(self, reason: str) -> Path:
-        cat_path = self.backup_catalog(reason)
-        man_path = self.backup_manifests(reason)
+        self.backup_catalog(reason)
+        self.backup_manifests(reason)
         return self.backup_dir
 
     def list_backups(self) -> list[Path]:
-        return sorted(list(self.backup_dir.glob("*")), key=lambda x: x.stat().st_mtime)
+        return sorted(self.backup_dir.glob("*"), key=lambda x: x.stat().st_mtime)
 
     def prune_backups(self, dry_run: bool = True) -> dict:
         backups = self.list_backups()

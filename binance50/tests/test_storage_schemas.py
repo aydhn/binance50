@@ -1,13 +1,13 @@
-import pytest
 import pandas as pd
+import pytest
+
+from binance50.core.exceptions import StorageSchemaError
 from binance50.storage.schemas import (
     get_ohlcv_schema,
-    get_universe_selection_schema,
-    validate_dataframe_schema,
     schema_to_pyarrow,
-    detect_schema_drift
+    validate_dataframe_schema,
 )
-from binance50.core.exceptions import StorageSchemaError
+
 
 def test_ohlcv_schema():
     schema = get_ohlcv_schema()

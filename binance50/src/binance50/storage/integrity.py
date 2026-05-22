@@ -1,11 +1,12 @@
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-import os
+from datetime import UTC, datetime
+
 from binance50.config.models import AppConfig
-from binance50.storage.sqlite_catalog import SQLiteCatalog
-from binance50.storage.parquet_store import ParquetDatasetStore
-from binance50.storage.paths import ensure_storage_directories, get_storage_root
 from binance50.core.exceptions import StorageIntegrityError
+from binance50.storage.parquet_store import ParquetDatasetStore
+from binance50.storage.paths import ensure_storage_directories
+from binance50.storage.sqlite_catalog import SQLiteCatalog
+
 
 @dataclass
 class StorageIntegrityReport:
@@ -62,7 +63,7 @@ class StorageIntegrityChecker:
     def run_full_check(self) -> StorageIntegrityReport:
         report = StorageIntegrityReport(
             status="running",
-            checked_at_utc=datetime.now(timezone.utc).isoformat(),
+            checked_at_utc=datetime.now(UTC).isoformat(),
             directory_status=self.check_directories(),
             sqlite_status=self.check_sqlite_integrity(),
             parquet_status=self.check_parquet_files(),

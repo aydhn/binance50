@@ -1,6 +1,8 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+
 from binance50.storage.catalog_models import QualityIndexRecord
+
 
 class QualityIndex:
     def __init__(self, catalog):
@@ -8,7 +10,7 @@ class QualityIndex:
 
     def index_quality_report(self, version_id: str, dataset_name: str, report: dict) -> list[QualityIndexRecord]:
         records = []
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
 
         # Assume report is a dict representation of OHLCVQualityReport from Phase 8
         symbol = report.get("symbol", "UNKNOWN")

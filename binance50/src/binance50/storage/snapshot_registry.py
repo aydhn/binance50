@@ -1,9 +1,10 @@
 import json
 import uuid
-from datetime import datetime, timezone
-from typing import Any
-from binance50.storage.sqlite_catalog import SQLiteCatalog
+from datetime import UTC, datetime
+
 from binance50.storage.catalog_models import SnapshotRecord
+from binance50.storage.sqlite_catalog import SQLiteCatalog
+
 
 class SnapshotRegistry:
     def __init__(self, catalog: SQLiteCatalog):
@@ -16,7 +17,7 @@ class SnapshotRegistry:
             source=source,
             dataset_version_id="",
             metadata=json.dumps(metadata),
-            created_at_utc=datetime.now(timezone.utc).isoformat()
+            created_at_utc=datetime.now(UTC).isoformat()
         )
         self.catalog.add_snapshot(record)
         return record

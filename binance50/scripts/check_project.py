@@ -50,6 +50,14 @@ def main() -> None:
     ]
 
     cli_checks = [
+
+        (["python", "-m", "binance50.cli", "indicator-config"], "Indicator Config"),
+        (["python", "-m", "binance50.cli", "indicator-backends"], "Indicator Backends"),
+        (["python", "-m", "binance50.cli", "indicator-list"], "Indicator List"),
+        (["python", "-m", "binance50.cli", "indicator-quality-check"], "Indicator Quality Check"),
+        (["python", "-m", "binance50.cli", "indicator-safety-check"], "Indicator Safety Check"),
+        (["python", "-m", "binance50.cli", "indicator-health"], "Indicator Health"),
+
         (["python", "-m", "binance50.cli", "universe-config"], "Universe Config Check"),
         (
             ["python", "-m", "binance50.cli", "universe-fixture-select", "--scope", "spot"],

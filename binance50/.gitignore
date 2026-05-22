@@ -25,3 +25,9 @@ artifacts/
 .env
 .env.*
 !.env.example
+data/
+logs/
+reports/
+__pycache__/
+*.pyc
+.pytest_cache/

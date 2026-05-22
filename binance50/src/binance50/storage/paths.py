@@ -1,7 +1,9 @@
 import re
 from pathlib import Path
+
 from binance50.config.models import AppConfig
 from binance50.core.exceptions import StoragePathError
+
 
 def sanitize_path_component(value: str) -> str:
     """Sanitize a string to be used as a safe directory/file name component."""

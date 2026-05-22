@@ -1,8 +1,9 @@
 import json
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
-from binance50.config.models import UniverseConfig
+from binance50.config.models import AppConfig, UniverseConfig
 from binance50.universe.models import UniverseSelectionResult
 
 

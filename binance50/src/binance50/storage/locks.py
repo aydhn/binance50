@@ -1,9 +1,12 @@
+import contextlib
 import os
 import time
 from pathlib import Path
+
 from binance50.config.models import AppConfig
 from binance50.core.exceptions import StorageLockError
 from binance50.storage.paths import get_lock_dir, sanitize_path_component
+
 
 class StorageLock:
     def __init__(self, config: AppConfig):
@@ -28,7 +31,7 @@ class StorageLock:
             except FileExistsError:
                 # Check for stale lock
                 try:
-                    with open(lock_path, 'r') as f:
+                    with open(lock_path) as f:
                         pid_str = f.read().strip()
                         if pid_str:
                             pid = int(pid_str)
@@ -37,10 +40,8 @@ class StorageLock:
                                 os.kill(pid, 0)
                             except OSError:
                                 # Process is dead, stale lock
-                                try:
+                                with contextlib.suppress(FileNotFoundError):
                                     os.unlink(lock_path)
-                                except FileNotFoundError:
-                                    pass
                                 continue # Try to acquire again
                 except Exception:
                     pass
@@ -50,10 +51,8 @@ class StorageLock:
 
     def release(self, lock_name: str) -> None:
         lock_path = self._get_lock_path(lock_name)
-        try:
+        with contextlib.suppress(FileNotFoundError):
             os.unlink(lock_path)
-        except FileNotFoundError:
-            pass
 
     def is_locked(self, lock_name: str) -> bool:
         lock_path = self._get_lock_path(lock_name)
