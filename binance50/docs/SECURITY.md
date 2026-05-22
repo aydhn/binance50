@@ -148,3 +148,8 @@ A corrupt market data series (e.g. overlapping records or chronological gaps) ru
 
 ### Cache Metadata and Secrets
 `OHLCVFrameMetadata` captures data hashes, lengths, and intervals—it explicitly drops all raw API strings and avoids storing API tokens or environments, keeping cache files portable and non-sensitive.
+
+## WebSocket Limits & Safety
+- Limit tracking ensures no more than 1024 streams per spot connection.
+- Stream connections are strictly blocked by `stream_guard` if `market_stream_real_connect_enabled` is false.
+- User Data Streams and Private Routes are completely locked out in Phase 9.

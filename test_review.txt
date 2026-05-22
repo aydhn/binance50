@@ -1,3 +1,14 @@
-I have explored the codebase and have a good understanding of what needs to be done.
-The plan is basically the content of the `plan.md` file, which accurately reflects the user request.
-I will proceed with implementing the required modules.
+Could you review this plan?
+1. Modify `config/default.yaml` and `config/models.py` to add Phase 9 stream settings.
+2. Add new error codes and exceptions to `core/error_codes.py`, `core/exceptions.py`, `core/error_classifier.py`.
+3. Create new `streams/` module:
+   - `event_types.py`, `models.py`, `stream_names.py` (which will replace/extend the one in `connectors/`), `subscription.py`, `parser.py`, `validators.py`, `buffer.py`, `dispatcher.py`, `state.py`, `metrics.py`, `simulator.py`, `replay.py`, `routing.py`, `lifecycle.py`, `reports.py`, `fixtures.py`.
+4. Create `market_data/realtime_store.py`.
+5. Create `safety/stream_guard.py` to block real WebSocket connections.
+6. Create `connectors/stream_connection.py` and modify `connectors/websocket_client.py` to integrate with `StreamSubscriptionPlan`.
+7. Create stream fixtures in `data/fixtures/streams/`.
+8. Add new CLI commands to `cli.py` and update the `doctor` command.
+9. Add tests to `tests/` directory.
+10. Update `scripts/check_project.py` with Phase 9 commands and tests.
+11. Update documentation (`ARCHITECTURE.md`, `SECURITY.md`, `PHASE_PLAN.md`, `README.md`).
+12. Pre-commit check (format, lint, mypy, pytest).

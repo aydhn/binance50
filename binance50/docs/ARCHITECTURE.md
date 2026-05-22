@@ -181,3 +181,12 @@ By default, the real network is completely disabled in Phase 8. Offline JSON fix
 
 ### Why is real network disabled in Phase 8?
 To prevent accidental test script executions consuming API rate limits and because stream buffers, real network pipelines, and final execution guards are yet to be completely wired in Phase 9 and beyond. Phase 8 strictly focuses on the internal modeling and local state generation of historical market data.
+
+## WebSocket Market Stream Layer
+- **Stream Subscription Plan**: Generates stream paths and payload models offline.
+- **Stream Parser**: Deserializes raw string payloads into strongly-typed Pydantic event models.
+- **Stream Buffer**: Implements max capacity and drop policies (e.g., `reject_new`) for event queues.
+- **Stream Simulator/Replay**: Loads offline JSON fixtures, executes pipeline steps sequentially, validating parsing and buffer handling without actual network.
+- **Lifecycle**: Tracks reconnection timers, ping/pong delays offline.
+
+**Why Phase 9 lacks real WS connections**: We must first ensure we can robustly model, digest, test, limit-check, and safeguard streams entirely offline to prevent rate-limit bans or stale data processing bugs in production.

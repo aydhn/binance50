@@ -14,6 +14,7 @@ from binance50.connectors.health import build_connector_health_report
 from binance50.connectors.stream_names import (
     build_kline_stream,
 )
+from binance50.core.enums import MarketScope
 from binance50.core.exception_handler import handle_exception
 from binance50.core.exceptions import ConfigError
 from binance50.logging.setup import setup_logging
@@ -41,7 +42,19 @@ from binance50.safety.secrets_guard import (
     check_for_leaked_secrets,
     verify_no_secrets_in_example_env,
 )
+from binance50.safety.stream_guard import (
+    assert_real_stream_connect_allowed,
+    build_stream_safety_report,
+)
 from binance50.security.live_unlock import build_live_unlock_report
+from binance50.streams.event_types import StreamSource, StreamType
+from binance50.streams.parser import parse_stream_payload
+from binance50.streams.replay import StreamReplayEngine
+from binance50.streams.reports import build_stream_health_report
+from binance50.streams.routing import build_full_stream_url
+from binance50.streams.simulator import StreamSimulator
+from binance50.streams.state import StreamStateStore
+from binance50.streams.subscription import build_subscription_plan
 
 app = typer.Typer(help="binance50 CLI tool")
 console = Console()
@@ -530,8 +543,6 @@ def clock_sync_simulate(server_time_ms: int, local_before_ms: int, local_after_m
 def websocket_limits_check(scope: str, stream_count: int, messages_per_second: int):
     """Check websocket limits."""
     config = load_config()
-    from binance50.core.enums import MarketScope
-
     config.runtime.market_scope = MarketScope(scope)
     d1 = validate_stream_count(config, stream_count)
     d2 = validate_control_message_rate(config, messages_per_second)
@@ -569,7 +580,6 @@ def universe_fixture_select(
     try:
         from pathlib import Path
 
-        from binance50.core.enums import MarketScope
         from binance50.universe.blacklist import load_blacklist
         from binance50.universe.cache import UniverseCache
         from binance50.universe.selector import UniverseSelector
@@ -733,6 +743,112 @@ def universe_safety_check() -> None:
         console.print(f"[red]Failed: {e}[/red]")
         sys.exit(1)
 
+
+
+@app.command()
+def stream_config():
+    from binance50.config.loader import load_config
+    config = load_config()
+    console.print("Stream Config:", config.streams.model_dump())
+    try:
+        assert_real_stream_connect_allowed(config)
+        console.print("[green]Real stream connect allowed.[/green]")
+    except Exception as e:
+        console.print(f"[yellow]Real stream connect disabled: {e}[/yellow]")
+
+@app.command()
+def stream_plan(
+    symbols: str = typer.Option(..., help="Comma separated symbols"),
+    scope: str = typer.Option(..., help="Market scope (spot, usdm_futures)"),
+    types: str = typer.Option(..., help="Comma separated stream types (kline, bookTicker, etc)"),
+    interval: str = typer.Option("1m", help="Kline interval")
+):
+    from binance50.config.loader import load_config
+    config = load_config()
+    market_scope = MarketScope(scope)
+    syms = [s.strip().upper() for s in symbols.split(",")]
+    tps = [StreamType(t.strip()) for t in types.split(",")]
+    plan = build_subscription_plan(syms, tps, market_scope, config, interval)
+    console.print("Subscription Plan:", plan.model_dump())
+
+@app.command()
+def stream_url_test(
+    symbols: str = typer.Option("BTCUSDT", help="Comma separated symbols"),
+    scope: str = typer.Option("spot", help="Market scope"),
+    types: str = typer.Option("kline", help="Comma separated stream types"),
+    interval: str = typer.Option("1m", help="Kline interval")
+):
+    from binance50.config.loader import load_config
+    config = load_config()
+    market_scope = MarketScope(scope)
+    syms = [s.strip().upper() for s in symbols.split(",")]
+    tps = [StreamType(t.strip()) for t in types.split(",")]
+    plan = build_subscription_plan(syms, tps, market_scope, config, interval)
+    url = build_full_stream_url(plan, config)
+    console.print(f"Full Stream URL: {url}")
+
+@app.command()
+def stream_fixture_parse(
+    fixture: str = typer.Option(..., help="Fixture filename"),
+    scope: str = typer.Option("spot", help="Market scope")
+):
+    from binance50.streams.fixtures import load_stream_fixture
+    raw = load_stream_fixture(fixture)
+    market_scope = MarketScope(scope)
+    res = parse_stream_payload(raw, market_scope, StreamSource.fixture)
+    if res.success and res.event:
+        console.print("Parsed Event:", res.event.dump_redacted())
+    else:
+        console.print("[red]Parse Failed:[/red]", res.error)
+
+@app.command()
+def stream_simulate():
+    from binance50.config.loader import load_config
+    config = load_config()
+    sim = StreamSimulator(config)
+    res = sim.simulate_from_fixtures(["spot_kline_btcusdt_1m_closed.json"], MarketScope.SPOT)
+    console.print("Simulation Result:", res.model_dump())
+
+@app.command()
+def stream_buffer_test():
+    from binance50.config.loader import load_config
+    config = load_config()
+    sim = StreamSimulator(config)
+    res = sim.simulate_from_fixtures(["spot_kline_btcusdt_1m_closed.json", "spot_kline_btcusdt_1m_open.json"], MarketScope.SPOT)
+    console.print("Buffer Test Simulation Result:", res.model_dump())
+
+@app.command()
+def stream_replay_fixtures():
+    from binance50.config.loader import load_config
+    config = load_config()
+    engine = StreamReplayEngine(config)
+    res = engine.replay_fixture_sequence(["spot_kline_btcusdt_1m_closed.json"], MarketScope.SPOT, 1.0)
+    console.print("Replay Result:", res.model_dump())
+
+@app.command()
+def stream_state_report():
+    from binance50.config.loader import load_config
+    config = load_config()
+    sim = StreamSimulator(config)
+    store = StreamStateStore()
+    events = sim.load_fixture_events(["spot_kline_btcusdt_1m_closed.json"], MarketScope.SPOT)
+    for e in events:
+        store.update(e)
+    console.print("State Report:", store.to_report())
+
+@app.command()
+def stream_safety_check():
+    from binance50.config.loader import load_config
+    config = load_config()
+    rep = build_stream_safety_report(config)
+    console.print("Stream Safety Report:", rep)
+
+@app.command()
+def stream_health():
+    from binance50.config.loader import load_config
+    config = load_config()
+    rep = build_stream_health_report(config)
+    console.print("Stream Health:", rep)
 
 if __name__ == "__main__":
     app()

@@ -1,97 +1,69 @@
-import yaml
-from pathlib import Path
+with open("binance50/config/default.yaml", "r") as f:
+    content = f.read()
 
-config_path = Path("binance50/config/default.yaml")
-with open(config_path, "r") as f:
-    config = yaml.safe_load(f)
+streams_config = """
+streams:
+  enabled: true
+  market_stream_real_connect_enabled: false
+  use_combined_streams: true
+  default_stream_types:
+    - kline
+    - bookTicker
+    - miniTicker
+  allowed_stream_types:
+    - kline
+    - miniTicker
+    - ticker
+    - bookTicker
+    - partialDepth
+    - diffDepth
+    - trade
+    - aggTrade
+    - markPrice
+    - forceOrder
+  default_kline_interval: 1m
+  allowed_kline_intervals:
+    - 1m
+    - 3m
+    - 5m
+    - 15m
+    - 30m
+    - 1h
+    - 2h
+    - 4h
+    - 6h
+    - 8h
+    - 12h
+    - 1d
+    - 3d
+    - 1w
+    - 1M
+  max_symbols_per_stream_plan: 20
+  max_streams_per_connection_spot: 1024
+  max_streams_per_connection_usdm: 1024
+  max_control_messages_per_second_spot: 5
+  max_control_messages_per_second_usdm: 10
+  buffer_max_events: 10000
+  buffer_drop_policy: reject_new
+  buffer_warn_threshold_pct: 80.0
+  stale_event_threshold_seconds: 30
+  max_event_time_skew_ms: 5000
+  require_monotonic_event_time: false
+  detect_duplicate_events: true
+  duplicate_cache_size: 5000
+  replay_enabled: true
+  replay_speed_multiplier: 1.0
+  realtime_store_enabled: true
+  persist_realtime_snapshots: false
+  lifecycle:
+    max_connection_lifetime_hours: 24
+    reconnect_before_disconnect_minutes: 10
+    ping_timeout_seconds: 60
+    pong_timeout_seconds: 600
+    reconnect_backoff_initial_seconds: 1.0
+    reconnect_backoff_max_seconds: 60.0
+"""
 
-config["market_data"] = {
-  "enabled": True,
-  "real_fetch_enabled": False,
-  "source": "binance_public",
-  "prefer_market_data_only_endpoint": True,
-  "base_data_endpoint": "https://data-api.binance.vision",
-  "spot_klines_path": "/api/v3/klines",
-  "usdm_klines_path": "/fapi/v1/klines",
-  "default_intervals": [
-    "1m",
-    "5m",
-    "15m",
-    "1h",
-    "4h",
-    "1d"
-  ],
-  "allowed_intervals": [
-    "1m",
-    "3m",
-    "5m",
-    "15m",
-    "30m",
-    "1h",
-    "2h",
-    "4h",
-    "6h",
-    "8h",
-    "12h",
-    "1d",
-    "3d",
-    "1w",
-    "1M"
-  ],
-  "default_history_days": {
-    "1m": 30,
-    "3m": 60,
-    "5m": 90,
-    "15m": 180,
-    "30m": 365,
-    "1h": 730,
-    "2h": 730,
-    "4h": 1095,
-    "6h": 1095,
-    "8h": 1095,
-    "12h": 1095,
-    "1d": 1825,
-    "3d": 1825,
-    "1w": 3650,
-    "1M": 3650
-  },
-  "spot_max_limit": 1000,
-  "usdm_max_limit": 1500,
-  "request_limit_safety_margin_pct": 90,
-  "exclude_incomplete_last_candle": True,
-  "require_closed_candles": True,
-  "allow_partial_candle_cache": False,
-  "cache_enabled": True,
-  "cache_format": "parquet",
-  "cache_dir": "data/ohlcv",
-  "metadata_dir": "data/ohlcv/metadata",
-  "export_dir": "data/ohlcv/exports",
-  "cache_partitioning": {
-    "by_market_scope": True,
-    "by_symbol": True,
-    "by_interval": True
-  },
-  "incremental_enabled": True,
-  "overlap_candles_on_update": 2,
-  "max_gap_fill_attempts": 3,
-  "validate_after_fetch": True,
-  "validate_after_cache_load": True,
-  "min_rows_required": 100,
-  "max_rows_per_symbol_interval": 2000000,
-  "quality": {
-    "reject_duplicate_open_time": True,
-    "reject_out_of_order": True,
-    "reject_negative_prices": True,
-    "reject_zero_or_negative_close": True,
-    "reject_high_low_inconsistency": True,
-    "reject_negative_volume": True,
-    "warn_zero_volume": True,
-    "detect_gaps": True,
-    "max_gap_ratio_pct": 1.0,
-    "allow_weekend_crypto_continuity": True,
-    "timezone": "UTC"
-  }
-}
-
-with open(config_path, "w") as f:
-    yaml.dump(config, f, default_flow_style=False, sort_keys=False)
+if "streams:" not in content:
+    with open("binance50/config/default.yaml", "w") as f:
+        f.write(content.rstrip() + "\n" + streams_config)

@@ -14,3 +14,5 @@
 
 ### Phase 9 Hazırlığı
 - Phase 9'da WebSocket market stream hattı, kline/ticker/orderbook stream modelleri ve stream buffer mimarisi kurulacak; gerçek bağlantı yine guard kontrollü ilerleyecek.
+
+- Phase 10: [Pending] Lokal veri ambarı, parquet/sqlite partition yönetimi, veri katalogu ve veri kalite indeksleri kurulacak.
