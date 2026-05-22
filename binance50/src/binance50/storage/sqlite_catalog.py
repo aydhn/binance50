@@ -1,14 +1,20 @@
 import sqlite3
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Generator, Any
+
 from binance50.config.models import AppConfig
 from binance50.core.exceptions import SQLiteCatalogError, StorageIntegrityError
-from binance50.storage.paths import get_sqlite_catalog_path
 from binance50.storage.catalog_models import (
-    DatasetRecord, DatasetVersionRecord, FileManifestRecord,
-    QualityIndexRecord, SnapshotRecord, StorageJobRecord
+    DatasetRecord,
+    DatasetVersionRecord,
+    FileManifestRecord,
+    QualityIndexRecord,
+    SnapshotRecord,
+    StorageJobRecord,
 )
+from binance50.storage.paths import get_sqlite_catalog_path
+
 
 class SQLiteCatalog:
     def __init__(self, config: AppConfig, path: Path | None = None):

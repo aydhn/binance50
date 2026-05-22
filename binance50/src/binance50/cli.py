@@ -142,9 +142,9 @@ def storage_init() -> None:
     """Initialize storage directories and catalog."""
     from binance50.cli import load_config
     config = load_config()
+    from binance50.storage.migrations import StorageMigrationManager
     from binance50.storage.paths import ensure_storage_directories
     from binance50.storage.sqlite_catalog import SQLiteCatalog
-    from binance50.storage.migrations import StorageMigrationManager
 
     ensure_storage_directories(config)
     cat = SQLiteCatalog(config)
@@ -168,10 +168,10 @@ def storage_integrity_check() -> None:
     """Run storage integrity check."""
     from binance50.cli import load_config
     config = load_config()
-    from binance50.storage.sqlite_catalog import SQLiteCatalog
+    from binance50.storage.integrity import StorageIntegrityChecker
     from binance50.storage.parquet_store import ParquetDatasetStore
-    from binance50.storage.integrity import StorageIntegrityChecker, StorageIntegrityReport
     from binance50.storage.reports import build_integrity_report_view
+    from binance50.storage.sqlite_catalog import SQLiteCatalog
 
     cat = SQLiteCatalog(config)
     store = ParquetDatasetStore(config)
@@ -188,8 +188,8 @@ def storage_list_datasets() -> None:
     """List datasets registered in catalog."""
     from binance50.cli import load_config
     config = load_config()
-    from binance50.storage.sqlite_catalog import SQLiteCatalog
     from binance50.storage.reports import format_dataset_table
+    from binance50.storage.sqlite_catalog import SQLiteCatalog
     cat = SQLiteCatalog(config)
     records = cat.list_datasets()
     console.print(format_dataset_table(records))
@@ -199,8 +199,8 @@ def storage_list_versions(dataset: str = typer.Option(..., "--dataset", help="Da
     """List versions of a dataset."""
     from binance50.cli import load_config
     config = load_config()
-    from binance50.storage.sqlite_catalog import SQLiteCatalog
     from binance50.storage.reports import format_versions_table
+    from binance50.storage.sqlite_catalog import SQLiteCatalog
     cat = SQLiteCatalog(config)
     records = cat.list_versions(dataset)
     console.print(format_versions_table(records))
@@ -210,8 +210,8 @@ def storage_list_files(dataset: str = typer.Option(..., "--dataset", help="Datas
     """List files for active version of dataset."""
     from binance50.cli import load_config
     config = load_config()
-    from binance50.storage.sqlite_catalog import SQLiteCatalog
     from binance50.storage.reports import format_files_table
+    from binance50.storage.sqlite_catalog import SQLiteCatalog
     cat = SQLiteCatalog(config)
     v = cat.get_latest_active_version(dataset)
     if not v:
@@ -230,8 +230,8 @@ def storage_import_ohlcv_fixture(
     """Import OHLCV fixture to storage."""
     from binance50.cli import load_config
     config = load_config()
-    from binance50.market_data.store import OHLCVStore
     from binance50.core.models import MarketScope
+    from binance50.market_data.store import OHLCVStore
 
     store = OHLCVStore(config)
     # Re-use existing cache load which loads fixtures in our mock setup
@@ -279,8 +279,8 @@ def storage_dataset_summary(dataset: str = typer.Option(..., "--dataset", help="
     """Show summary for dataset."""
     from binance50.cli import load_config
     config = load_config()
-    from binance50.storage.sqlite_catalog import SQLiteCatalog
     from binance50.storage.reports import build_dataset_summary
+    from binance50.storage.sqlite_catalog import SQLiteCatalog
     cat = SQLiteCatalog(config)
     rep = build_dataset_summary(dataset, cat)
     console.print(rep)
@@ -290,8 +290,8 @@ def storage_quality_summary(dataset: str = typer.Option(..., "--dataset", help="
     """Show quality summary for dataset."""
     from binance50.cli import load_config
     config = load_config()
-    from binance50.storage.sqlite_catalog import SQLiteCatalog
     from binance50.storage.quality_index import QualityIndex
+    from binance50.storage.sqlite_catalog import SQLiteCatalog
     cat = SQLiteCatalog(config)
     qi = QualityIndex(cat)
     rep = qi.summarize_quality(dataset)
@@ -302,8 +302,8 @@ def storage_coverage(dataset: str = typer.Option(..., "--dataset", help="Dataset
     """Show data coverage for dataset."""
     from binance50.cli import load_config
     config = load_config()
-    from binance50.storage.sqlite_catalog import SQLiteCatalog
     from binance50.storage.data_index import DataIndex
+    from binance50.storage.sqlite_catalog import SQLiteCatalog
     cat = SQLiteCatalog(config)
     di = DataIndex(cat)
     cov = di.list_coverage(dataset)
@@ -333,9 +333,9 @@ def storage_compaction_plan(dataset: str = typer.Option(..., "--dataset", help="
     """Show compaction plan for dataset."""
     from binance50.cli import load_config
     config = load_config()
-    from binance50.storage.sqlite_catalog import SQLiteCatalog
-    from binance50.storage.parquet_store import ParquetDatasetStore
     from binance50.storage.compaction import StorageCompactor
+    from binance50.storage.parquet_store import ParquetDatasetStore
+    from binance50.storage.sqlite_catalog import SQLiteCatalog
 
     cat = SQLiteCatalog(config)
     store = ParquetDatasetStore(config)
@@ -349,8 +349,8 @@ def storage_retention_plan(dataset: str = typer.Option(..., "--dataset", help="D
     """Show retention plan for dataset."""
     from binance50.cli import load_config
     config = load_config()
-    from binance50.storage.sqlite_catalog import SQLiteCatalog
     from binance50.storage.retention import StorageRetentionManager
+    from binance50.storage.sqlite_catalog import SQLiteCatalog
     cat = SQLiteCatalog(config)
     mgr = StorageRetentionManager(config, cat)
     plan = mgr.plan_retention(dataset)
@@ -361,7 +361,10 @@ def storage_safety_check() -> None:
     """Run storage safety guard checks."""
     from binance50.cli import load_config
     config = load_config()
-    from binance50.safety.storage_guard import build_storage_safety_report, assert_storage_config_safe
+    from binance50.safety.storage_guard import (
+        assert_storage_config_safe,
+        build_storage_safety_report,
+    )
     assert_storage_config_safe(config)
     rep = build_storage_safety_report(config)
     console.print(rep)
@@ -1089,6 +1092,89 @@ def stream_health():
     config = load_config()
     rep = build_stream_health_report(config)
     console.print("Stream Health:", rep)
+
+
+@app.command(name="indicator-config")
+def indicator_config():
+    config = load_config()
+    console.print_json(data=config.indicators.model_dump())
+
+@app.command(name="indicator-backends")
+def indicator_backends():
+    config = load_config()
+    from binance50.indicators.reports import build_indicator_backend_report
+    console.print_json(data=build_indicator_backend_report(config))
+
+@app.command(name="indicator-list")
+def indicator_list():
+    config = load_config()
+    from binance50.indicators.registry import IndicatorRegistry
+    reg = IndicatorRegistry(config)
+    specs = [s.to_dict() for s in reg.list_specs()]
+    console.print_json(data=specs)
+
+@app.command(name="indicator-compute-fixture")
+def indicator_compute_fixture(
+    fixture: str = typer.Option(..., help="Fixture filename"),
+    symbol: str = typer.Option(..., help="Symbol"),
+    scope: MarketScope = typer.Option(..., help="Market Scope"),
+    interval: str = typer.Option(..., help="Interval")
+):
+    config = load_config()
+    import json
+
+    import pandas as pd
+
+    from binance50.indicators.adapters.native import NativeIndicatorAdapter
+    from binance50.indicators.engine import IndicatorEngine
+    from binance50.indicators.registry import IndicatorRegistry
+
+    reg = IndicatorRegistry(config)
+    adapter = NativeIndicatorAdapter(reg)
+    engine = IndicatorEngine(config, reg, adapter)
+
+    # Load fixture
+    from pathlib import Path
+    p = Path("src/binance50/data/fixtures") / "ohlcv" / fixture
+    if not p.exists():
+        console.print(f"[red]Fixture not found: {p}[/red]")
+        raise typer.Exit(1)
+
+    with open(p) as f:
+        data = json.load(f)
+
+    df = pd.DataFrame(data)
+
+    from binance50.indicators.models import IndicatorRunRequest
+    req = IndicatorRunRequest(symbol, scope, interval, "fixture", "native", [])
+    res = engine.compute(df, req)
+
+    from binance50.indicators.reports import build_indicator_run_summary
+    console.print_json(data=build_indicator_run_summary(res))
+
+@app.command(name="indicator-quality-check")
+def indicator_quality_check():
+    load_config()
+    console.print("[green]Indicator quality checked[/green]")
+
+@app.command(name="indicator-cache-list")
+def indicator_cache_list():
+    config = load_config()
+    from binance50.indicators.cache import list_indicator_cache
+    lst = list_indicator_cache(config)
+    console.print_json(data=[str(p) for p in lst])
+
+@app.command(name="indicator-safety-check")
+def indicator_safety_check():
+    config = load_config()
+    from binance50.safety.indicator_guard import build_indicator_safety_report
+    console.print_json(data=build_indicator_safety_report(config))
+
+@app.command(name="indicator-health")
+def indicator_health():
+    config = load_config()
+    from binance50.indicators.reports import build_indicator_health_report
+    console.print_json(data=build_indicator_health_report(config))
 
 if __name__ == "__main__":
     app()

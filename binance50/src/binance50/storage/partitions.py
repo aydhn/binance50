@@ -1,10 +1,13 @@
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+
 import pandas as pd
-from datetime import datetime, timezone
+
 from binance50.config.models import AppConfig
 from binance50.storage.paths import build_dataset_partition_path
+
 
 @dataclass(frozen=True)
 class PartitionSpec:
@@ -34,7 +37,7 @@ def build_partition_spec(row_or_metadata: dict[str, Any], config: AppConfig, dat
              break
 
     if ts is not None:
-         dt = datetime.fromtimestamp(int(ts) / 1000, tz=timezone.utc)
+         dt = datetime.fromtimestamp(int(ts) / 1000, tz=UTC)
          y = str(dt.year)
          m = str(dt.month).zfill(2)
          d = str(dt.day).zfill(2)

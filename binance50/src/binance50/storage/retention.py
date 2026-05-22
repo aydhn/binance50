@@ -1,7 +1,9 @@
 from dataclasses import dataclass
+
 from binance50.config.models import AppConfig
+from binance50.core.exceptions import DestructiveActionBlockedError
 from binance50.storage.sqlite_catalog import SQLiteCatalog
-from binance50.core.exceptions import StorageRetentionError, DestructiveActionBlockedError
+
 
 @dataclass
 class RetentionPlan:

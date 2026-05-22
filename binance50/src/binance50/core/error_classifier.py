@@ -109,9 +109,14 @@ def classify_stream_error(msg: str) -> type[Binance50Error]:
 def classify_storage_error(error: Exception) -> type[Binance50Error]:
     """Classify storage related errors."""
     from binance50.core.exceptions import (
-        StorageError, SQLiteCatalogError, ParquetWriteError,
-        ParquetReadError, StoragePathError, StorageSchemaError,
-        StorageIntegrityError, DestructiveActionBlockedError
+        DestructiveActionBlockedError,
+        ParquetReadError,
+        ParquetWriteError,
+        SQLiteCatalogError,
+        StorageError,
+        StorageIntegrityError,
+        StoragePathError,
+        StorageSchemaError,
     )
 
     error_str = str(error).lower()
@@ -133,3 +138,35 @@ def classify_storage_error(error: Exception) -> type[Binance50Error]:
         return DestructiveActionBlockedError
 
     return StorageError
+
+
+def classify_indicator_error(error: Exception) -> type[Binance50Error]:
+    from binance50.core.exceptions import (
+        IndicatorBackendError,
+        IndicatorComputationError,
+        IndicatorError,
+        IndicatorInputError,
+        IndicatorQualityError,
+        InsufficientHistoryError,
+        LookaheadBiasError,
+        OptionalIndicatorBackendMissingError,
+    )
+
+    error_str = str(error).lower()
+
+    if "missing ohlcv column" in error_str:
+        return IndicatorInputError
+    if "invalid backend" in error_str:
+        return IndicatorBackendError
+    if "optional backend missing" in error_str:
+        return OptionalIndicatorBackendMissingError
+    if "all nan indicator" in error_str:
+        return IndicatorQualityError
+    if "future" in error_str or "target" in error_str or "label" in error_str or "lookahead" in error_str:
+        return LookaheadBiasError
+    if "insufficient rows" in error_str or "insufficient history" in error_str:
+        return InsufficientHistoryError
+    if isinstance(error, IndicatorError):
+        return error.__class__
+
+    return IndicatorComputationError

@@ -1,11 +1,13 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+
 from binance50.config.models import AppConfig
-from binance50.storage.sqlite_catalog import SQLiteCatalog
-from binance50.storage.catalog_models import DatasetRecord, DatasetVersionRecord
-from binance50.storage.schemas import DatasetSchema, DatasetKind
-from binance50.storage.manifest import DatasetManifest
 from binance50.core.exceptions import DatasetRegistryError
+from binance50.storage.catalog_models import DatasetRecord, DatasetVersionRecord
+from binance50.storage.manifest import DatasetManifest
+from binance50.storage.schemas import DatasetKind, DatasetSchema
+from binance50.storage.sqlite_catalog import SQLiteCatalog
+
 
 class DatasetRegistry:
     def __init__(self, config: AppConfig, catalog: SQLiteCatalog):
@@ -21,7 +23,7 @@ class DatasetRegistry:
         self._assert_dataset_allowed(dataset_name)
 
         existing = self.catalog.get_dataset(dataset_name)
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
 
         if existing:
             existing.schema_version = schema.version
@@ -63,7 +65,7 @@ class DatasetRegistry:
             data_hash=manifest.data_hash,
             manifest_path=f"{manifest.dataset_name}_{manifest.version_id}.json",
             quality_status=quality_status,
-            created_at_utc=datetime.now(timezone.utc).isoformat(),
+            created_at_utc=datetime.now(UTC).isoformat(),
             is_active=0 # Default to inactive, requires explicit activation
         )
         self.catalog.create_dataset_version(record)

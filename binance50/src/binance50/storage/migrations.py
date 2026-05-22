@@ -1,9 +1,10 @@
 from dataclasses import dataclass
-from typing import Any
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+
 from binance50.config.models import AppConfig
-from binance50.core.exceptions import StorageMigrationError, DestructiveActionBlockedError
+from binance50.core.exceptions import DestructiveActionBlockedError, StorageMigrationError
 from binance50.storage.sqlite_catalog import SQLiteCatalog
+
 
 @dataclass
 class Migration:
@@ -182,7 +183,7 @@ class StorageMigrationManager:
 
                     c.execute(
                         "INSERT INTO schema_migrations (version, name, applied_at_utc) VALUES (?, ?, ?)",
-                        (m.version, m.name, datetime.now(timezone.utc).isoformat())
+                        (m.version, m.name, datetime.now(UTC).isoformat())
                     )
             except Exception as e:
                  raise StorageMigrationError(f"Failed to apply migration {m.name}: {e}")

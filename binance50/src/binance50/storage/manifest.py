@@ -1,16 +1,18 @@
 import json
 import uuid
-from dataclasses import dataclass, asdict
-from datetime import datetime, timezone
+from dataclasses import asdict, dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+
 import pandas as pd
 
 from binance50.config.models import AppConfig
-from binance50.storage.schemas import DatasetSchema
-from binance50.storage.paths import get_manifest_dir
-from binance50.storage.catalog_models import FileManifestRecord
 from binance50.core.exceptions import StorageManifestError
+from binance50.storage.catalog_models import FileManifestRecord
+from binance50.storage.paths import get_manifest_dir
+from binance50.storage.schemas import DatasetSchema
+
 
 @dataclass
 class DatasetManifest:
@@ -70,7 +72,7 @@ def build_manifest(
         min_time_ms=min_t,
         max_time_ms=max_t,
         quality_status=quality_status,
-        created_at_utc=datetime.now(timezone.utc).isoformat(),
+        created_at_utc=datetime.now(UTC).isoformat(),
         metadata=metadata or {}
     )
 
@@ -91,7 +93,7 @@ def write_manifest(manifest: DatasetManifest, config: AppConfig) -> Path:
 
 def read_manifest(path: Path) -> DatasetManifest:
     try:
-        with open(path, 'r') as f:
+        with open(path) as f:
             data = json.load(f)
             return DatasetManifest(**data)
     except Exception as e:

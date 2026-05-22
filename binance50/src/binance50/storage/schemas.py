@@ -1,11 +1,15 @@
-from enum import Enum
 from dataclasses import dataclass, field
-import pandas as pd
+from enum import StrEnum
 from typing import Any
+
+import pandas as pd
+
 from binance50.core.exceptions import StorageSchemaError
 
-class DatasetKind(str, Enum):
+
+class DatasetKind(StrEnum):
     OHLCV = "ohlcv"
+    INDICATORS = "indicators"
     UNIVERSE_SELECTION = "universe_selection"
     STREAM_EVENTS = "stream_events"
     QUALITY_REPORTS = "quality_reports"
@@ -152,8 +156,8 @@ def detect_schema_drift(df: pd.DataFrame, schema: DatasetSchema) -> dict[str, An
     # Note: we could do deeper dtype checks here, but leaving simple for now
 
     return {
-        "missing_required_columns": [c for c in missing if not next((s for s in schema.columns if s.name == c)).nullable],
-        "missing_optional_columns": [c for c in missing if next((s for s in schema.columns if s.name == c)).nullable],
+        "missing_required_columns": [c for c in missing if not next(s for s in schema.columns if s.name == c).nullable],
+        "missing_optional_columns": [c for c in missing if next(s for s in schema.columns if s.name == c).nullable],
         "extra_columns": extra,
         "is_drifted": len(missing) > 0 or len(extra) > 0
     }

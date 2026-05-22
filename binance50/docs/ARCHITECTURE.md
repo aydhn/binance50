@@ -190,3 +190,15 @@ To prevent accidental test script executions consuming API rate limits and becau
 - **Lifecycle**: Tracks reconnection timers, ping/pong delays offline.
 
 **Why Phase 9 lacks real WS connections**: We must first ensure we can robustly model, digest, test, limit-check, and safeguard streams entirely offline to prevent rate-limit bans or stale data processing bugs in production.
+
+## Indicator Engine (Phase 11)
+- **Indicator Engine Architecture**: Decoupled engine processing OHLCV data to generate technical indicators via an extensible registry.
+- **Native Backend**: Pandas/Numpy-based native calculation path serving as the robust default without heavy dependencies.
+- **Optional Backend Adapters**: Protocol-based adapters permitting integration of libraries like TA-Lib or pandas-ta gracefully.
+- **Indicator Registry**: Centralized repository of specifications, mapping configuration parameters to computing functions.
+- **Warmup/Lookback Model**: Explicit handling of required history rows (warmup period) to ensure indicator outputs are valid and not skewed by insufficient data.
+- **Indicator Metadata Model**: Detailed generation tracking including lookback boundaries and output validity windows.
+- **Indicator Quality Checks**: Validation routines that check for structural issues such as all-NaNs, infinity, constant values, or outliers.
+- **Lookahead-bias Prevention**: Strict barriers rejecting columns with future labels to ensure indicator execution relies strictly on past and present data.
+- **Warehouse Integration**: Generated indicator outputs alongside their configurations and metadata can be written directly to the localized data warehouse.
+- **Why no strategy signals in Phase 11?**: The goal of this phase is isolating the deterministic computation of metrics. Evaluation and trading signals belong in the forthcoming strategy and scoring engines to maintain the single-responsibility principle.

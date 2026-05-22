@@ -3,11 +3,11 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 from binance50.config.models import AppConfig
+from binance50.connectors.stream_names import build_combined_stream_path
 from binance50.core.enums import MarketScope
 from binance50.core.time_utils import get_utc_now
 from binance50.streams.event_types import StreamRoute, StreamType
 from binance50.streams.stream_names import build_stream_name
-from binance50.connectors.stream_names import build_combined_stream_path
 
 
 class StreamSubscription(BaseModel):

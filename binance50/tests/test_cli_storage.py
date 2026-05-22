@@ -1,4 +1,5 @@
 from typer.testing import CliRunner
+
 from binance50.cli import app
 
 runner = CliRunner()

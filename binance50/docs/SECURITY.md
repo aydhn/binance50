@@ -153,3 +153,12 @@ A corrupt market data series (e.g. overlapping records or chronological gaps) ru
 - Limit tracking ensures no more than 1024 streams per spot connection.
 - Stream connections are strictly blocked by `stream_guard` if `market_stream_real_connect_enabled` is false.
 - User Data Streams and Private Routes are completely locked out in Phase 9.
+
+## Indicator Security & Safety (Phase 11)
+- **Lookahead Bias Risk**: The engine is guarded against calculating values that incorporate future knowledge, a critical risk in algorithmic trading testing.
+- **Future/Target/Label Column Ban**: Input constraints explicitly reject any columns implicitly suggesting target prices or forward returns (`future_return`, `label`, etc.).
+- **Warmup Rows Risk**: The system ensures metrics outputted early in a dataset that haven't consumed sufficient historical data points are clearly marked or omitted, preventing false confidence in strategy layers.
+- **Incomplete Candle Risk**: Options are strictly provided to drop incomplete candles to ensure indicator consistency across boundaries.
+- **Optional Dependency Security**: Third-party indicator libraries (TA-Lib, pandas-ta) are loaded securely and their absence gracefully managed rather than crashing the runtime.
+- **Indicator Output != Trade Signal**: Indicator values are strictly mathematical features and are structurally prohibited from issuing live execution commands.
+- **Indicator Cache Path Security**: Storage mechanisms apply path sanitization to prevent traversal attacks when defining or loading cached metrics.

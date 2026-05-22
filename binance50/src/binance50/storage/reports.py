@@ -1,7 +1,8 @@
 from binance50.config.models import AppConfig
-from binance50.storage.sqlite_catalog import SQLiteCatalog
 from binance50.storage.catalog_models import DatasetRecord, DatasetVersionRecord, FileManifestRecord
 from binance50.storage.integrity import StorageIntegrityReport
+from binance50.storage.sqlite_catalog import SQLiteCatalog
+
 
 def build_storage_config_report(config: AppConfig) -> dict:
     return {

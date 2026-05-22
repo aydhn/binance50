@@ -1,8 +1,7 @@
-import pytest
-from pathlib import Path
 from binance50.config.models import AppConfig
-from binance50.storage.sqlite_catalog import SQLiteCatalog
 from binance50.storage.catalog_models import DatasetRecord
+from binance50.storage.sqlite_catalog import SQLiteCatalog
+
 
 def test_sqlite_catalog_init(tmp_path):
     config = AppConfig()
