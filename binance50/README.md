@@ -108,3 +108,9 @@ python -m binance50.cli ohlcv-incremental-plan --symbol BTCUSDT --scope spot --i
 python -m binance50.cli market-data-safety-check
 python -m binance50.cli market-data-health
 ```
+
+## WebSocket Market Stream Layer
+Phase 9 provides robust offline simulation and structural preparation for real-time WebSocket market data. Real websocket connections are intentionally disabled by default.
+Test commands include:
+- `python -m binance50.cli stream-simulate`
+- `python -m binance50.cli stream-buffer-test`

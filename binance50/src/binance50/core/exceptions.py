@@ -1,79 +1,55 @@
-from typing import Any, Self
+from typing import Any
 
 from binance50.core import error_codes
 
 
 class Binance50Error(Exception):
-    """Base exception for binance50."""
-
-    def __init__(
-        self,
-        message: str,
-        error_code: str = "UNKNOWN_ERROR",
-        component: str = "core",
-        severity: str = "error",
-        retryable: bool = False,
-        user_action_required: bool = False,
-        metadata: dict[str, Any] | None = None,
-        cause: Exception | None = None,
-    ) -> None:
-        super().__init__(message)
+    def __init__(self, message: str, **kwargs: Any) -> None:
         self.message = message
-        self.error_code = error_code
-        self.component = component
-        self.severity = severity
-        self.retryable = retryable
-        self.user_action_required = user_action_required
-        self.metadata = metadata or {}
-        self.cause = cause
-        if cause:
-            self.__cause__ = cause
+        self.error_code = kwargs.get("error_code", "UNKNOWN_ERROR")
+        self.component = kwargs.get("component", "unknown")
+        self.severity = kwargs.get("severity", "error")
+        self.retryable = kwargs.get("retryable", False)
+        self.user_action_required = kwargs.get("user_action_required", False)
+        self.metadata = kwargs.get("metadata", {})
+        super().__init__(self.message)
+
+
+    def with_context(self, **kwargs: Any) -> "Binance50Error":
+        self.metadata.update(kwargs)
+        return self
+
+    def safe_message(self) -> str:
+        from binance50.logging.redaction import redact_text
+        return redact_text(self.message)
 
     def to_dict(self, redacted: bool = True) -> dict[str, Any]:
-        """Convert exception to dictionary representation."""
-        # Note: True redaction logic will be applied in the exception handler or logging layer
-        # if `redacted` is True. For now we return the metadata.
-        from binance50.logging.redaction import redact_mapping
-
-        md = redact_mapping(self.metadata) if redacted else self.metadata
-        return {
+        d = {
             "error_code": self.error_code,
-            "message": self.message,
+            "message": self.safe_message() if redacted else self.message,
             "component": self.component,
             "severity": self.severity,
             "retryable": self.retryable,
             "user_action_required": self.user_action_required,
-            "metadata": md,
             "exception_class": self.__class__.__name__,
+            "metadata": self.metadata.copy(),
         }
-
-    def safe_message(self) -> str:
-        """Return a message safe for public logging/display."""
-        from binance50.logging.redaction import redact_text
-
-        return redact_text(self.message)
-
-    def with_context(self, **metadata: Any) -> Self:
-        """Add metadata to the exception context."""
-        self.metadata.update(metadata)
-        return self
+        if redacted:
+            from binance50.logging.redaction import redact_mapping
+            d["metadata"] = redact_mapping(d["metadata"])
+        return d
 
 
-# General Classes
 class ConfigError(Binance50Error):
-    """Configuration related errors."""
-
     def __init__(self, message: str, **kwargs: Any) -> None:
         kwargs.setdefault("error_code", error_codes.CONFIG_LOAD_FAILED)
         kwargs.setdefault("component", "config")
         super().__init__(message, **kwargs)
 
-
 class ConfigValidationError(ConfigError):
     def __init__(self, message: str, **kwargs: Any) -> None:
         kwargs.setdefault("error_code", error_codes.CONFIG_VALIDATION_FAILED)
         super().__init__(message, **kwargs)
-
 
 class EnvironmentProfileError(Binance50Error):
     def __init__(self, message: str, **kwargs: Any) -> None:
@@ -81,38 +57,25 @@ class EnvironmentProfileError(Binance50Error):
         kwargs.setdefault("component", "environment")
         super().__init__(message, **kwargs)
 
-
 class SafetyError(Binance50Error):
-    """Safety and guard related errors."""
-
     def __init__(self, message: str, **kwargs: Any) -> None:
         kwargs.setdefault("error_code", error_codes.SAFETY_CHECK_FAILED)
         kwargs.setdefault("component", "safety")
         kwargs.setdefault("severity", "critical")
         super().__init__(message, **kwargs)
 
-
 class SecretLeakError(SafetyError):
-    """Secret leak related errors."""
-
     def __init__(self, message: str, **kwargs: Any) -> None:
         kwargs.setdefault("error_code", error_codes.SECRET_LEAK_DETECTED)
         super().__init__(message, **kwargs)
 
-
 class LiveTradingBlockedError(SafetyError):
-    """Live trading is blocked."""
-
     def __init__(self, message: str, **kwargs: Any) -> None:
         kwargs.setdefault("error_code", error_codes.LIVE_TRADING_BLOCKED)
         super().__init__(message, **kwargs)
 
-
 class InvalidTradingModeError(SafetyError):
-    """Invalid trading mode."""
-
     pass
-
 
 class LoggingSetupError(Binance50Error):
     def __init__(self, message: str, **kwargs: Any) -> None:
@@ -120,51 +83,41 @@ class LoggingSetupError(Binance50Error):
         kwargs.setdefault("component", "logging")
         super().__init__(message, **kwargs)
 
-
 class AuditWriteError(Binance50Error):
     def __init__(self, message: str, **kwargs: Any) -> None:
         kwargs.setdefault("error_code", error_codes.AUDIT_WRITE_FAILED)
         kwargs.setdefault("component", "audit")
         super().__init__(message, **kwargs)
 
-
 class DataValidationError(Binance50Error):
     pass
 
-
 class DependencyMissingError(Binance50Error):
     pass
-
 
 class UnsupportedFeatureError(Binance50Error):
     def __init__(self, message: str, **kwargs: Any) -> None:
         kwargs.setdefault("error_code", error_codes.UNSUPPORTED_FEATURE)
         super().__init__(message, **kwargs)
 
-
 class StateError(Binance50Error):
     pass
-
 
 class RuntimeInvariantError(Binance50Error):
     def __init__(self, message: str, **kwargs: Any) -> None:
         kwargs.setdefault("error_code", error_codes.RUNTIME_INVARIANT_FAILED)
         super().__init__(message, **kwargs)
 
-
-# Binance-specific Classes
 class BinanceApiError(Binance50Error):
     def __init__(self, message: str, **kwargs: Any) -> None:
         kwargs.setdefault("component", "binance_api")
         super().__init__(message, **kwargs)
-
 
 class BinanceRateLimitError(BinanceApiError):
     def __init__(self, message: str, **kwargs: Any) -> None:
         kwargs.setdefault("error_code", error_codes.BINANCE_RATE_LIMIT)
         kwargs.setdefault("retryable", True)
         super().__init__(message, **kwargs)
-
 
 class BinanceIpBanError(BinanceApiError):
     def __init__(self, message: str, **kwargs: Any) -> None:
@@ -173,17 +126,14 @@ class BinanceIpBanError(BinanceApiError):
         kwargs.setdefault("user_action_required", True)
         super().__init__(message, **kwargs)
 
-
 class BinanceRequestError(BinanceApiError):
     pass
-
 
 class BinanceServerError(BinanceApiError):
     def __init__(self, message: str, **kwargs: Any) -> None:
         kwargs.setdefault("error_code", error_codes.BINANCE_SERVER_ERROR)
         kwargs.setdefault("retryable", True)
         super().__init__(message, **kwargs)
-
 
 class BinanceUnknownExecutionStatusError(BinanceApiError):
     def __init__(self, message: str, **kwargs: Any) -> None:
@@ -192,14 +142,12 @@ class BinanceUnknownExecutionStatusError(BinanceApiError):
         kwargs.setdefault("user_action_required", True)
         super().__init__(message, **kwargs)
 
-
 class BinanceAuthenticationError(BinanceApiError):
     def __init__(self, message: str, **kwargs: Any) -> None:
         kwargs.setdefault("error_code", error_codes.BINANCE_AUTH_FAILED)
         kwargs.setdefault("severity", "critical")
         kwargs.setdefault("user_action_required", True)
         super().__init__(message, **kwargs)
-
 
 class BinancePermissionError(BinanceApiError):
     def __init__(self, message: str, **kwargs: Any) -> None:
@@ -208,226 +156,208 @@ class BinancePermissionError(BinanceApiError):
         kwargs.setdefault("user_action_required", True)
         super().__init__(message, **kwargs)
 
-
 class BinanceTimestampError(BinanceApiError):
     def __init__(self, message: str, **kwargs: Any) -> None:
         kwargs.setdefault("error_code", error_codes.BINANCE_TIMESTAMP_ERROR)
         kwargs.setdefault("retryable", True)
         super().__init__(message, **kwargs)
 
-
 class BinanceInsufficientBalanceError(BinanceApiError):
     pass
-
 
 class BinanceOrderRejectedError(BinanceApiError):
     def __init__(self, message: str, **kwargs: Any) -> None:
         kwargs.setdefault("error_code", error_codes.BINANCE_ORDER_REJECTED)
         super().__init__(message, **kwargs)
 
-
 class BinanceSymbolFilterError(BinanceApiError):
     def __init__(self, message: str, **kwargs: Any) -> None:
         kwargs.setdefault("error_code", error_codes.BINANCE_SYMBOL_FILTER_FAILED)
         super().__init__(message, **kwargs)
 
-
 class BinanceWebSocketError(BinanceApiError):
     pass
-
 
 class BinanceUserDataStreamError(BinanceApiError):
     pass
 
-
 class CredentialError(Binance50Error):
-    """Base class for credential-related errors."""
-
     pass
 
-
 class CredentialPairError(CredentialError):
-    """Raised when a credential pair is incomplete (e.g., API key provided without secret)."""
-
     default_code = "CREDENTIAL_PAIR_INCOMPLETE"
 
-
 class ApiPermissionError(Binance50Error):
-    """Raised when API permissions do not match the required policy."""
-
     default_code = "API_PERMISSION_INVALID"
 
-
 class DryRunViolationError(SafetyError):
-    """Raised when an operation attempts to bypass the dry-run guard."""
-
     default_code = "DRY_RUN_VIOLATION"
 
-
 class OrderPathDisabledError(SafetyError):
-    """Raised when an operation attempts to use the order gateway while it is disabled."""
-
     default_code = "ORDER_PATH_DISABLED"
 
-
 class UnsafeConfigurationError(SafetyError):
-    """Raised when the configuration is deemed unsafe for the intended operation."""
-
     default_code = "UNSAFE_CONFIGURATION"
 
-
 class GitIgnorePolicyError(SafetyError):
-    """Raised when the .gitignore file does not adequately protect environment files."""
-
     default_code = "GITIGNORE_ENV_MISSING"
 
-
 class EnvFilePolicyError(SafetyError):
-    """Raised for violations related to the .env or .env.example files."""
-
     default_code = "ENV_EXAMPLE_SECRET_DETECTED"
 
-
 class LiveUnlockError(SafetyError):
-    """Raised when the live trading unlock phrase or risk acknowledgment is missing or incorrect."""
-
     default_code = "LIVE_UNLOCK_MISSING"
 
-
 class UnsupportedPermissionError(ApiPermissionError):
-    """Raised when an unsupported permission is detected (e.g., margin trading)."""
-
     default_code = "UNSUPPORTED_PERMISSION"
-
 
 class ConnectorDisabledError(UnsupportedFeatureError):
     def __init__(self, message: str = "Connector is disabled", **kwargs: Any) -> None:
         super().__init__(message, **kwargs)
 
-
 class RateLimitError(Binance50Error):
     pass
-
 
 class RateLimitExceededError(RateLimitError):
     pass
 
-
 class RateLimitCooldownError(RateLimitError):
     pass
-
 
 class IpBanCooldownError(RateLimitError):
     pass
 
-
 class RetryPolicyError(Binance50Error):
     pass
-
 
 class BackoffPolicyError(Binance50Error):
     pass
 
-
 class TimeoutPolicyError(Binance50Error):
     pass
-
 
 class ClockSyncError(Binance50Error):
     pass
 
-
 class ClockDriftError(ClockSyncError):
     pass
-
 
 class RecvWindowError(Binance50Error):
     pass
 
-
 class CircuitBreakerOpenError(Binance50Error):
     pass
-
 
 class WebSocketLimitError(Binance50Error):
     pass
 
-
 class RequestBudgetError(Binance50Error):
     pass
-
 
 class RealNetworkDisabledError(SafetyError):
     pass
 
-
 class MarketDataError(Binance50Error):
-    """Base exception for market data operations."""
-
     pass
-
 
 class MarketDataFetchDisabledError(MarketDataError):
-    """Raised when fetching market data is blocked by configuration."""
-
     pass
-
 
 class OHLCVParseError(MarketDataError):
-    """Raised when parsing OHLCV data fails."""
-
     pass
-
 
 class OHLCVValidationError(MarketDataError):
-    """Raised when OHLCV data fails validation."""
-
     pass
-
 
 class OHLCVQualityError(MarketDataError):
-    """Raised when OHLCV data has quality issues like gaps or duplicates."""
-
     pass
-
 
 class OHLCVCacheError(MarketDataError):
-    """Raised when reading or writing OHLCV cache fails."""
-
     pass
-
 
 class OHLCVStoreError(MarketDataError):
-    """Raised when storing or loading OHLCV data fails."""
-
     pass
-
 
 class OHLCVIncrementalError(MarketDataError):
-    """Raised when incremental updates fail."""
-
     pass
-
 
 class FetchPlanError(MarketDataError):
-    """Raised when building a fetch plan fails."""
-
     pass
-
 
 class UnsupportedIntervalError(MarketDataError):
-    """Raised when an unsupported interval is requested."""
-
     pass
-
 
 class IncompleteCandleError(MarketDataError):
-    """Raised when detecting an incomplete candle."""
-
     pass
-
 
 class DataGapError(MarketDataError):
-    """Raised when missing data ranges are detected."""
-
     pass
+
+# Phase 9 Stream Exceptions
+class StreamError(Binance50Error):
+    pass
+
+class StreamConfigError(StreamError):
+    def __init__(self, message: str, **kwargs: Any) -> None:
+        kwargs.setdefault("error_code", error_codes.STREAM_CONFIG_INVALID)
+        super().__init__(message, **kwargs)
+
+class StreamConnectionDisabledError(StreamError):
+    def __init__(self, message: str = "Real WebSocket connections are disabled in Phase 9", **kwargs: Any) -> None:
+        kwargs.setdefault("error_code", error_codes.STREAM_REAL_CONNECT_DISABLED)
+        super().__init__(message, **kwargs)
+
+class StreamSubscriptionError(StreamError):
+    def __init__(self, message: str, **kwargs: Any) -> None:
+        kwargs.setdefault("error_code", error_codes.STREAM_SUBSCRIPTION_INVALID)
+        super().__init__(message, **kwargs)
+
+class StreamParseError(StreamError):
+    def __init__(self, message: str, **kwargs: Any) -> None:
+        kwargs.setdefault("error_code", error_codes.STREAM_PARSE_FAILED)
+        super().__init__(message, **kwargs)
+
+class StreamValidationError(StreamError):
+    def __init__(self, message: str, **kwargs: Any) -> None:
+        kwargs.setdefault("error_code", error_codes.STREAM_VALIDATION_FAILED)
+        super().__init__(message, **kwargs)
+
+class StreamBufferOverflowError(StreamError):
+    def __init__(self, message: str, **kwargs: Any) -> None:
+        kwargs.setdefault("error_code", error_codes.STREAM_BUFFER_OVERFLOW)
+        super().__init__(message, **kwargs)
+
+class StreamDuplicateEventError(StreamError):
+    def __init__(self, message: str, **kwargs: Any) -> None:
+        kwargs.setdefault("error_code", error_codes.STREAM_DUPLICATE_EVENT)
+        super().__init__(message, **kwargs)
+
+class StreamStaleEventError(StreamError):
+    def __init__(self, message: str, **kwargs: Any) -> None:
+        kwargs.setdefault("error_code", error_codes.STREAM_STALE_EVENT)
+        super().__init__(message, **kwargs)
+
+class StreamOutOfOrderError(StreamError):
+    def __init__(self, message: str, **kwargs: Any) -> None:
+        kwargs.setdefault("error_code", error_codes.STREAM_OUT_OF_ORDER)
+        super().__init__(message, **kwargs)
+
+class StreamReplayError(StreamError):
+    def __init__(self, message: str, **kwargs: Any) -> None:
+        kwargs.setdefault("error_code", error_codes.STREAM_REPLAY_FAILED)
+        super().__init__(message, **kwargs)
+
+class StreamRouteError(StreamError):
+    def __init__(self, message: str, **kwargs: Any) -> None:
+        kwargs.setdefault("error_code", error_codes.STREAM_ROUTE_INVALID)
+        super().__init__(message, **kwargs)
+
+class StreamLifecycleError(StreamError):
+    def __init__(self, message: str, **kwargs: Any) -> None:
+        kwargs.setdefault("error_code", error_codes.STREAM_LIFECYCLE_INVALID)
+        super().__init__(message, **kwargs)
+
+class RealtimeStoreError(Binance50Error):
+    def __init__(self, message: str, **kwargs: Any) -> None:
+        kwargs.setdefault("error_code", error_codes.REALTIME_STORE_FAILED)
+        super().__init__(message, **kwargs)

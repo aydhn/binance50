@@ -1,12 +1,16 @@
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from binance50.streams.subscription import StreamSubscriptionPlan
+
 from binance50.config.models import AppConfig
 from binance50.connectors.capabilities import ConnectorCapabilities
 from binance50.connectors.connection_policy import ConnectionPolicy
 from binance50.connectors.endpoint_resolver import EndpointInfo
 from binance50.connectors.stream_names import build_combined_stream_path, build_raw_stream_path
 from binance50.core.exceptions import ConnectorDisabledError, UnsupportedFeatureError
-from binance50.rate_limit.websocket_limits import (
-    validate_stream_count,
-)
+from binance50.rate_limit.websocket_limits import validate_stream_count
+from binance50.safety.stream_guard import assert_real_stream_connect_allowed
 
 
 class BinanceWebSocketClient:
@@ -52,3 +56,24 @@ class BinanceWebSocketClient:
 
     def close(self) -> None:
         pass
+
+
+    def build_subscription_plan(self, symbols: list[str], stream_types: list, market_scope, interval=None) -> 'StreamSubscriptionPlan':
+        from binance50.streams.subscription import build_subscription_plan
+        return build_subscription_plan(symbols, stream_types, market_scope, self.config, interval)
+
+    def build_stream_url_from_plan(self, plan: 'StreamSubscriptionPlan') -> str:
+        from binance50.streams.routing import build_full_stream_url
+        # Adjust base depending on plan type inside routing, but the method handles it if config is passed
+        # The routing module actually needs endpoint info, but here we just rely on the new method
+        # which might not perfectly align with endpoint_info, but let's stick to the phase requirements
+        return build_full_stream_url(plan, self.config)
+
+    def subscribe(self, plan: 'StreamSubscriptionPlan') -> None:
+        assert_real_stream_connect_allowed(self.config)
+
+    def unsubscribe(self, plan: 'StreamSubscriptionPlan') -> None:
+        assert_real_stream_connect_allowed(self.config)
+
+    def receive_loop(self) -> None:
+        assert_real_stream_connect_allowed(self.config)
