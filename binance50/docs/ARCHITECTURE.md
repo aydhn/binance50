@@ -243,3 +243,24 @@ The `StrategyExplanation` model provides rigorous traceability, documenting exac
 
 ### Why No Execution in Phase 13?
 To adhere to the "Secure by Default" and "Test Driven" principles, execution structures are withheld. Phase 13 merely provides deterministic data classification. Actual trades wait for execution gating and risk engines.
+
+## Signal Scoring Engine (Phase 14)
+
+The **Signal Scoring Engine** translates the output of the Strategy Engine (Phase 13) into unified, explainable, and normalized signal scores. Crucially, the outcome of this phase is *still not an order*.
+
+### Core Components
+- **Normalization:** Converts unconstrained candidate confidences to a 0-100 scale based on dynamic criteria.
+- **Component Scoring:** Each signal's final score is a weighted aggregation of multiple factors:
+    - Base confidence
+    - Plugin-specific base weights
+    - Multi-timeframe and divergence confirmation
+    - Freshness and bar age decay
+    - Data quality
+- **Confluence Engine:** Groups candidates by bar time and symbol. Signals confirmed by multiple distinct plugins receive confluence bonuses, which are strictly capped to prevent unbounded optimism.
+- **Conflict Detection:** Detects opposite-direction candidates (e.g., Bullish and Bearish on the exact same bar). Conflicts do not delete signals; they apply an explicate, capped penalty and flag the signal as conflicted.
+- **Freshness/Expiry:** Uses the original `open_time` against current system time or `expiry_bars` to decay older signals linearly or step-wise, ensuring stale signals don't act as current triggers.
+- **Calibration Placeholder:** Emits offline placeholder metrics for Brier Score, Expected Calibration Error, and Reliability Bins. Genuine live calibration requires actual realized labels (which depend on a backtesting or live simulation engine).
+- **Threshold Classification:** Maps the continuous score into discrete intents (e.g., `research_candidate`, `risk_review_candidate`).
+
+### Why No Execution in Phase 14?
+In adherence to the strict isolation principles of binance50, Phase 14 remains intentionally decoupled from order creation or risk sizing. A high-scoring signal (`>90`) signifies strong confluence and system confidence, but executing that signal depends on subsequent risk engines, capital availability, active position limits, and execution routers. Therefore, ScoredSignalCandidates strictly avoid actionable language (like "buy" or "sell") and execution fields (like `quantity`, `leverage`).

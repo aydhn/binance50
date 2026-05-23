@@ -1,0 +1,526 @@
+
+--- Running Code Quality Checks ---
+
+--- Running: Pytest Unit Tests ---
+/home/jules/.pyenv/versions/3.12.13/bin/python: No module named pytest
+
+✗ Pytest Unit Tests failed with exit code 1.
+
+--- Running: MyPy Type Checker ---
+mypy: error: Cannot read file 'binance50/src': No such file or directory
+Found 1 error in 1 file (errors prevented further checking)
+
+✗ MyPy Type Checker failed with exit code 2.
+
+--- Running: Binance50 Doctor ---
+╭──────────────────╮
+│ Binance50 Doctor │
+╰──────────────────╯
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┓
+┃ Check                         ┃ Status ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━┩
+│ Python Version (3.12) >= 3.11 │ Passed │
+│ Config Loader                 │ Passed │
+│ .env.example Safety           │ Passed │
+│ Environment Matrix            │ Passed │
+│ Logging Setup                 │ Passed │
+│ Exception Handler             │ Passed │
+│ Connector Factory             │ Passed │
+└───────────────────────────────┴────────┘
+
+✓ Binance50 Doctor passed.
+
+--- Running: Secrets Guard Check ---
+╭──────────────────────────────────────────────────────────────────────────────╮
+│ Secrets Check                                                                │
+╰──────────────────────────────────────────────────────────────────────────────╯
+{
+  "status": "safe",
+  "issues": []
+}
+
+✓ Secrets Guard Check passed.
+
+--- Running: API Key Guard Check ---
+╭──────────────────────────────────────────────────────────────────────────────╮
+│ API Key Check                                                                │
+╰──────────────────────────────────────────────────────────────────────────────╯
+{
+  "status": "safe",
+  "issues": [],
+  "credentials_present": false,
+  "credential_pair_complete": false,
+  "permissions": {
+    "read": false,
+    "spot_trade": false,
+    "futures_trade": false,
+    "margin_trade": false,
+    "ip_restricted": false
+  }
+}
+
+✓ API Key Guard Check passed.
+
+--- Running: Dry-run Guard Check ---
+╭──────────────────────────────────────────────────────────────────────────────╮
+│ Dry Run Check                                                                │
+╰──────────────────────────────────────────────────────────────────────────────╯
+{
+  "status": "safe",
+  "issues": [],
+  "dry_run": true,
+  "force_paper_mode": true,
+  "disable_all_orders": true,
+  "effective_trading_mode": "paper",
+  "real_orders_impossible": true,
+  "order_gateway_enabled": false
+}
+
+✓ Dry-run Guard Check passed.
+
+--- Running: Live Unlock Guard Check ---
+╭──────────────────────────────────────────────────────────────────────────────╮
+│ Live Unlock Check                                                            │
+╰──────────────────────────────────────────────────────────────────────────────╯
+{
+  "unlock_phrase_present": false,
+  "risk_ack_present": false,
+  "requires_manual_unlock": true,
+  "requires_mainnet_confirmation": true,
+  "live_blocked_by_unlock_guard": true
+}
+
+Live unlock guard is blocked as expected.
+
+✓ Live Unlock Guard Check passed.
+
+--- Running: Full Safety Report ---
+╭──────────────────────────────────────────────────────────────────────────────╮
+│ Full Safety Report                                                           │
+╰──────────────────────────────────────────────────────────────────────────────╯
+{
+  "safety_status": "safe",
+  "selected_profile": "local_paper_spot",
+  "runtime_mode": "paper",
+  "dry_run": true,
+  "force_paper_mode": true,
+  "disable_all_orders": true,
+  "allow_testnet_orders": false,
+  "allow_demo_orders": false,
+  "allow_live_orders": false,
+  "effective_trading_mode": "paper",
+  "credentials_present": false,
+  "credential_pair_complete": false,
+  "api_permissions": {
+    "read": false,
+    "spot_trade": false,
+    "futures_trade": false,
+    "margin_trade": false,
+    "ip_restricted": false
+  },
+  "ip_restricted": false,
+  "order_path_status": "disabled",
+  "real_order_impossible": true,
+  "live_trading_blocked": true,
+  "blocking_reasons": [
+    "Selected profile is not marked as live"
+  ],
+  "warnings": [],
+  "unlock_status": {
+    "unlock_phrase_present": false,
+    "risk_ack_present": false,
+    "requires_manual_unlock": true,
+    "requires_mainnet_confirmation": true,
+    "live_blocked_by_unlock_guard": true
+  },
+  "secrets_report": {
+    "status": "safe",
+    "issues": []
+  }
+}
+
+✓ Full Safety Report passed.
+
+--- Running: Connector Status ---
+╭──────────────────────────────────────────────────────────────────────────────╮
+│ Connector Status                                                             │
+╰──────────────────────────────────────────────────────────────────────────────╯
+┌───────────────────────┬─────────┐
+│ Selected Adapter      │ binance │
+│ REST Enabled          │ False   │
+│ WebSocket Enabled     │ False   │
+│ Order Gateway Enabled │ False   │
+│ Mock Enabled          │ False   │
+│ Real Network Allowed  │ False   │
+└───────────────────────┴─────────┘
+
+✓ Connector Status passed.
+
+--- Running: Connector Health ---
+╭──────────────────────────────────────────────────────────────────────────────╮
+│ Connector Health                                                             │
+╰──────────────────────────────────────────────────────────────────────────────╯
+{
+  "health": {
+    "enabled": false,
+    "connected": false,
+    "connector_type": "rest",
+    "exchange": "binance",
+    "environment_profile": "local_paper_spot",
+    "account_domain": "spot",
+    "market_scope": "spot",
+    "status": "disabled_safe",
+    "message": "Connector disabled by default; no external network calls
+allowed.",
+    "last_check_utc": "1970-01-01T00:00:00Z",
+    "capabilities": {
+      "exchange": "binance",
+      "account_domain": "spot",
+      "market_scope": "spot",
+      "supports_rest": false,
+      "supports_websocket_market": false,
+      "supports_websocket_user": false,
+      "supports_testnet": false,
+      "supports_mainnet": false,
+      "supports_readonly": false,
+      "supports_market_data": false,
+      "supports_account_data": false,
+      "supports_order_placement": false,
+      "supports_paper_mode": false,
+      "supports_user_data_stream": false,
+      "supports_combined_streams": false,
+      "supports_raw_streams": false,
+      "supports_routed_futures_streams": false,
+      "order_placement_enabled": false,
+      "connection_enabled": false,
+      "websocket_enabled": false,
+      "user_data_stream_enabled": false,
+      "notes": null
+    },
+    "rate_limit_status": "ok",
+    "cooldown_active": false,
+    "circuit_breaker_state": "closed",
+    "clock_drift_status": "ok",
+    "recv_window_ms": 5000,
+    "websocket_limit_status": "ok",
+    "real_network_enabled": false,
+    "real_network_blocked_in_phase6": true,
+    "blocking_reasons": [],
+    "warnings": []
+  },
+  "safety_report": {
+    "connection_enabled": false,
+    "mock_enabled": false,
+    "websocket_enabled": false,
+    "order_gateway_enabled": false,
+    "real_network_allowed": false,
+    "profile_is_paper": true
+  }
+}
+
+✓ Connector Health passed.
+
+--- Running: Connector Endpoints ---
+╭──────────────────────────────────────────────────────────────────────────────╮
+│ Connector Endpoints                                                          │
+╰──────────────────────────────────────────────────────────────────────────────╯
+{
+  "rest_base_url": null,
+  "rest_fallback_urls": [],
+  "websocket_market_base_url": null,
+  "websocket_user_base_url": null,
+  "websocket_api_base_url": null,
+  "futures_public_ws_base_url": null,
+  "futures_market_ws_base_url": null,
+  "futures_private_ws_base_url": null,
+  "is_testnet": false,
+  "is_mainnet": false,
+  "is_paper": false,
+  "source_profile": "local_paper_spot"
+}
+
+✓ Connector Endpoints passed.
+
+--- Running: Connector Capabilities ---
+╭──────────────────────────────────────────────────────────────────────────────╮
+│ Connector Capabilities                                                       │
+╰──────────────────────────────────────────────────────────────────────────────╯
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┓
+┃ Capability                      ┃ Supported ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━┩
+│ exchange                        │ binance   │
+│ account_domain                  │ spot      │
+│ market_scope                    │ spot      │
+│ supports_rest                   │ False     │
+│ supports_websocket_market       │ False     │
+│ supports_websocket_user         │ False     │
+│ supports_testnet                │ False     │
+│ supports_mainnet                │ False     │
+│ supports_readonly               │ False     │
+│ supports_market_data            │ False     │
+│ supports_account_data           │ False     │
+│ supports_order_placement        │ False     │
+│ supports_paper_mode             │ False     │
+│ supports_user_data_stream       │ False     │
+│ supports_combined_streams       │ False     │
+│ supports_raw_streams            │ False     │
+│ supports_routed_futures_streams │ False     │
+│ order_placement_enabled         │ False     │
+│ connection_enabled              │ False     │
+│ websocket_enabled               │ False     │
+│ user_data_stream_enabled        │ False     │
+│ notes                           │ None      │
+└─────────────────────────────────┴───────────┘
+
+✓ Connector Capabilities passed.
+
+--- Running: Connector Stream URL Test ---
+╭──────────────────────────────────────────────────────────────────────────────╮
+│ Stream URL Test                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+Generated URL: /stream?streams=btcusdt@kline_1m
+
+✓ Connector Stream URL Test passed.
+
+--- Running: SDK Check ---
+╭──────────────────────────────────────────────────────────────────────────────╮
+│ SDK Check                                                                    │
+╰──────────────────────────────────────────────────────────────────────────────╯
+{
+  "spot_sdk": false,
+  "usdm_futures_sdk": false,
+  "unofficial_python_binance": false,
+  "warnings": []
+}
+
+✓ SDK Check passed.
+
+--- Running: Signal Config Check ---
+{
+  "enabled": true,
+  "output_dataset_name": "scored_signal_candidates",
+  "cache_enabled": true,
+  "cache_dir": "data/signals",
+  "export_dir": "data/signals/exports",
+  "execution_forbidden": true,
+  "order_creation_forbidden": true,
+  "paper_trade_forbidden": true,
+  "backtest_forbidden": true,
+  "live_trade_forbidden": true,
+  "risk_engine_required_before_execution": true,
+  "require_explanations": true,
+  "require_score_breakdown": true,
+  "require_candidate_intent_no_order": true,
+  "reject_order_like_language": true,
+  "reject_execution_fields": true,
+  "reject_future_columns": true,
+  "reject_target_columns": true,
+  "reject_label_columns": true,
+  "warmup_candidates_allowed": false,
+  "scoring": {
+    "min_score": 0.0,
+    "max_score": 100.0,
+    "default_no_action_score": 0.0,
+    "confidence_normalization": "linear_0_100",
+    "clamp_scores": true,
+    "round_scores_decimals": 4,
+    "score_tiers": {
+      "very_low": [
+        0.0,
+        20.0
+      ],
+      "low": [
+        20.0,
+        40.0
+      ],
+      "medium": [
+        40.0,
+        60.0
+      ],
+      "high": [
+        60.0,
+        80.0
+      ],
+      "very_high": [
+        80.0,
+        100.0
+      ]
+    },
+    "min_score_for_research_candidate": 50.0,
+    "min_score_for_risk_review": 65.0,
+    "min_score_for_future_backtest_candidate": 70.0
+  },
+  "plugin_weights": {
+    "trend_following": 1.0,
+    "mean_reversion": 0.85,
+    "momentum_continuation": 0.9,
+    "volatility_breakout": 0.8,
+    "volume_confirmation": 0.6,
+    "divergence_candidate": 0.75,
+    "mtf_confirmation": 0.7,
+    "pattern_candidate": 0.35,
+    "composite_skeleton": 0.5
+  },
+  "component_weights": {
+    "candidate_confidence": 0.35,
+    "plugin_weighted_score": 0.2,
+    "confluence": 0.2,
+    "confirmation": 0.1,
+    "freshness": 0.05,
+    "data_quality": 0.1,
+    "conflict_penalty": -0.2
+  },
+  "confluence": {
+    "enabled": true,
+    "same_direction_bonus_per_plugin": 5.0,
+    "max_same_direction_bonus": 20.0,
+    "require_distinct_plugin_types": true,
+    "plugin_type_diversity_bonus": 5.0,
+    "trend_volume_confirmation_bonus": 5.0,
+    "mtf_confirmation_bonus": 5.0,
+    "divergence_confirmation_bonus": 3.0,
+    "pattern_confirmation_bonus": 1.0,
+    "max_confluence_score": 100.0,
+    "min_plugins_for_confluence": 2
+  },
+  "conflicts": {
+    "enabled": true,
+    "detect_opposite_direction_same_bar": true,
+    "detect_same_plugin_opposite_direction": true,
+    "bearish_bullish_conflict_penalty": 20.0,
+    "same_plugin_conflict_penalty": 30.0,
+    "max_conflict_penalty": 50.0,
+    "keep_conflicted_candidates": true,
+    "mark_conflicted_candidates": true
+  },
+  "freshness": {
+    "enabled": true,
+    "default_expiry_bars": 3,
+    "max_expiry_bars": 50,
+    "score_decay_mode": "linear",
+    "expired_score_multiplier": 0.0,
+    "stale_score_multiplier": 0.5,
+    "current_bar_multiplier": 1.0
+  },
+  "calibration": {
+    "enabled": true,
+    "mode": "placeholder_metrics_only",
+    "require_backtest_before_live_calibration": true,
+    "brier_score_supported": true,
+    "reliability_bins": 10,
+    "expected_calibration_error_supported": true,
+    "calibration_training_deferred": true
+  },
+  "thresholds": {
+    "enabled": true,
+    "no_action_below": 40.0,
+    "research_candidate_min": 50.0,
+    "risk_review_min": 65.0,
+    "future_backtest_candidate_min": 70.0,
+    "execution_threshold_deferred": true
+  },
+  "quality": {
+    "reject_empty_scored_set": false,
+    "warn_empty_scored_set": true,
+    "reject_score_out_of_range": true,
+    "reject_missing_breakdown": true,
+    "reject_missing_explanation": true,
+    "reject_order_language": true,
+    "reject_execution_intent": true,
+    "warn_high_conflict_ratio": true,
+    "max_conflict_ratio": 0.5,
+    "warn_single_plugin_high_score": true,
+    "max_single_plugin_score_without_confluence": 70.0
+  }
+}
+execution_forbidden: True
+execution_threshold_deferred: True
+
+✓ Signal Config Check passed.
+
+--- Running: Signal Thresholds Check ---
+{
+  "enabled": true,
+  "no_action_below": 40.0,
+  "research_candidate_min": 50.0,
+  "risk_review_min": 65.0,
+  "future_backtest_candidate_min": 70.0,
+  "execution_threshold_deferred": true,
+  "warning": "Execution thresholds are disabled in Phase 14. Signals are candidates only."
+}
+
+✓ Signal Thresholds Check passed.
+
+--- Running: Signal Weight Report ---
+{
+  "plugin_weights": {
+    "trend_following": 1.0,
+    "mean_reversion": 0.85,
+    "momentum_continuation": 0.9,
+    "volatility_breakout": 0.8,
+    "volume_confirmation": 0.6,
+    "divergence_candidate": 0.75,
+    "mtf_confirmation": 0.7,
+    "pattern_candidate": 0.35,
+    "composite_skeleton": 0.5
+  },
+  "component_weights": {
+    "candidate_confidence": 0.35,
+    "plugin_weighted_score": 0.2,
+    "confluence": 0.2,
+    "confirmation": 0.1,
+    "freshness": 0.05,
+    "data_quality": 0.1,
+    "conflict_penalty": -0.2
+  }
+}
+
+✓ Signal Weight Report passed.
+
+--- Running: Signal Run Fixture Check ---
+Signal scoring pipeline run completed on fixture.
+WARNING: Output generated are candidates only. NO ORDERS GENERATED.
+
+✓ Signal Run Fixture Check passed.
+
+--- Running: Signal Safety Check ---
+{
+  "scoring_safety": {
+    "config_safe": true,
+    "no_execution_threshold": true,
+    "errors": []
+  },
+  "confluence_safety": {
+    "confluence_config_safe": true,
+    "conflict_policy_safe": true,
+    "errors": []
+  }
+}
+
+✓ Signal Safety Check passed.
+
+--- Running: Signal Quality Check ---
+Signal quality checked. All clear.
+
+✓ Signal Quality Check passed.
+
+--- Running: Signal Calibration Report ---
+{
+  "mode": "placeholder_metrics_only",
+  "calibration_training_deferred": true,
+  "brier_score_supported": true,
+  "reliability_bins": 10,
+  "expected_calibration_error_supported": true,
+  "sample_count": 0,
+  "metrics": null,
+  "warnings": [
+    "Calibration training is deferred to Phase 15/16.",
+    "Real calibration requires realized labels from backtests or live trading.",
+    "Placeholder metrics only."
+  ]
+}
+
+✓ Signal Calibration Report passed.
+
+=========================================
+💥 Some checks failed. Please review the output above.

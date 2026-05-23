@@ -170,3 +170,22 @@ python -m binance50.cli strategy-quality-check
 python -m binance50.cli strategy-safety-check
 python -m binance50.cli strategy-health
 ```
+
+## Signal Scoring Engine (Phase 14)
+The Signal Scoring engine normalizes the output of our isolated strategy plugins into comprehensive, reliable `ScoredSignalCandidate` objects.
+
+- **What it does:** It processes directional signal candidates, groups them for confluence (multiple plugins confirming the same intent), detects conflicts, handles staleness/freshness based on bar age, and yields a single mathematically-grounded score bounded between 0 and 100.
+- **Not an order:** A `ScoredSignalCandidate` explicitly forbids actionable order properties (like leverage, quantity, exact entry price) or execution language (like "buy now"). This ensures safety boundaries aren't leaked.
+- **Confluence and Conflict:** The system dynamically rewards diverse plugins agreeing on the same bar, while levying strict penalties against conflicting inputs on identical bars.
+- **Calibration:** Live predictive calibration is considered invalid without realized labels. Actual ML/Calibration relies purely on placeholder frameworks in this phase until a risk engine or backtester can assign outcome labels.
+
+**Commands to run:**
+- `python -m binance50.cli signal-config`
+- `python -m binance50.cli signal-thresholds`
+- `python -m binance50.cli signal-weight-report`
+- `python -m binance50.cli signal-run-fixture --symbol BTCUSDT --scope spot --interval 1m`
+- `python -m binance50.cli signal-confluence-report`
+- `python -m binance50.cli signal-conflict-report`
+- `python -m binance50.cli signal-calibration-report`
+- `python -m binance50.cli signal-safety-check`
+- `python -m binance50.cli signal-health`
