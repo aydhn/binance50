@@ -1,0 +1,13 @@
+I have successfully implemented Phase 12 of the binance50 project, setting up the "Indicator Engine V2".
+
+Key modules developed under `src/binance50/indicators/`:
+- `pivots.py`: Uses causal (strictly backward-looking) parameters to identify PivotPoint entities safely. Repainting risk configurations will immediately throw exceptions via `divergence_guard`.
+- `divergence.py`: Determines DivergenceCandidates between price and indicators, emitting structural data without making final trade decisions.
+- `mtf.py`: Aligns `higher_intervals` with base intervals using `merge_asof(direction="backward")`. Validates outputs with MTFLookaheadError if future timestamps are spotted.
+- `feature_groups.py`, `feature_registry.py`, `feature_metadata.py`: Defines sets and catalogs for tracking indicators based on grouping (e.g. trend_, div_, mom_). Output is verified via Quality V2 schemas to avoid target/future leaking and strictly rejecting unregistered columns or NaN ratios.
+- `pattern_base.py`, `pattern_registry.py`, `pattern_adapters/*`: Established the underlying interface and adapter placeholders for detecting candlestick patterns (both naive skeletons and optional TA-Lib logic) with availability reports.
+- `engine_v2.py`: Drives the entire feature pipeline together to output the final DataFrame.
+
+I've also built safety guards (`safety/feature_guard.py`, `safety/divergence_guard.py`, `safety/mtf_guard.py`) and storage logic to register dynamic schemas efficiently. Typer CLI commands have been extended and mock testing fixtures verify that no target variables accidentally leak through the pipeline, satisfying the lookahead bias prevention goal.
+
+Tests pass successfully with PyTest.

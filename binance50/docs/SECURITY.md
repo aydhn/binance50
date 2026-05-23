@@ -162,3 +162,10 @@ A corrupt market data series (e.g. overlapping records or chronological gaps) ru
 - **Optional Dependency Security**: Third-party indicator libraries (TA-Lib, pandas-ta) are loaded securely and their absence gracefully managed rather than crashing the runtime.
 - **Indicator Output != Trade Signal**: Indicator values are strictly mathematical features and are structurally prohibited from issuing live execution commands.
 - **Indicator Cache Path Security**: Storage mechanisms apply path sanitization to prevent traversal attacks when defining or loading cached metrics.
+
+## Indicator V2 Feature Security
+- **Divergence repainting risk**: Blocked via strict configuration. Centered rolling windows are prohibited.
+- **Causal pivot principle**: Pivots only observe past data to confirm themselves.
+- **MTF future leakage risk**: Eliminated by ensuring `higher_close_time <= base_open_time`.
+- **Target/Future column ban**: Prevents "next_close" or "future_return" columns from polluting the feature registry.
+- **Pattern Candidates != Signals**: Skeletons deliberately output strengths/confidences rather than execute paths to ensure separation of concern.

@@ -521,3 +521,54 @@ class WarmupError(IndicatorError):
     def __init__(self, message: str, **kwargs: Any) -> None:
         kwargs.setdefault("error_code", error_codes.WARMUP_FAILED)
         super().__init__(message, **kwargs)
+
+class IndicatorV2Error(Binance50Error):
+    """Base exception for Indicator V2 related errors."""
+    pass
+
+class PivotDetectionError(IndicatorV2Error):
+    """Raised when pivot detection fails."""
+    pass
+
+class DivergenceDetectionError(IndicatorV2Error):
+    """Raised when divergence detection fails."""
+    pass
+
+class MTFAlignmentError(IndicatorV2Error):
+    """Raised when MTF alignment fails."""
+    pass
+
+class MTFLookaheadError(MTFAlignmentError):
+    """Raised when MTF alignment attempts to use future data."""
+    pass
+
+class FeatureGroupError(IndicatorV2Error):
+    """Raised when feature grouping fails or is invalid."""
+    pass
+
+class FeatureMetadataError(IndicatorV2Error):
+    """Raised when feature metadata is invalid."""
+    pass
+
+class FeatureRegistryError(IndicatorV2Error):
+    """Raised when operations on the feature registry fail."""
+    pass
+
+class FeatureQualityError(IndicatorV2Error):
+    """Raised when feature quality checks fail."""
+    pass
+
+class PatternEngineError(IndicatorV2Error):
+    """Raised when pattern engine operations fail."""
+    pass
+
+class PatternAdapterError(PatternEngineError):
+    """Raised when pattern adapters fail or are missing."""
+    pass
+
+class RepaintingRiskError(IndicatorV2Error):
+    """Raised when a repainting risk is detected in indicator parameters."""
+    pass
+
+class RuntimeInvariantFailedError(Binance50Error):
+    pass

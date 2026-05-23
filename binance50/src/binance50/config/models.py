@@ -1,7 +1,7 @@
 import re
 from typing import Literal
 
-from pydantic import BaseModel, Field, SecretStr, model_validator
+from pydantic import BaseModel, Field, SecretStr, model_validator, field_validator
 
 from binance50.core.enums import (
     AccountDomain,
@@ -777,6 +777,142 @@ class IndicatorsConfig(BaseModel):
     quality: IndicatorQualityConfig = Field(default_factory=IndicatorQualityConfig)
 
 
+
+class PivotConfig(BaseModel):
+    enabled: bool = True
+    method: Literal["causal_window"] = "causal_window"
+    left_window: int = Field(default=3, ge=1)
+    min_prominence_pct: float = Field(default=0.10, ge=0.0)
+    min_distance_bars: int = Field(default=3, ge=1)
+    use_centered_window: bool = False
+    allow_repainting: bool = False
+    confirm_after_bars: int = 0
+    max_pivots_per_series: int = 5000
+
+    @field_validator("use_centered_window")
+    def validate_use_centered_window(cls, v: bool) -> bool:
+        if v:
+            raise ValueError("use_centered_window must be False in Phase 12")
+        return v
+
+    @field_validator("allow_repainting")
+    def validate_allow_repainting(cls, v: bool) -> bool:
+        if v:
+            raise ValueError("allow_repainting must be False in Phase 12")
+        return v
+
+    @field_validator("confirm_after_bars")
+    def validate_confirm_after_bars(cls, v: int) -> int:
+        if v > 0:
+            raise ValueError("confirm_after_bars must be 0 in Phase 12 (no repainting allowed)")
+        return v
+
+
+class DivergenceConfig(BaseModel):
+    enabled: bool = True
+    lookback_bars: int = Field(default=100, ge=1)
+    max_pivot_pair_distance: int = Field(default=50, ge=1)
+    min_pivot_distance: int = Field(default=3, ge=1)
+    price_source: str = "close"
+    indicator_sources: list[str] = Field(default_factory=lambda: ['mom_rsi_14'], min_length=1)
+    detect_regular: bool = True
+    detect_hidden: bool = True
+    require_price_pivot: bool = True
+    require_indicator_pivot: bool = True
+    min_indicator_delta_pct: float = Field(default=0.05, ge=0.0)
+    min_price_delta_pct: float = Field(default=0.05, ge=0.0)
+    score_enabled: bool = True
+    max_divergence_score: float = 100.0
+    output_flags: bool = True
+    output_scores: bool = True
+
+    @model_validator(mode="after")
+    def validate_distances(self) -> "DivergenceConfig":
+        if self.max_pivot_pair_distance > self.lookback_bars:
+            raise ValueError("max_pivot_pair_distance cannot exceed lookback_bars")
+        if self.min_pivot_distance > self.max_pivot_pair_distance:
+            raise ValueError("min_pivot_distance cannot exceed max_pivot_pair_distance")
+        return self
+
+
+class MTFConfig(BaseModel):
+    enabled: bool = True
+    base_intervals: list[str] = Field(default_factory=list)
+    higher_intervals: list[str] = Field(default_factory=list)
+    alignment_method: Literal["asof_backward"] = "asof_backward"
+    require_higher_tf_closed: bool = True
+    max_alignment_tolerance_bars: int = Field(default=1, ge=0)
+    add_higher_tf_prefix: bool = True
+    prefix_template: str = "mtf_{interval}_"
+    disallow_forward_alignment: bool = True
+    disallow_nearest_alignment: bool = True
+    drop_unmatched_rows: bool = False
+    mark_unmatched_rows: bool = True
+
+    @field_validator("disallow_forward_alignment")
+    def validate_disallow_forward(cls, v: bool) -> bool:
+        if not v:
+            raise ValueError("disallow_forward_alignment must be True")
+        return v
+
+    @field_validator("disallow_nearest_alignment")
+    def validate_disallow_nearest(cls, v: bool) -> bool:
+        if not v:
+            raise ValueError("disallow_nearest_alignment must be True")
+        return v
+
+
+class FeatureGroupConfig(BaseModel):
+    enabled: bool = True
+    groups: dict[str, dict] = Field(default_factory=dict)
+    require_group_metadata: bool = True
+    allow_ungrouped_features: bool = False
+
+
+class PatternConfig(BaseModel):
+    enabled: bool = True
+    native_pattern_skeleton_enabled: bool = True
+    talib_pattern_adapter_enabled: bool = True
+    fail_if_talib_missing: bool = False
+    output_prefix: str = "pat_"
+    supported_initial_patterns: list[str] = Field(default_factory=list)
+    full_pattern_engine_deferred: bool = True
+
+
+class IndicatorV2QualityConfig(BaseModel):
+    reject_all_nan_feature: bool = True
+    reject_inf: bool = True
+    warn_high_nan_ratio: bool = True
+    max_nan_ratio: float = Field(default=0.50, ge=0.0, le=1.0)
+    reject_duplicate_feature_names: bool = True
+    reject_unregistered_feature: bool = True
+    reject_lookahead_columns: bool = True
+    detect_feature_correlation: bool = False
+    correlation_warning_threshold: float = Field(default=0.98, ge=0.0, le=1.0)
+
+
+class IndicatorV2Config(BaseModel):
+    enabled: bool = True
+    output_dataset_name: str = "indicator_features_v2"
+    cache_enabled: bool = True
+    cache_dir: str = "data/indicators_v2"
+    export_dir: str = "data/indicators_v2/exports"
+    prevent_lookahead_bias: bool = True
+    require_closed_candles: bool = True
+    reject_future_columns: bool = True
+    max_feature_columns: int = Field(default=1000, ge=10, le=5000)
+    max_feature_groups: int = Field(default=100, ge=1)
+    max_mtf_sources_per_run: int = Field(default=5, ge=1)
+
+    pivots: PivotConfig = Field(default_factory=PivotConfig)
+    divergence: DivergenceConfig = Field(default_factory=DivergenceConfig)
+    mtf: MTFConfig = Field(default_factory=MTFConfig)
+    feature_groups: FeatureGroupConfig = Field(default_factory=FeatureGroupConfig)
+    patterns: PatternConfig = Field(default_factory=PatternConfig)
+    quality: IndicatorV2QualityConfig = Field(default_factory=IndicatorV2QualityConfig)
+
+
+
 class AppConfig(BaseModel):
     project: ProjectConfig = ProjectConfig()
     runtime: RuntimeConfig = RuntimeConfig()
@@ -792,6 +928,7 @@ class AppConfig(BaseModel):
     websocket_limits: WebSocketLimitsConfig = WebSocketLimitsConfig()
     environment_matrix: EnvironmentMatrixConfig = EnvironmentMatrixConfig()
     universe: UniverseConfig = UniverseConfig()
+    indicator_v2: IndicatorV2Config = Field(default_factory=IndicatorV2Config)
     market_data: MarketDataConfig = MarketDataConfig()
     streams: StreamsConfig = StreamsConfig()
     storage: StorageConfig = StorageConfig()

@@ -1,6 +1,18 @@
 from typing import Any
 
 from binance50.core.exceptions import (
+    IndicatorV2Error,
+    PivotDetectionError,
+    DivergenceDetectionError,
+    MTFAlignmentError,
+    MTFLookaheadError,
+    FeatureGroupError,
+    FeatureMetadataError,
+    FeatureRegistryError,
+    FeatureQualityError,
+    PatternEngineError,
+    PatternAdapterError,
+    RepaintingRiskError,
     Binance50Error,
     BinanceApiError,
     BinanceAuthenticationError,
@@ -109,6 +121,18 @@ def classify_stream_error(msg: str) -> type[Binance50Error]:
 def classify_storage_error(error: Exception) -> type[Binance50Error]:
     """Classify storage related errors."""
     from binance50.core.exceptions import (
+    IndicatorV2Error,
+    PivotDetectionError,
+    DivergenceDetectionError,
+    MTFAlignmentError,
+    MTFLookaheadError,
+    FeatureGroupError,
+    FeatureMetadataError,
+    FeatureRegistryError,
+    FeatureQualityError,
+    PatternEngineError,
+    PatternAdapterError,
+    RepaintingRiskError,
         DestructiveActionBlockedError,
         ParquetReadError,
         ParquetWriteError,
@@ -142,6 +166,18 @@ def classify_storage_error(error: Exception) -> type[Binance50Error]:
 
 def classify_indicator_error(error: Exception) -> type[Binance50Error]:
     from binance50.core.exceptions import (
+    IndicatorV2Error,
+    PivotDetectionError,
+    DivergenceDetectionError,
+    MTFAlignmentError,
+    MTFLookaheadError,
+    FeatureGroupError,
+    FeatureMetadataError,
+    FeatureRegistryError,
+    FeatureQualityError,
+    PatternEngineError,
+    PatternAdapterError,
+    RepaintingRiskError,
         IndicatorBackendError,
         IndicatorComputationError,
         IndicatorError,
@@ -170,3 +206,33 @@ def classify_indicator_error(error: Exception) -> type[Binance50Error]:
         return error.__class__
 
     return IndicatorComputationError
+
+def classify_indicator_v2_error(exception: Exception) -> str:
+    """Classify indicator v2 exceptions to their error codes."""
+    import binance50.core.error_codes as error_codes
+
+    if isinstance(exception, RepaintingRiskError):
+        return error_codes.REPAINTING_RISK_DETECTED
+    elif isinstance(exception, MTFLookaheadError):
+        return error_codes.MTF_LOOKAHEAD_DETECTED
+    elif isinstance(exception, MTFAlignmentError):
+        return error_codes.MTF_ALIGNMENT_FAILED
+    elif isinstance(exception, DivergenceDetectionError):
+        return error_codes.DIVERGENCE_DETECTION_FAILED
+    elif isinstance(exception, PivotDetectionError):
+        return error_codes.PIVOT_DETECTION_FAILED
+    elif isinstance(exception, FeatureGroupError):
+        return error_codes.FEATURE_GROUP_INVALID
+    elif isinstance(exception, FeatureMetadataError):
+        return error_codes.FEATURE_METADATA_INVALID
+    elif isinstance(exception, FeatureRegistryError):
+        return error_codes.FEATURE_REGISTRY_FAILED
+    elif isinstance(exception, FeatureQualityError):
+        return error_codes.FEATURE_QUALITY_FAILED
+    elif isinstance(exception, PatternAdapterError):
+        return error_codes.PATTERN_ADAPTER_FAILED
+    elif isinstance(exception, PatternEngineError):
+        return error_codes.PATTERN_ENGINE_FAILED
+    elif isinstance(exception, IndicatorV2Error):
+        return error_codes.INDICATOR_V2_FAILED
+    return "UNKNOWN_ERROR"

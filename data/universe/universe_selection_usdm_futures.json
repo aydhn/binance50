@@ -1,0 +1,683 @@
+{
+  "selected_symbols": [
+    "BTCUSDT",
+    "ETHUSDT",
+    "BNBUSDT"
+  ],
+  "rejected_symbols": [
+    "HALTUSDT"
+  ],
+  "candidates": {
+    "BTCUSDT": {
+      "symbol": "BTCUSDT",
+      "market_scope": "usdm_futures",
+      "metadata": {
+        "symbol": "BTCUSDT",
+        "base_asset": "BTC",
+        "quote_asset": "USDT",
+        "status": "trading",
+        "market_scope": "usdm_futures",
+        "permissions": [],
+        "contract_type": null,
+        "margin_asset": "",
+        "filters": {
+          "lot_size": {
+            "filter_type": "lot_size",
+            "raw": {
+              "filterType": "LOT_SIZE",
+              "minQty": "0.00001",
+              "maxQty": "9000",
+              "stepSize": "0.00001"
+            },
+            "min_price": null,
+            "max_price": null,
+            "tick_size": null,
+            "min_qty": "0.00001",
+            "max_qty": "9000",
+            "step_size": "0.00001",
+            "min_notional": null,
+            "max_notional": null,
+            "apply_to_market": null,
+            "avg_price_mins": null
+          },
+          "price_filter": {
+            "filter_type": "price_filter",
+            "raw": {
+              "filterType": "PRICE_FILTER",
+              "minPrice": "0.01",
+              "maxPrice": "1000000",
+              "tickSize": "0.01"
+            },
+            "min_price": "0.01",
+            "max_price": "1000000",
+            "tick_size": "0.01",
+            "min_qty": null,
+            "max_qty": null,
+            "step_size": null,
+            "min_notional": null,
+            "max_notional": null,
+            "apply_to_market": null,
+            "avg_price_mins": null
+          },
+          "min_notional": {
+            "filter_type": "min_notional",
+            "raw": {
+              "filterType": "MIN_NOTIONAL",
+              "minNotional": "10.0"
+            },
+            "min_price": null,
+            "max_price": null,
+            "tick_size": null,
+            "min_qty": null,
+            "max_qty": null,
+            "step_size": null,
+            "min_notional": "10.0",
+            "max_notional": null,
+            "apply_to_market": null,
+            "avg_price_mins": null
+          }
+        },
+        "raw": {
+          "symbol": "BTCUSDT",
+          "status": "TRADING",
+          "baseAsset": "BTC",
+          "quoteAsset": "USDT",
+          "filters": [
+            {
+              "filterType": "LOT_SIZE",
+              "minQty": "0.00001",
+              "maxQty": "9000",
+              "stepSize": "0.00001"
+            },
+            {
+              "filterType": "PRICE_FILTER",
+              "minPrice": "0.01",
+              "maxPrice": "1000000",
+              "tickSize": "0.01"
+            },
+            {
+              "filterType": "MIN_NOTIONAL",
+              "minNotional": "10.0"
+            }
+          ]
+        }
+      },
+      "ticker_24h": {
+        "symbol": "BTCUSDT",
+        "price_change_percent": "0",
+        "last_price": "0",
+        "volume": "0",
+        "quote_volume": "500000000",
+        "trade_count": 50000,
+        "raw": {
+          "symbol": "BTCUSDT",
+          "quoteVolume": "500000000",
+          "count": 50000
+        }
+      },
+      "book_ticker": {
+        "symbol": "BTCUSDT",
+        "bid_price": "50000",
+        "bid_qty": "1",
+        "ask_price": "50001",
+        "ask_qty": "1",
+        "raw": {
+          "symbol": "BTCUSDT",
+          "bidPrice": "50000",
+          "bidQty": "1",
+          "askPrice": "50001",
+          "askQty": "1"
+        }
+      },
+      "spread": {
+        "symbol": "BTCUSDT",
+        "bid": "50000",
+        "ask": "50001",
+        "mid": "50000.5",
+        "spread_abs": "1",
+        "spread_bps": "0.1999980000199998000019999800",
+        "valid": true
+      },
+      "liquidity": {
+        "symbol": "BTCUSDT",
+        "quote_volume_24h": "500000000",
+        "base_volume_24h": "0",
+        "trade_count_24h": 50000,
+        "bid_notional": "50000",
+        "ask_notional": "50001",
+        "depth_notional": "50000",
+        "valid": true
+      },
+      "rule_quality": {
+        "symbol": "BTCUSDT",
+        "has_price_filter": true,
+        "has_lot_size": true,
+        "has_min_notional": true,
+        "min_notional": "10.0",
+        "tick_size": "0.01",
+        "step_size": "0.00001",
+        "price_tick_pct": null,
+        "qty_step_pct": null,
+        "quality_score": 100.0,
+        "warnings": []
+      },
+      "score": 94.250007499925,
+      "decision_status": "accepted",
+      "rejection_reasons": [],
+      "warnings": []
+    },
+    "ETHUSDT": {
+      "symbol": "ETHUSDT",
+      "market_scope": "usdm_futures",
+      "metadata": {
+        "symbol": "ETHUSDT",
+        "base_asset": "ETH",
+        "quote_asset": "USDT",
+        "status": "trading",
+        "market_scope": "usdm_futures",
+        "permissions": [],
+        "contract_type": null,
+        "margin_asset": "",
+        "filters": {
+          "lot_size": {
+            "filter_type": "lot_size",
+            "raw": {
+              "filterType": "LOT_SIZE",
+              "minQty": "0.0001",
+              "maxQty": "9000",
+              "stepSize": "0.0001"
+            },
+            "min_price": null,
+            "max_price": null,
+            "tick_size": null,
+            "min_qty": "0.0001",
+            "max_qty": "9000",
+            "step_size": "0.0001",
+            "min_notional": null,
+            "max_notional": null,
+            "apply_to_market": null,
+            "avg_price_mins": null
+          },
+          "price_filter": {
+            "filter_type": "price_filter",
+            "raw": {
+              "filterType": "PRICE_FILTER",
+              "minPrice": "0.01",
+              "maxPrice": "100000",
+              "tickSize": "0.01"
+            },
+            "min_price": "0.01",
+            "max_price": "100000",
+            "tick_size": "0.01",
+            "min_qty": null,
+            "max_qty": null,
+            "step_size": null,
+            "min_notional": null,
+            "max_notional": null,
+            "apply_to_market": null,
+            "avg_price_mins": null
+          },
+          "min_notional": {
+            "filter_type": "min_notional",
+            "raw": {
+              "filterType": "MIN_NOTIONAL",
+              "minNotional": "10.0"
+            },
+            "min_price": null,
+            "max_price": null,
+            "tick_size": null,
+            "min_qty": null,
+            "max_qty": null,
+            "step_size": null,
+            "min_notional": "10.0",
+            "max_notional": null,
+            "apply_to_market": null,
+            "avg_price_mins": null
+          }
+        },
+        "raw": {
+          "symbol": "ETHUSDT",
+          "status": "TRADING",
+          "baseAsset": "ETH",
+          "quoteAsset": "USDT",
+          "filters": [
+            {
+              "filterType": "LOT_SIZE",
+              "minQty": "0.0001",
+              "maxQty": "9000",
+              "stepSize": "0.0001"
+            },
+            {
+              "filterType": "PRICE_FILTER",
+              "minPrice": "0.01",
+              "maxPrice": "100000",
+              "tickSize": "0.01"
+            },
+            {
+              "filterType": "MIN_NOTIONAL",
+              "minNotional": "10.0"
+            }
+          ]
+        }
+      },
+      "ticker_24h": {
+        "symbol": "ETHUSDT",
+        "price_change_percent": "0",
+        "last_price": "0",
+        "volume": "0",
+        "quote_volume": "500000000",
+        "trade_count": 50000,
+        "raw": {
+          "symbol": "ETHUSDT",
+          "quoteVolume": "500000000",
+          "count": 50000
+        }
+      },
+      "book_ticker": {
+        "symbol": "ETHUSDT",
+        "bid_price": "3000",
+        "bid_qty": "10",
+        "ask_price": "3000.5",
+        "ask_qty": "10",
+        "raw": {
+          "symbol": "ETHUSDT",
+          "bidPrice": "3000",
+          "bidQty": "10",
+          "askPrice": "3000.5",
+          "askQty": "10"
+        }
+      },
+      "spread": {
+        "symbol": "ETHUSDT",
+        "bid": "3000",
+        "ask": "3000.5",
+        "mid": "3000.25",
+        "spread_abs": "0.5",
+        "spread_bps": "1.666527789350887426047829348",
+        "valid": true
+      },
+      "liquidity": {
+        "symbol": "ETHUSDT",
+        "quote_volume_24h": "500000000",
+        "base_volume_24h": "0",
+        "trade_count_24h": 50000,
+        "bid_notional": "30000",
+        "ask_notional": "30005.0",
+        "depth_notional": "30000",
+        "valid": true
+      },
+      "rule_quality": {
+        "symbol": "ETHUSDT",
+        "has_price_filter": true,
+        "has_lot_size": true,
+        "has_min_notional": true,
+        "min_notional": "10.0",
+        "tick_size": "0.01",
+        "step_size": "0.0001",
+        "price_tick_pct": null,
+        "qty_step_pct": null,
+        "quality_score": 100.0,
+        "warnings": []
+      },
+      "score": 88.75052078993417,
+      "decision_status": "accepted",
+      "rejection_reasons": [],
+      "warnings": []
+    },
+    "BNBUSDT": {
+      "symbol": "BNBUSDT",
+      "market_scope": "usdm_futures",
+      "metadata": {
+        "symbol": "BNBUSDT",
+        "base_asset": "BNB",
+        "quote_asset": "USDT",
+        "status": "trading",
+        "market_scope": "usdm_futures",
+        "permissions": [],
+        "contract_type": null,
+        "margin_asset": "",
+        "filters": {
+          "lot_size": {
+            "filter_type": "lot_size",
+            "raw": {
+              "filterType": "LOT_SIZE",
+              "minQty": "0.01",
+              "maxQty": "9000",
+              "stepSize": "0.01"
+            },
+            "min_price": null,
+            "max_price": null,
+            "tick_size": null,
+            "min_qty": "0.01",
+            "max_qty": "9000",
+            "step_size": "0.01",
+            "min_notional": null,
+            "max_notional": null,
+            "apply_to_market": null,
+            "avg_price_mins": null
+          },
+          "price_filter": {
+            "filter_type": "price_filter",
+            "raw": {
+              "filterType": "PRICE_FILTER",
+              "minPrice": "0.01",
+              "maxPrice": "100000",
+              "tickSize": "0.01"
+            },
+            "min_price": "0.01",
+            "max_price": "100000",
+            "tick_size": "0.01",
+            "min_qty": null,
+            "max_qty": null,
+            "step_size": null,
+            "min_notional": null,
+            "max_notional": null,
+            "apply_to_market": null,
+            "avg_price_mins": null
+          },
+          "min_notional": {
+            "filter_type": "min_notional",
+            "raw": {
+              "filterType": "MIN_NOTIONAL",
+              "minNotional": "10.0"
+            },
+            "min_price": null,
+            "max_price": null,
+            "tick_size": null,
+            "min_qty": null,
+            "max_qty": null,
+            "step_size": null,
+            "min_notional": "10.0",
+            "max_notional": null,
+            "apply_to_market": null,
+            "avg_price_mins": null
+          }
+        },
+        "raw": {
+          "symbol": "BNBUSDT",
+          "status": "TRADING",
+          "baseAsset": "BNB",
+          "quoteAsset": "USDT",
+          "filters": [
+            {
+              "filterType": "LOT_SIZE",
+              "minQty": "0.01",
+              "maxQty": "9000",
+              "stepSize": "0.01"
+            },
+            {
+              "filterType": "PRICE_FILTER",
+              "minPrice": "0.01",
+              "maxPrice": "100000",
+              "tickSize": "0.01"
+            },
+            {
+              "filterType": "MIN_NOTIONAL",
+              "minNotional": "10.0"
+            }
+          ]
+        }
+      },
+      "ticker_24h": {
+        "symbol": "BNBUSDT",
+        "price_change_percent": "0",
+        "last_price": "0",
+        "volume": "0",
+        "quote_volume": "500000000",
+        "trade_count": 50000,
+        "raw": {
+          "symbol": "BNBUSDT",
+          "quoteVolume": "500000000",
+          "count": 50000
+        }
+      },
+      "book_ticker": {
+        "symbol": "BNBUSDT",
+        "bid_price": "300",
+        "bid_qty": "10",
+        "ask_price": "300.05",
+        "ask_qty": "10",
+        "raw": {
+          "symbol": "BNBUSDT",
+          "bidPrice": "300",
+          "bidQty": "10",
+          "askPrice": "300.05",
+          "askQty": "10"
+        }
+      },
+      "spread": {
+        "symbol": "BNBUSDT",
+        "bid": "300",
+        "ask": "300.05",
+        "mid": "300.025",
+        "spread_abs": "0.05",
+        "spread_bps": "1.666527789350887426047829348",
+        "valid": true
+      },
+      "liquidity": {
+        "symbol": "BNBUSDT",
+        "quote_volume_24h": "500000000",
+        "base_volume_24h": "0",
+        "trade_count_24h": 50000,
+        "bid_notional": "3000",
+        "ask_notional": "3000.50",
+        "depth_notional": "3000",
+        "valid": true
+      },
+      "rule_quality": {
+        "symbol": "BNBUSDT",
+        "has_price_filter": true,
+        "has_lot_size": true,
+        "has_min_notional": true,
+        "min_notional": "10.0",
+        "tick_size": "0.01",
+        "step_size": "0.01",
+        "price_tick_pct": null,
+        "qty_step_pct": null,
+        "quality_score": 100.0,
+        "warnings": []
+      },
+      "score": 88.75052078993417,
+      "decision_status": "accepted",
+      "rejection_reasons": [],
+      "warnings": []
+    },
+    "HALTUSDT": {
+      "symbol": "HALTUSDT",
+      "market_scope": "usdm_futures",
+      "metadata": {
+        "symbol": "HALTUSDT",
+        "base_asset": "HALT",
+        "quote_asset": "USDT",
+        "status": "halt",
+        "market_scope": "usdm_futures",
+        "permissions": [],
+        "contract_type": null,
+        "margin_asset": "",
+        "filters": {
+          "lot_size": {
+            "filter_type": "lot_size",
+            "raw": {
+              "filterType": "LOT_SIZE",
+              "minQty": "0.01",
+              "maxQty": "9000",
+              "stepSize": "0.01"
+            },
+            "min_price": null,
+            "max_price": null,
+            "tick_size": null,
+            "min_qty": "0.01",
+            "max_qty": "9000",
+            "step_size": "0.01",
+            "min_notional": null,
+            "max_notional": null,
+            "apply_to_market": null,
+            "avg_price_mins": null
+          },
+          "price_filter": {
+            "filter_type": "price_filter",
+            "raw": {
+              "filterType": "PRICE_FILTER",
+              "minPrice": "0.01",
+              "maxPrice": "100000",
+              "tickSize": "0.01"
+            },
+            "min_price": "0.01",
+            "max_price": "100000",
+            "tick_size": "0.01",
+            "min_qty": null,
+            "max_qty": null,
+            "step_size": null,
+            "min_notional": null,
+            "max_notional": null,
+            "apply_to_market": null,
+            "avg_price_mins": null
+          },
+          "min_notional": {
+            "filter_type": "min_notional",
+            "raw": {
+              "filterType": "MIN_NOTIONAL",
+              "minNotional": "10.0"
+            },
+            "min_price": null,
+            "max_price": null,
+            "tick_size": null,
+            "min_qty": null,
+            "max_qty": null,
+            "step_size": null,
+            "min_notional": "10.0",
+            "max_notional": null,
+            "apply_to_market": null,
+            "avg_price_mins": null
+          }
+        },
+        "raw": {
+          "symbol": "HALTUSDT",
+          "status": "HALT",
+          "baseAsset": "HALT",
+          "quoteAsset": "USDT",
+          "filters": [
+            {
+              "filterType": "LOT_SIZE",
+              "minQty": "0.01",
+              "maxQty": "9000",
+              "stepSize": "0.01"
+            },
+            {
+              "filterType": "PRICE_FILTER",
+              "minPrice": "0.01",
+              "maxPrice": "100000",
+              "tickSize": "0.01"
+            },
+            {
+              "filterType": "MIN_NOTIONAL",
+              "minNotional": "10.0"
+            }
+          ]
+        }
+      },
+      "ticker_24h": {
+        "symbol": "HALTUSDT",
+        "price_change_percent": "0",
+        "last_price": "0",
+        "volume": "0",
+        "quote_volume": "10",
+        "trade_count": 1,
+        "raw": {
+          "symbol": "HALTUSDT",
+          "quoteVolume": "10",
+          "count": 1
+        }
+      },
+      "book_ticker": {
+        "symbol": "HALTUSDT",
+        "bid_price": "300",
+        "bid_qty": "10",
+        "ask_price": "300.1",
+        "ask_qty": "10",
+        "raw": {
+          "symbol": "HALTUSDT",
+          "bidPrice": "300",
+          "bidQty": "10",
+          "askPrice": "300.1",
+          "askQty": "10"
+        }
+      },
+      "spread": {
+        "symbol": "HALTUSDT",
+        "bid": "300",
+        "ask": "300.1",
+        "mid": "300.05",
+        "spread_abs": "0.1",
+        "spread_bps": "3.332777870354940843192801200",
+        "valid": true
+      },
+      "liquidity": {
+        "symbol": "HALTUSDT",
+        "quote_volume_24h": "10",
+        "base_volume_24h": "0",
+        "trade_count_24h": 1,
+        "bid_notional": "3000",
+        "ask_notional": "3001.0",
+        "depth_notional": "3000",
+        "valid": true
+      },
+      "rule_quality": {
+        "symbol": "HALTUSDT",
+        "has_price_filter": true,
+        "has_lot_size": true,
+        "has_min_notional": true,
+        "min_notional": "10.0",
+        "tick_size": "0.01",
+        "step_size": "0.01",
+        "price_tick_pct": null,
+        "qty_step_pct": null,
+        "quality_score": 100.0,
+        "warnings": []
+      },
+      "score": 0.0,
+      "decision_status": "rejected",
+      "rejection_reasons": [
+        "not_trading"
+      ],
+      "warnings": []
+    }
+  },
+  "generated_at_utc": "2026-05-23T01:42:30.670592Z",
+  "config_summary": {
+    "max_initial": 10,
+    "min_required": 3,
+    "quote_assets": [
+      "USDT"
+    ]
+  },
+  "source_snapshot_id": "usdm_futures_fixture_snapshot",
+  "report": {
+    "summary": {
+      "selected_count": 3,
+      "rejected_count": 1,
+      "total_candidates": 4,
+      "top_selected": [
+        "BTCUSDT",
+        "ETHUSDT",
+        "BNBUSDT"
+      ],
+      "generated_at_utc": "2026-05-23T01:42:30.670592+00:00",
+      "source_snapshot": "usdm_futures_fixture_snapshot"
+    },
+    "rejection_reasons": {
+      "not_trading": 1
+    },
+    "metrics": {
+      "avg_spread_bps": 1.1776845262405915,
+      "avg_score": 90.58368302659778,
+      "min_symbols_met": true
+    },
+    "config_snapshot": {
+      "max_initial": 10,
+      "min_required": 3,
+      "min_quote_vol": 10000000.0,
+      "max_spread_bps": 8.0
+    }
+  }
+}

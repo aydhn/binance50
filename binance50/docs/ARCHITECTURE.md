@@ -202,3 +202,14 @@ To prevent accidental test script executions consuming API rate limits and becau
 - **Lookahead-bias Prevention**: Strict barriers rejecting columns with future labels to ensure indicator execution relies strictly on past and present data.
 - **Warehouse Integration**: Generated indicator outputs alongside their configurations and metadata can be written directly to the localized data warehouse.
 - **Why no strategy signals in Phase 11?**: The goal of this phase is isolating the deterministic computation of metrics. Evaluation and trading signals belong in the forthcoming strategy and scoring engines to maintain the single-responsibility principle.
+
+## Phase 12: Indicator Engine V2
+
+The Indicator Engine V2 builds upon the V1 base and adds higher-level abstractions like Divergence Candidate generation, Multi-timeframe (MTF) alignment, Pattern Skeletons, and Feature Groupings.
+
+- **Causal Pivot Detection**: Pivots are determined exclusively using backward-looking windows. There is no future leakage.
+- **Divergence Candidate Model**: Emits signals based on price vs indicator movements. These are *candidates*, not direct trade signals.
+- **Multi-timeframe Alignment**: Implements strictly backward (`asof`) alignment. Forward/nearest matching is disabled.
+- **Feature Grouping & Metadata Registry**: Maintains provenance and statistics for all generated columns.
+- **Lookahead-safe feature pipeline**: Preempts the possibility of target/label leakage in the features layer.
+- **No Trade Signals in Phase 12**: Signals, backtesting, and ML are explicitly excluded from this phase to focus on stable structural feature engineering.

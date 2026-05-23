@@ -10,6 +10,7 @@ from binance50.core.exceptions import StorageSchemaError
 class DatasetKind(StrEnum):
     OHLCV = "ohlcv"
     INDICATORS = "indicators"
+    INDICATOR_FEATURES_V2 = "indicator_features_v2"
     UNIVERSE_SELECTION = "universe_selection"
     STREAM_EVENTS = "stream_events"
     QUALITY_REPORTS = "quality_reports"
@@ -34,6 +35,9 @@ class DatasetSchema:
     partition_columns: list[str] = field(default_factory=list)
     timestamp_column: str | None = None
     created_at_utc: str = ""
+    dynamic_columns_allowed: bool = False
+    dynamic_column_prefixes: list[str] = field(default_factory=list)
+    disallowed_column_names: list[str] = field(default_factory=list)
 
 def get_ohlcv_schema() -> DatasetSchema:
     return DatasetSchema(
@@ -146,6 +150,19 @@ def detect_schema_drift(df: pd.DataFrame, schema: DatasetSchema) -> dict[str, An
     missing = list(expected_cols - actual_cols)
     extra = list(actual_cols - expected_cols)
 
+    if schema.dynamic_columns_allowed:
+        allowed_extra = []
+        for col in extra:
+            if any(col.startswith(p) for p in schema.dynamic_column_prefixes):
+                allowed_extra.append(col)
+
+        # Check disallowed
+        for col in extra:
+            if col in schema.disallowed_column_names:
+                raise StorageSchemaError(f"Disallowed column name detected: {col}")
+
+        extra = [c for c in extra if c not in allowed_extra]
+
     # Check for secret-like column names
     secret_words = ["api_key", "secret", "token", "signature", "password"]
     for col in actual_cols:
@@ -196,3 +213,25 @@ def schema_to_pyarrow(schema: DatasetSchema) -> Any:
         fields.append(pa.field(c.name, type_map.get(c.dtype, pa.string()), nullable=c.nullable))
 
     return pa.schema(fields)
+
+
+INDICATOR_V2_SCHEMA = DatasetSchema(
+    dataset_name="indicator_features_v2",
+    dataset_kind=DatasetKind.INDICATOR_FEATURES_V2,
+    version=1, partition_columns=["market_scope", "symbol"],
+    columns=[
+        ColumnSchema("market_scope", "str", False, True, "Market scope (e.g. spot, usdm)"),
+        ColumnSchema("symbol", "str", False, True, "Trading pair symbol"),
+        ColumnSchema("interval", "str", False, True, "Timeframe interval"),
+        ColumnSchema("open_time", "datetime64[ns, UTC]", False, True, "Candle open time"),
+        ColumnSchema("feature_set_id", "str", False, True, "Unique ID of the feature set definition"),
+
+        ColumnSchema("close_time", "datetime64[ns, UTC]", False, False, "Candle close time"),
+        ColumnSchema("feature_config_hash", "str", False, False, "Hash of the indicator v2 config"),
+        ColumnSchema("is_warmup", "bool", False, False, "Whether row is in warmup period"),
+        ColumnSchema("generated_at_utc", "datetime64[ns, UTC]", False, False, "When features were computed"),
+    ],
+    dynamic_columns_allowed=True,
+    dynamic_column_prefixes=["div_", "mtf_", "pat_", "trend_", "mom_", "vol_", "volu_", "tr_"],
+    disallowed_column_names=["target", "label", "future_return", "next_close"]
+)

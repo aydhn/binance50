@@ -227,3 +227,63 @@ def import_indicator_result(result: IndicatorRunResult, config: AppConfig) -> Da
     registry.activate_version(version_id)
 
     return manifest
+
+def import_indicator_v2_result(result, config: AppConfig) -> DatasetManifest:
+    import uuid
+
+    from binance50.storage.dataset_registry import DatasetRegistry
+    from binance50.storage.manifest import (
+        build_manifest,
+        manifest_to_catalog_records,
+        write_manifest,
+    )
+    from binance50.storage.parquet_store import ParquetDatasetStore
+    from binance50.storage.schemas import DatasetKind, INDICATOR_V2_SCHEMA
+    from binance50.storage.sqlite_catalog import SQLiteCatalog
+    from binance50.core.exceptions import FeatureQualityError
+
+    if not result.success or result.output_df is None:
+        raise ValueError("Cannot import failed indicator v2 result")
+
+    if result.quality_report and result.quality_report.status == "fail":
+        raise FeatureQualityError("Cannot import indicator v2 result that failed quality checks")
+
+    catalog = SQLiteCatalog(config)
+    registry = DatasetRegistry(config, catalog)
+
+    ds_name = config.indicator_v2.output_dataset_name
+
+    schema = INDICATOR_V2_SCHEMA
+    _ensure_dataset(registry, ds_name, DatasetKind.INDICATOR_FEATURES_V2, schema)
+
+    df = result.output_df
+
+    store = ParquetDatasetStore(config)
+    paths = store.write_dataset(df, ds_name, schema, mode="append")
+
+    version_id = uuid.uuid4().hex
+
+    metadata = {
+        "source": "indicator_engine_v2",
+        "request_id": result.request.request_id if result.request else None
+    }
+
+    if result.feature_set_metadata:
+        # Avoid direct object serialization issues
+        metadata["feature_set_id"] = result.feature_set_metadata.feature_set_id
+        metadata["feature_count"] = result.feature_set_metadata.feature_count
+        metadata["config_hash"] = result.feature_set_metadata.config_hash
+
+    manifest = build_manifest(ds_name, version_id, paths, df, schema, quality_status="pass", metadata=metadata)
+    write_manifest(manifest, config)
+
+    registry.register_version(ds_name, manifest, "indicator_engine_v2", "pass")
+
+    records = manifest_to_catalog_records(manifest)
+    for r in records:
+        catalog.add_file_manifest(r)
+
+    # Automatically activate if quality checks passed (checked above)
+    registry.activate_version(version_id)
+
+    return manifest
