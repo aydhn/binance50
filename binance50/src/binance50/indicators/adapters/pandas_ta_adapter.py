@@ -16,6 +16,7 @@ class PandasTaIndicatorAdapter(IndicatorBackendAdapter):
 
         try:
             import pandas_ta
+
             self._available = True
             self._version = pandas_ta.version
             self._pta = pandas_ta
@@ -34,17 +35,22 @@ class PandasTaIndicatorAdapter(IndicatorBackendAdapter):
             "name": self.name,
             "available": self._available,
             "version": self._version,
-            "supported_functions_count": 0 # Not queried easily without parsing the module
+            "supported_functions_count": 0,  # Not queried easily without parsing the module
         }
 
     def supports_indicator(self, name: str) -> bool:
         if not self._available:
             return False
-        return False # Not mapped in Phase 11
+        return False  # Not mapped in Phase 11
 
-    def compute(self, spec: IndicatorSpec, df: pd.DataFrame, context: IndicatorContext) -> pd.DataFrame:
+    def compute(
+        self, spec: IndicatorSpec, df: pd.DataFrame, context: IndicatorContext
+    ) -> pd.DataFrame:
         if not self._available:
-             from binance50.core.exceptions import OptionalIndicatorBackendMissingError
-             raise OptionalIndicatorBackendMissingError("pandas-ta is not installed")
+            from binance50.core.exceptions import OptionalIndicatorBackendMissingError
 
-        raise UnsupportedFeatureError(f"pandas-ta computation not fully mapped for {spec.name} in Phase 11")
+            raise OptionalIndicatorBackendMissingError("pandas-ta is not installed")
+
+        raise UnsupportedFeatureError(
+            f"pandas-ta computation not fully mapped for {spec.name} in Phase 11"
+        )

@@ -50,14 +50,12 @@ def main() -> None:
     ]
 
     cli_checks = [
-
         (["python", "-m", "binance50.cli", "indicator-config"], "Indicator Config"),
         (["python", "-m", "binance50.cli", "indicator-backends"], "Indicator Backends"),
         (["python", "-m", "binance50.cli", "indicator-list"], "Indicator List"),
         (["python", "-m", "binance50.cli", "indicator-quality-check"], "Indicator Quality Check"),
         (["python", "-m", "binance50.cli", "indicator-safety-check"], "Indicator Safety Check"),
         (["python", "-m", "binance50.cli", "indicator-health"], "Indicator Health"),
-
         (["python", "-m", "binance50.cli", "universe-config"], "Universe Config Check"),
         (
             ["python", "-m", "binance50.cli", "universe-fixture-select", "--scope", "spot"],
@@ -99,18 +97,78 @@ def main() -> None:
             "Connector Stream URL Test",
         ),
         (["python", "-m", "binance50.cli", "sdk-check"], "SDK Check"),
-
         (["python", "-m", "binance50.cli", "stream-config"], "Stream Config Check"),
-        (["python", "-m", "binance50.cli", "stream-plan", "--symbols", "BTCUSDT,ETHUSDT", "--scope", "spot", "--types", "kline,bookTicker", "--interval", "1m"], "Stream Plan Check"),
-        (["python", "-m", "binance50.cli", "stream-url-test", "--symbols", "BTCUSDT", "--scope", "spot", "--types", "kline", "--interval", "1m"], "Stream URL Test Check"),
-        (["python", "-m", "binance50.cli", "stream-fixture-parse", "--fixture", "spot_kline_btcusdt_1m_closed.json", "--scope", "spot"], "Stream Fixture Parse Check"),
+        (
+            [
+                "python",
+                "-m",
+                "binance50.cli",
+                "stream-plan",
+                "--symbols",
+                "BTCUSDT,ETHUSDT",
+                "--scope",
+                "spot",
+                "--types",
+                "kline,bookTicker",
+                "--interval",
+                "1m",
+            ],
+            "Stream Plan Check",
+        ),
+        (
+            [
+                "python",
+                "-m",
+                "binance50.cli",
+                "stream-url-test",
+                "--symbols",
+                "BTCUSDT",
+                "--scope",
+                "spot",
+                "--types",
+                "kline",
+                "--interval",
+                "1m",
+            ],
+            "Stream URL Test Check",
+        ),
+        (
+            [
+                "python",
+                "-m",
+                "binance50.cli",
+                "stream-fixture-parse",
+                "--fixture",
+                "spot_kline_btcusdt_1m_closed.json",
+                "--scope",
+                "spot",
+            ],
+            "Stream Fixture Parse Check",
+        ),
         (["python", "-m", "binance50.cli", "stream-simulate"], "Stream Simulate Check"),
         (["python", "-m", "binance50.cli", "stream-buffer-test"], "Stream Buffer Test Check"),
-        (["python", "-m", "binance50.cli", "stream-replay-fixtures"], "Stream Replay Fixtures Check"),
+        (
+            ["python", "-m", "binance50.cli", "stream-replay-fixtures"],
+            "Stream Replay Fixtures Check",
+        ),
         (["python", "-m", "binance50.cli", "stream-state-report"], "Stream State Report Check"),
         (["python", "-m", "binance50.cli", "stream-safety-check"], "Stream Safety Check"),
         (["python", "-m", "binance50.cli", "stream-health"], "Stream Health Check"),
-
+        (["python", "-m", "binance50.cli", "strategy-config"], "Strategy Config Check"),
+        (["python", "-m", "binance50.cli", "strategy-list"], "Strategy List Check"),
+        (
+            ["python", "-m", "binance50.cli", "strategy-plugin-health"],
+            "Strategy Plugin Health Check",
+        ),
+        (["python", "-m", "binance50.cli", "strategy-run-fixture"], "Strategy Run Fixture Check"),
+        (
+            ["python", "-m", "binance50.cli", "strategy-candidates-preview"],
+            "Strategy Candidate Preview Check",
+        ),
+        (["python", "-m", "binance50.cli", "strategy-quality-check"], "Strategy Quality Check"),
+        (["python", "-m", "binance50.cli", "strategy-cache-list"], "Strategy Cache List Check"),
+        (["python", "-m", "binance50.cli", "strategy-safety-check"], "Strategy Safety Check"),
+        (["python", "-m", "binance50.cli", "strategy-health"], "Strategy Health Check"),
     ]
 
     all_passed = True

@@ -35,7 +35,7 @@ from binance50.market_data.realtime_store import RealtimeMarketDataStore
 """
 
 if "build_subscription_plan" not in content:
-    lines = content.split('\n')
+    lines = content.split("\n")
     import_idx = 0
     for i, line in enumerate(lines):
         if line.startswith("import") or line.startswith("from"):

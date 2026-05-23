@@ -17,7 +17,7 @@ class StorageHealthService:
             "parquet_root": self.check_parquet_root(),
             "free_space": self.check_free_space(),
             "permissions": self.check_permissions(),
-            "status": "healthy"
+            "status": "healthy",
         }
 
     def check_catalog(self) -> dict[str, Any]:
@@ -25,15 +25,12 @@ class StorageHealthService:
         return {
             "path": str(path),
             "exists": path.exists(),
-            "size_bytes": path.stat().st_size if path.exists() else 0
+            "size_bytes": path.stat().st_size if path.exists() else 0,
         }
 
     def check_parquet_root(self) -> dict[str, Any]:
         path = get_parquet_root(self.config)
-        return {
-            "path": str(path),
-            "exists": path.exists()
-        }
+        return {"path": str(path), "exists": path.exists()}
 
     def check_free_space(self) -> dict[str, Any]:
         path = get_storage_root(self.config)
@@ -44,7 +41,7 @@ class StorageHealthService:
             "total_gb": round(total / (1024**3), 2),
             "used_gb": round(used / (1024**3), 2),
             "free_gb": round(free / (1024**3), 2),
-            "free_pct": round(free / total * 100, 2) if total > 0 else 0
+            "free_pct": round(free / total * 100, 2) if total > 0 else 0,
         }
 
     def check_permissions(self) -> dict[str, Any]:

@@ -23,8 +23,9 @@ class IndicatorQualityIssue:
             "issue_type": self.issue_type,
             "severity": self.severity,
             "message": self.message,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
+
 
 @dataclass
 class IndicatorQualityReport:
@@ -48,10 +49,13 @@ class IndicatorQualityReport:
             "inf_columns": self.inf_columns,
             "constant_columns": self.constant_columns,
             "extreme_value_columns": self.extreme_value_columns,
-            "generated_at_utc": self.generated_at_utc
+            "generated_at_utc": self.generated_at_utc,
         }
 
-def build_indicator_quality_report(df: pd.DataFrame, indicator_columns: list[str], config: AppConfig) -> IndicatorQualityReport:
+
+def build_indicator_quality_report(
+    df: pd.DataFrame, indicator_columns: list[str], config: AppConfig
+) -> IndicatorQualityReport:
     issues = []
     nan_ratio_by_column = {}
     inf_columns = []
@@ -59,9 +63,17 @@ def build_indicator_quality_report(df: pd.DataFrame, indicator_columns: list[str
     extreme_value_columns = []
 
     if len(df) == 0:
-        return IndicatorQualityReport("fail", 0, len(indicator_columns), [
-            IndicatorQualityIssue("all", "empty_dataframe", "error", "Dataframe is empty")
-        ], {}, [], [], [], datetime.now(UTC).isoformat())
+        return IndicatorQualityReport(
+            "fail",
+            0,
+            len(indicator_columns),
+            [IndicatorQualityIssue("all", "empty_dataframe", "error", "Dataframe is empty")],
+            {},
+            [],
+            [],
+            [],
+            datetime.now(UTC).isoformat(),
+        )
 
     for col in indicator_columns:
         if col not in df.columns:
@@ -76,21 +88,34 @@ def build_indicator_quality_report(df: pd.DataFrame, indicator_columns: list[str
 
         if nan_ratio == 1.0:
             if config.indicators.quality.reject_all_nan_indicator:
-                issues.append(IndicatorQualityIssue(col, "all_nan", "error", "Indicator is all NaN"))
-        elif config.indicators.quality.warn_high_nan_ratio and nan_ratio > config.indicators.quality.max_nan_ratio:
-            issues.append(IndicatorQualityIssue(col, "high_nan_ratio", "warning", f"High NaN ratio: {nan_ratio:.2%}"))
+                issues.append(
+                    IndicatorQualityIssue(col, "all_nan", "error", "Indicator is all NaN")
+                )
+        elif (
+            config.indicators.quality.warn_high_nan_ratio
+            and nan_ratio > config.indicators.quality.max_nan_ratio
+        ):
+            issues.append(
+                IndicatorQualityIssue(
+                    col, "high_nan_ratio", "warning", f"High NaN ratio: {nan_ratio:.2%}"
+                )
+            )
 
         # Inf check
         if config.indicators.quality.detect_inf and np.isinf(s).any():
             inf_columns.append(col)
-            issues.append(IndicatorQualityIssue(col, "infinity_detected", "error", "Infinity values detected"))
+            issues.append(
+                IndicatorQualityIssue(col, "infinity_detected", "error", "Infinity values detected")
+            )
 
         # Constant check (ignore nan)
         s_valid = s.dropna()
         if len(s_valid) > 1 and s_valid.nunique() == 1:
             constant_columns.append(col)
             sev = "error" if config.indicators.quality.reject_constant_indicator else "warning"
-            issues.append(IndicatorQualityIssue(col, "constant_values", sev, "Indicator has constant values"))
+            issues.append(
+                IndicatorQualityIssue(col, "constant_values", sev, "Indicator has constant values")
+            )
 
         # Extreme values check
         if config.indicators.quality.detect_extreme_values and len(s_valid) > 1:
@@ -100,7 +125,14 @@ def build_indicator_quality_report(df: pd.DataFrame, indicator_columns: list[str
                 z = (s_valid - mean).abs() / std
                 if (z > config.indicators.quality.extreme_zscore_threshold).any():
                     extreme_value_columns.append(col)
-                    issues.append(IndicatorQualityIssue(col, "extreme_values", "warning", f"Extreme values detected (z > {config.indicators.quality.extreme_zscore_threshold})"))
+                    issues.append(
+                        IndicatorQualityIssue(
+                            col,
+                            "extreme_values",
+                            "warning",
+                            f"Extreme values detected (z > {config.indicators.quality.extreme_zscore_threshold})",
+                        )
+                    )
 
     status = "pass"
     if any(i.severity == "error" for i in issues):
@@ -115,8 +147,9 @@ def build_indicator_quality_report(df: pd.DataFrame, indicator_columns: list[str
         inf_columns=inf_columns,
         constant_columns=constant_columns,
         extreme_value_columns=extreme_value_columns,
-        generated_at_utc=datetime.now(UTC).isoformat()
+        generated_at_utc=datetime.now(UTC).isoformat(),
     )
+
 
 def assert_indicator_quality_passed(report: IndicatorQualityReport, config: AppConfig) -> None:
     if report.status == "fail":

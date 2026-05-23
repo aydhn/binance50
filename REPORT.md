@@ -1,75 +1,55 @@
-## Indicator Engine Phase 11 Report
 
-### Oluşturulan/Güncellenen Dosyalar
-**Modeller ve Config**:
-- `src/binance50/config/models.py` (Yeni domain objeleri `IndicatorsConfig` vb.)
-- `config/default.yaml` (Yüzlerce satırlık yeni trend, momentum, volatility ve indicator configi)
-- `src/binance50/core/exceptions.py`, `src/binance50/core/error_codes.py`, `src/binance50/core/error_classifier.py`
+# Phase 13 Report: Strategy Engine Implementation
 
-**Indicators Engine Mimarisi (yeni)**:
-- `src/binance50/indicators/models.py`: Domain modelleri (`IndicatorSpec`, `IndicatorRunRequest`, `IndicatorRunResult`)
-- `src/binance50/indicators/context.py`: Engine scope context
-- `src/binance50/indicators/validators.py`: Future column (label) detect eden ve Lookahead-bias koruması yapan input validatorleri
-- `src/binance50/indicators/warmup.py`: Lookup window ve min require row analiz modülü
-- `src/binance50/indicators/transforms.py`: Ortak transformlar (log return vb.)
-- `src/binance50/indicators/trend.py`, `momentum.py`, `volatility.py`, `volume.py`: Native numpy/pandas algoritmaları
-- `src/binance50/indicators/registry.py`: Dinamik register yapısı
-- `src/binance50/indicators/adapters/`: `native.py`, `pandas_ta_adapter.py`, `talib_adapter.py`
-- `src/binance50/indicators/quality.py`, `cache.py`, `engine.py`, `reports.py`
+## Oluşturulan/güncellenen dosyalar
+- **Config & Core:** `config/default.yaml`, `src/binance50/config/models.py`, `src/binance50/core/exceptions.py`, `src/binance50/core/error_codes.py`, `src/binance50/core/error_classifier.py`
+- **Domain & Engine:** `src/binance50/strategies/models.py`, `src/binance50/strategies/base.py`, `src/binance50/strategies/context.py`, `src/binance50/strategies/engine.py`, `src/binance50/strategies/registry.py`, `src/binance50/strategies/plugin_loader.py`
+- **Rules & Validation:** `src/binance50/strategies/conditions.py`, `src/binance50/strategies/rule_dsl.py`, `src/binance50/strategies/validators.py`, `src/binance50/strategies/quality.py`
+- **Output & Safety:** `src/binance50/strategies/candidates.py`, `src/binance50/strategies/explanations.py`, `src/binance50/strategies/reports.py`, `src/binance50/strategies/cache.py`, `src/binance50/strategies/export.py`, `src/binance50/safety/strategy_guard.py`, `src/binance50/safety/signal_candidate_guard.py`
+- **Plugins:** 9 built-in plugin files implemented.
+- **Testing & Tooling:** 11 core strategy test files, 7 plugin test files, updated CLI tooling, and complete `scripts/check_project.py` integration.
+- **Storage:** Updated schemas and importers for `strategy_candidates`.
+- **Docs:** Updated `README.md`, `ARCHITECTURE.md`, `SECURITY.md`, and `PHASE_PLAN.md`.
 
-**Guard, Storage ve Features**:
-- `src/binance50/safety/indicator_guard.py`
-- `src/binance50/features/basic_returns.py`
-- `src/binance50/storage/schemas.py`, `importers.py`
-- `src/binance50/cli.py` komutları (örn: `indicator-compute-fixture`)
+## Strategy config kararları
+Strategy konfigurasyonu katı execution engellerine default olarak (`execution_forbidden: True`, vb.) sahiptir. Minimum and maximum expiry constraints, required rule confidence ranges, and isolated plugin limitations are defined using explicit Pydantic models.
 
-### Indicator Config Kararları
-`default.yaml` içerisine `enabled`, `prevent_lookahead_bias`, `reject_duplicate_open_time` gibi anahtarlar girilmiştir. Tüm indikatör sınıfları (Trend, Volatility vs.) ayrı konfigürasyonlara bölünmüştür (örneğin SMA, EMA, MACD, RSI period yapılandırmaları). Default olarak strict kurallar ile çalışır.
+## Strategy plugin mimarisi
+Architecture encapsulates a generic protocol interface (`StrategyPluginProtocol`) ensuring individual plugin evaluation executes safely via `StrategyEngine` which catches any component failure, preventing full pipeline crashes.
 
-### Native Backend Mimarisi
-Native backend `pandas` ve `numpy` tabanlı tamamen deterministik metodlarla yazılmıştır. Her bir indikatör ayrı bir fonksiyondur ve native adaptörü vasıtasıyla dinamik bir listeye bağlı olarak çağrılır. Testlerin çoğu bu backend'in gücünü ispatlar.
+## Strategy registry
+A localized stateful mapping ensuring unique naming and dynamic toggling capabilities. Unhealthy plugins are logged but ignored rather than halting processes.
 
-### Optional Backend Adapter Kararları
-`TA-Lib` ve `pandas-ta` bağımlılıkları kasıtlı olarak "zorunlu" tutulmamış (`try-except ImportError`), ve bir adaptör deseniyle sarılarak "Eğer mevcutsa availability report ile belirtilir, değilse fallback sağlanır" olarak yapılmıştır. Böylelikle CI veya lokal ortamda C kütüphanesi olmadan sorunsuz test yapılabilmektedir.
+## Rule DSL ve condition sistemi
+The `RuleBlock` logic arrays decouple mathematical boolean evaluation (`gt`, `lt`, `crosses_above`) out from raw Python allowing declarative criteria definition over DataFrames.
 
-### Trend Indikatörleri
-`sma`, `ema`, `wma`, `dema`, `tema`, `macd`, `adx`, `aroon` yazılmış ve test edilmiştir. EMA Wilders formülünde stabil hale getirilmiştir.
+## Built-in pluginler
+9 isolated logic implementations ranging from Trend Following (EMAs/ADX), Mean Reversion (Bollinger/RSI), to basic Composite tracking were integrated.
 
-### Momentum Indikatörleri
-`rsi`, `stochastic`, `stoch_rsi`, `roc`, `momentum`, `cci`, `williams_r` yazılmıştır. RSI için internal simple moving average bazlı bir formül kullanılmıştır.
+## SignalCandidate modeli
+Immutable execution-absent domain object. Explicitly rejects tracking actionable trade attributes (`order_id`, `quantity`). Uses explicit enums for direction (`bullish`, `bearish`) and intent.
 
-### Volatilite Indikatörleri
-`atr`, `natr`, `bollinger_bands`, `bollinger_bandwidth`, `keltner_channels`, `donchian_channels`, `rolling_std`, `realized_volatility` tamamen uygulanmıştır.
+## Explanation modeli
+Deterministic evidence tracker. Generates both string summaries completely free from imperative action verbs (like "buy now") and mapped dictionary details enumerating passed/failed conditions.
 
-### Hacim Indikatörleri
-`obv`, `volume_sma`, `volume_ema`, `vwap`, `mfi`, `cmf`, `accumulation_distribution_line` oluşturulmuştur.
+## Composite skeleton
+Implemented as a deferral candidate structure that checks multiple plugins for directional agreement but explicitly restricts generating unified final signals (`final_signal_scoring_deferred: True`).
 
-### Transform / Helper Özellikleri
-`typical_price`, `median_price`, `weighted_close`, `returns`, `log_returns`, `rolling_zscore`, `safe_divide` gibi işlemler oluşturulmuştur. Future leakage önlemek adına future parametreli (shift(-1)) gibi kullanımlar katı şekilde reddedilmektedir.
+## Strategy quality kontrolleri
+The engine implements rigorous scans to catch missing explanations, out-of-range confidence thresholds, duplicate generation identifiers, and intra-bar candidate conflicts (e.g. bullish and bearish signals output on the same timestamp).
 
-### Warmup/Lookback Kararları
-`estimate_max_lookback` ile en yüksek history checki bulunarak, dataframe içerisinde bir `is_warmup` flag maskesi oluşturulur. İstenen default config limitine uyulmazsa `InsufficientHistoryError` fırlatılır.
+## Strategy safety guard
+Multi-layer protection. `strategy_guard.py` acts against configuration overrides disabling default constraints. `signal_candidate_guard.py` rejects actionable output phrases ("buy now", "execute"). The output payload is scanned against reserved execution keywords (`entry_price`, `quantity`).
 
-### Lookahead-Bias Koruması
-Input ve Output validate ederken `FORBIDDEN_COLUMNS = ["future_return", "target", "label", "next_close", "forward"]` gibi stringlere sahip olan özellikler reddedilir. Ayrıca `fill_policy: "bfill"` (backfill) güvenlik testlerinde exception fırlatır.
+## CLI komutları
+Integration added for `strategy-config`, `strategy-list`, `strategy-plugin-health`, `strategy-run-fixture`, `strategy-candidates-preview`, `strategy-quality-check`, `strategy-cache-list`, `strategy-safety-check`, and `strategy-health`.
 
-### Indicator Quality Kontrolleri
-Veriler işlendikten sonra `quality.py` ile NaN (eksik veri oranı), Infinity, Exteme/Z-Score ve tümüyle NaN/Sabit değerlerden oluşan çıktı kolonları kalite skoru denetiminden geçer.
+## Test sonuçları
+The full `pytest` suite reports 331 passing tests successfully traversing boundary constraints, syntactic configurations, missing fixture mocks, logic rules, and engine isolation checks safely.
 
-### Cache/Warehouse Entegrasyonu
-Çıktı sonuçları JSON metadata ve parquet olarak saklanmakta. `importers.py` üzerinden `dynamic_schema` mantığı geliştirilerek, base statik columnların haricindeki hesaplanan dynamic feature kolonları otomatik olarak Storage Schema yapısına dönüştürülür.
+## Bilinen sınırlamalar
+- Dynamic loading of non-builtin external plugins remains blocked by default.
+- Phase 13 lacks full data warehousing traversal since testing logic was bound strictly via simulated mock data sets and offline DataFrame operations.
 
-### CLI Komutları
-- `indicator-config`, `indicator-backends`, `indicator-list`
-- `indicator-compute-fixture` (Offline test aracı), `indicator-quality-check`
-- `indicator-safety-check`, `indicator-health`, `indicator-cache-list`
-komutları `cli.py` dosyasına entegre edilmiştir.
-
-### Test Sonuçları
-Tüm Trend, Momentum, Volatilite, Hacim, Transform testleri, Model testleri, Engine ve Adaptör testleri, Kalite kontrol testleri tamamlanmış olup `pytest tests/` 284 PASS sonuçla dönmüştür. Pre-commit testlerinde `mypy`, `ruff`, ve `black` fixleri geçilmiştir.
-
-### Bilinen Sınırlamalar
-TA-lib/pandas-ta implementationları skeleton durumundadır. Engine native formülleri default kullanır. Optimizasyonlar büyük verisetlerinde multi-processing ihtiyacı duyabilir (ileriki memory limit sorunları olabilir).
-
-### Phase 12'ye Hazırlık
-İndikatör engine katmanı deterministik olarak feature üretimini halletmiş durumdadır. Bir sonraki fazda Divergence algılayıcılar, çoklu timeframe (MTF) mappingler ve candlestick patternleri için bu engine temel model olarak kullanılacaktır.
+## Phase 14’e hazırlık
+Input parameters strictly structured safely. Candidates ready to be passed into a future signal scoring and confluence engine without causing false execution triggering since the intent boundary remains cleanly sealed.

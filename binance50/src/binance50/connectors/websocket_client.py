@@ -57,22 +57,25 @@ class BinanceWebSocketClient:
     def close(self) -> None:
         pass
 
-
-    def build_subscription_plan(self, symbols: list[str], stream_types: list, market_scope, interval=None) -> 'StreamSubscriptionPlan':
+    def build_subscription_plan(
+        self, symbols: list[str], stream_types: list, market_scope, interval=None
+    ) -> "StreamSubscriptionPlan":
         from binance50.streams.subscription import build_subscription_plan
+
         return build_subscription_plan(symbols, stream_types, market_scope, self.config, interval)
 
-    def build_stream_url_from_plan(self, plan: 'StreamSubscriptionPlan') -> str:
+    def build_stream_url_from_plan(self, plan: "StreamSubscriptionPlan") -> str:
         from binance50.streams.routing import build_full_stream_url
+
         # Adjust base depending on plan type inside routing, but the method handles it if config is passed
         # The routing module actually needs endpoint info, but here we just rely on the new method
         # which might not perfectly align with endpoint_info, but let's stick to the phase requirements
         return build_full_stream_url(plan, self.config)
 
-    def subscribe(self, plan: 'StreamSubscriptionPlan') -> None:
+    def subscribe(self, plan: "StreamSubscriptionPlan") -> None:
         assert_real_stream_connect_allowed(self.config)
 
-    def unsubscribe(self, plan: 'StreamSubscriptionPlan') -> None:
+    def unsubscribe(self, plan: "StreamSubscriptionPlan") -> None:
         assert_real_stream_connect_allowed(self.config)
 
     def receive_loop(self) -> None:

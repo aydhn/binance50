@@ -169,3 +169,17 @@ A corrupt market data series (e.g. overlapping records or chronological gaps) ru
 - **MTF future leakage risk**: Eliminated by ensuring `higher_close_time <= base_open_time`.
 - **Target/Future column ban**: Prevents "next_close" or "future_return" columns from polluting the feature registry.
 - **Pattern Candidates != Signals**: Skeletons deliberately output strengths/confidences rather than execute paths to ensure separation of concern.
+
+## Strategy Plugin Security & Safety (Phase 13)
+
+### Output is NOT an Order
+Strategies are forcefully sandboxed away from the connector lifecycle. `SignalCandidate` outputs contain no parameters for execution sizing, entry limits, or risk locks.
+
+### Actionable Language Guard
+The `signal_candidate_guard` explicitly parses explanation strings to guarantee that "actionable" directives (e.g. "BUY NOW", "EXECUTE LONG") are rejected, ensuring candidate outputs remain strictly conversational suggestions to the scoring engine.
+
+### Execution Object Detection
+The configuration asserts the complete omission of execution keywords across all output dictionaries, ensuring no `order_id` or equivalent execution intent accidentally seeps through payloads.
+
+### Plugin Isolation
+`StrategyEngine` restricts plugin evaluation into sandbox `try-except` blocks. Rogue plugins that raise faults or attempt to circumvent restrictions are halted silently and logged via warning mechanisms rather than bringing down the runtime.

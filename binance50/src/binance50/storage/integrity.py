@@ -22,8 +22,11 @@ class StorageIntegrityReport:
     issues: list[str] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
 
+
 class StorageIntegrityChecker:
-    def __init__(self, config: AppConfig, catalog: SQLiteCatalog, parquet_store: ParquetDatasetStore):
+    def __init__(
+        self, config: AppConfig, catalog: SQLiteCatalog, parquet_store: ParquetDatasetStore
+    ):
         self.config = config
         self.catalog = catalog
         self.parquet_store = parquet_store
@@ -70,7 +73,7 @@ class StorageIntegrityChecker:
             manifest_status=self.check_manifests(),
             catalog_status=self.check_catalog_consistency(),
             hash_status=self.check_file_hashes(),
-            schema_status=self.check_schema_consistency()
+            schema_status=self.check_schema_consistency(),
         )
 
         has_error = False

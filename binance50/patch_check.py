@@ -15,6 +15,9 @@ phase9_checks = """
 """
 
 if "stream-config" not in content:
-    content = content.replace('(["python", "-m", "binance50.cli", "sdk-check"], "SDK Check"),', '(["python", "-m", "binance50.cli", "sdk-check"], "SDK Check"),\n' + phase9_checks)
+    content = content.replace(
+        '(["python", "-m", "binance50.cli", "sdk-check"], "SDK Check"),',
+        '(["python", "-m", "binance50.cli", "sdk-check"], "SDK Check"),\n' + phase9_checks,
+    )
     with open("scripts/check_project.py", "w") as f:
         f.write(content)

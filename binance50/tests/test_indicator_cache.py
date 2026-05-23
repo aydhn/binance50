@@ -1,4 +1,3 @@
-
 import pandas as pd
 import pytest
 
@@ -24,18 +23,22 @@ def temp_cache_dir(tmp_path):
     config.indicators.cache_dir = str(tmp_path)
     return config, tmp_path
 
+
 def test_build_cache_path(temp_cache_dir):
     config, _ = temp_cache_dir
     p = build_indicator_cache_path(config, "BTCUSDT", "spot", "1m", "native", "hash123")
     assert p.name == "spot_btcusdt_1m_native_hash123.parquet"
-    assert ".." not in p.name # Simple path traversal check
+    assert ".." not in p.name  # Simple path traversal check
+
 
 def test_save_load_result(temp_cache_dir):
     config, tmp_path = temp_cache_dir
 
     df = pd.DataFrame({"close": [1, 2, 3]})
     req = IndicatorRunRequest("BTC", MarketScope.SPOT, "1m", "ohlcv", "native", [])
-    meta = IndicatorFrameMetadata("BTC", MarketScope.SPOT, "1m", "native", 3, 3, 0, 0, 0, 0, 0, 3, "", "", "", "hash123")
+    meta = IndicatorFrameMetadata(
+        "BTC", MarketScope.SPOT, "1m", "native", 3, 3, 0, 0, 0, 0, 0, 3, "", "", "", "hash123"
+    )
     res = IndicatorRunResult(req, df, meta)
 
     p = save_indicator_result(res, config)
@@ -47,12 +50,15 @@ def test_save_load_result(temp_cache_dir):
     assert loaded.metadata.config_hash == "hash123"
     assert len(loaded.output_df) == 3
 
+
 def test_list_and_clear_cache(temp_cache_dir):
     config, tmp_path = temp_cache_dir
 
     df = pd.DataFrame({"close": [1]})
     req = IndicatorRunRequest("BTC", MarketScope.SPOT, "1m", "ohlcv", "native", [])
-    meta = IndicatorFrameMetadata("BTC", MarketScope.SPOT, "1m", "native", 1, 1, 0, 0, 0, 0, 0, 1, "", "", "", "hash123")
+    meta = IndicatorFrameMetadata(
+        "BTC", MarketScope.SPOT, "1m", "native", 1, 1, 0, 0, 0, 0, 0, 1, "", "", "", "hash123"
+    )
     res = IndicatorRunResult(req, df, meta)
 
     save_indicator_result(res, config)

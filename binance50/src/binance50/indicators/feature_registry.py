@@ -1,15 +1,17 @@
 import pandas as pd
-from typing import Dict, List, Optional
+
 from binance50.config.models import AppConfig
 from binance50.core.exceptions import FeatureRegistryError
-from .feature_metadata import FeatureMetadata, FeatureSetMetadata
 from binance50.features.grouping import exclude_non_feature_columns
+
+from .feature_metadata import FeatureMetadata, FeatureSetMetadata
+
 
 class FeatureRegistry:
     def __init__(self, config: AppConfig):
         self.config = config
-        self._features: Dict[str, FeatureMetadata] = {}
-        self._feature_sets: Dict[str, FeatureSetMetadata] = {}
+        self._features: dict[str, FeatureMetadata] = {}
+        self._feature_sets: dict[str, FeatureSetMetadata] = {}
 
     def register_feature(self, metadata: FeatureMetadata) -> None:
         if metadata.feature_name in self._features:
@@ -28,15 +30,15 @@ class FeatureRegistry:
                 # If doing multiple passes, might already exist, update it
                 self._features[f_meta.feature_name] = f_meta
 
-    def get_feature(self, name: str) -> Optional[FeatureMetadata]:
+    def get_feature(self, name: str) -> FeatureMetadata | None:
         return self._features.get(name)
 
-    def list_features(self, group: Optional[str] = None) -> List[FeatureMetadata]:
+    def list_features(self, group: str | None = None) -> list[FeatureMetadata]:
         if group:
             return [f for f in self._features.values() if f.group == group]
         return list(self._features.values())
 
-    def list_feature_sets(self) -> List[FeatureSetMetadata]:
+    def list_feature_sets(self) -> list[FeatureSetMetadata]:
         return list(self._feature_sets.values())
 
     def validate_dataframe_features(self, df: pd.DataFrame, config: AppConfig) -> None:
@@ -50,12 +52,14 @@ class FeatureRegistry:
                 unregistered.append(f)
 
         if unregistered and cfg.reject_unregistered_feature:
-            raise FeatureRegistryError(f"Found {len(unregistered)} unregistered features. First few: {unregistered[:5]}")
+            raise FeatureRegistryError(
+                f"Found {len(unregistered)} unregistered features. First few: {unregistered[:5]}"
+            )
 
     def to_report(self) -> dict:
         return {
             "total_features": len(self._features),
             "total_feature_sets": len(self._feature_sets),
             "groups": list(set(f.group for f in self._features.values() if f.group)),
-            "is_safe": True
+            "is_safe": True,
         }

@@ -1,4 +1,3 @@
-
 import pytest
 
 from binance50.config.models import AppConfig
@@ -21,6 +20,7 @@ def test_sanitize_path_component():
     with pytest.raises(StoragePathError):
         sanitize_path_component("my_api_key_123")
 
+
 def test_assert_path_inside_storage():
     config = AppConfig()
     root = get_storage_root(config)
@@ -31,6 +31,7 @@ def test_assert_path_inside_storage():
 
     with pytest.raises(StoragePathError):
         assert_path_inside_storage(unsafe_path, config)
+
 
 def test_build_dataset_partition_path():
     config = AppConfig()

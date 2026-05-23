@@ -19,3 +19,6 @@
 
 - Phase 11: Indicator engine v1; trend, momentum, volatilite, hacim ve temel transform indikatörleri native pandas/numpy backend ile kurulur.
 - Phase 12: Indicator engine v2 genişletilecek: divergence, multi-timeframe alignment, pattern/candlestick hazırlıkları ve feature grouping modeli kurulacak.
+
+### Phase 14 hazırlığı:
+Phase 14'te signal scoring ve confluence engine kurulacak; Phase 13 adayları nihai skora dönüştürülecek ama emir üretimi hâlâ risk/execution fazlarına kadar kapalı kalacak.

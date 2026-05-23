@@ -1,4 +1,3 @@
-
 with open("src/binance50/cli.py") as f:
     content = f.read()
 
@@ -21,7 +20,11 @@ from binance50.market_data.realtime_store import RealtimeMarketDataStore
 """
 
 if "build_subscription_plan" not in content:
-    content = content.replace('from binance50.rate_limit.websocket_limits import validate_stream_count', 'from binance50.rate_limit.websocket_limits import validate_stream_count\n' + import_statement.strip())
+    content = content.replace(
+        "from binance50.rate_limit.websocket_limits import validate_stream_count",
+        "from binance50.rate_limit.websocket_limits import validate_stream_count\n"
+        + import_statement.strip(),
+    )
 
 commands = """
 @app.command()
@@ -130,7 +133,10 @@ if "def stream_config" not in content:
         s_rep = build_stream_safety_report(config)
         console.print("Stream Safety:", s_rep)
 """
-    content = content.replace('console.print("[green]Doctor check complete.[/green]")', doctor_check + '\n        console.print("[green]Doctor check complete.[/green]")')
+    content = content.replace(
+        'console.print("[green]Doctor check complete.[/green]")',
+        doctor_check + '\n        console.print("[green]Doctor check complete.[/green]")',
+    )
 
     with open("src/binance50/cli.py", "w") as f:
         f.write(content)

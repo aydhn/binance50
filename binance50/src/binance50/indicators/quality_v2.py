@@ -1,34 +1,39 @@
-import pandas as pd
-from typing import List, Dict, Any
-from pydantic import BaseModel
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+from typing import Any
+
 import numpy as np
+import pandas as pd
+from pydantic import BaseModel
 
 from binance50.config.models import AppConfig
 from binance50.core.exceptions import FeatureQualityError
 from binance50.features.grouping import exclude_non_feature_columns
+
 from .feature_groups import infer_feature_group
+
 
 class FeatureQualityIssue(BaseModel):
     feature_name: str
     issue_type: str
     severity: str
     message: str
-    metadata: Dict[str, Any] = {}
+    metadata: dict[str, Any] = {}
+
 
 class FeatureQualityReport(BaseModel):
     status: str
     feature_count: int
     row_count: int
-    issues: List[FeatureQualityIssue]
-    nan_ratio_by_feature: Dict[str, float]
-    inf_features: List[str]
-    duplicate_features: List[str]
-    ungrouped_features: List[str]
-    lookahead_risk_features: List[str]
+    issues: list[FeatureQualityIssue]
+    nan_ratio_by_feature: dict[str, float]
+    inf_features: list[str]
+    duplicate_features: list[str]
+    ungrouped_features: list[str]
+    lookahead_risk_features: list[str]
     generated_at_utc: datetime
 
-def detect_duplicate_feature_names(columns: List[str]) -> List[str]:
+
+def detect_duplicate_feature_names(columns: list[str]) -> list[str]:
     seen = set()
     dupes = []
     for col in columns:
@@ -37,8 +42,10 @@ def detect_duplicate_feature_names(columns: List[str]) -> List[str]:
         seen.add(col)
     return dupes
 
-def detect_lookahead_risk_features(columns: List[str]) -> List[str]:
+
+def detect_lookahead_risk_features(columns: list[str]) -> list[str]:
     from binance50.features.grouping import TARGET_KEYWORDS
+
     risks = []
     for col in columns:
         col_lower = col.lower()
@@ -46,7 +53,8 @@ def detect_lookahead_risk_features(columns: List[str]) -> List[str]:
             risks.append(col)
     return risks
 
-def detect_high_nan_features(df: pd.DataFrame, config: AppConfig) -> Dict[str, float]:
+
+def detect_high_nan_features(df: pd.DataFrame, config: AppConfig) -> dict[str, float]:
     features = exclude_non_feature_columns(df.columns.tolist())
     max_ratio = config.indicator_v2.quality.max_nan_ratio
 
@@ -62,7 +70,8 @@ def detect_high_nan_features(df: pd.DataFrame, config: AppConfig) -> Dict[str, f
 
     return high_nans
 
-def detect_inf_features(df: pd.DataFrame) -> List[str]:
+
+def detect_inf_features(df: pd.DataFrame) -> list[str]:
     features = exclude_non_feature_columns(df.columns.tolist())
     infs = []
 
@@ -75,7 +84,8 @@ def detect_inf_features(df: pd.DataFrame) -> List[str]:
 
     return infs
 
-def detect_unregistered_features(df: pd.DataFrame, registry, config: AppConfig) -> List[str]:
+
+def detect_unregistered_features(df: pd.DataFrame, registry, config: AppConfig) -> list[str]:
     features = exclude_non_feature_columns(df.columns.tolist())
     unreg = []
     for f in features:
@@ -83,7 +93,10 @@ def detect_unregistered_features(df: pd.DataFrame, registry, config: AppConfig) 
             unreg.append(f)
     return unreg
 
-def build_feature_quality_report(df: pd.DataFrame, feature_columns: List[str], config: AppConfig, registry=None) -> FeatureQualityReport:
+
+def build_feature_quality_report(
+    df: pd.DataFrame, feature_columns: list[str], config: AppConfig, registry=None
+) -> FeatureQualityReport:
     cfg = config.indicator_v2.quality
 
     issues = []
@@ -93,31 +106,66 @@ def build_feature_quality_report(df: pd.DataFrame, feature_columns: List[str], c
     if dupes and cfg.reject_duplicate_feature_names:
         status = "fail"
         for d in dupes:
-            issues.append(FeatureQualityIssue(feature_name=d, issue_type="duplicate", severity="error", message="Duplicate feature name"))
+            issues.append(
+                FeatureQualityIssue(
+                    feature_name=d,
+                    issue_type="duplicate",
+                    severity="error",
+                    message="Duplicate feature name",
+                )
+            )
 
     lookahead = detect_lookahead_risk_features(feature_columns)
     if lookahead and cfg.reject_lookahead_columns:
         status = "fail"
         for l in lookahead:
-            issues.append(FeatureQualityIssue(feature_name=l, issue_type="lookahead", severity="error", message="Lookahead/target keyword detected"))
+            issues.append(
+                FeatureQualityIssue(
+                    feature_name=l,
+                    issue_type="lookahead",
+                    severity="error",
+                    message="Lookahead/target keyword detected",
+                )
+            )
 
     infs = detect_inf_features(df)
     if infs and cfg.reject_inf:
         status = "fail"
         for i in infs:
-            issues.append(FeatureQualityIssue(feature_name=i, issue_type="inf_values", severity="error", message="Infinite values detected"))
+            issues.append(
+                FeatureQualityIssue(
+                    feature_name=i,
+                    issue_type="inf_values",
+                    severity="error",
+                    message="Infinite values detected",
+                )
+            )
 
     high_nans = detect_high_nan_features(df, config)
     all_nan = [f for f, r in high_nans.items() if r >= 0.999]
     if all_nan and cfg.reject_all_nan_feature:
         status = "fail"
         for a in all_nan:
-            issues.append(FeatureQualityIssue(feature_name=a, issue_type="all_nan", severity="error", message="Feature is entirely NaN"))
+            issues.append(
+                FeatureQualityIssue(
+                    feature_name=a,
+                    issue_type="all_nan",
+                    severity="error",
+                    message="Feature is entirely NaN",
+                )
+            )
 
     if cfg.warn_high_nan_ratio:
         for f, r in high_nans.items():
             if f not in all_nan:
-                issues.append(FeatureQualityIssue(feature_name=f, issue_type="high_nan", severity="warning", message=f"NaN ratio is {r:.2f} > max_nan_ratio"))
+                issues.append(
+                    FeatureQualityIssue(
+                        feature_name=f,
+                        issue_type="high_nan",
+                        severity="warning",
+                        message=f"NaN ratio is {r:.2f} > max_nan_ratio",
+                    )
+                )
 
     unreg = []
     if registry and cfg.reject_unregistered_feature:
@@ -125,7 +173,14 @@ def build_feature_quality_report(df: pd.DataFrame, feature_columns: List[str], c
         if unreg:
             status = "fail"
             for u in unreg:
-                issues.append(FeatureQualityIssue(feature_name=u, issue_type="unregistered", severity="error", message="Feature not in registry"))
+                issues.append(
+                    FeatureQualityIssue(
+                        feature_name=u,
+                        issue_type="unregistered",
+                        severity="error",
+                        message="Feature not in registry",
+                    )
+                )
 
     ungrouped = []
     if not config.indicator_v2.feature_groups.allow_ungrouped_features:
@@ -133,7 +188,14 @@ def build_feature_quality_report(df: pd.DataFrame, feature_columns: List[str], c
             if not infer_feature_group(f, config):
                 ungrouped.append(f)
                 status = "fail"
-                issues.append(FeatureQualityIssue(feature_name=f, issue_type="ungrouped", severity="error", message="Feature doesn't belong to any group"))
+                issues.append(
+                    FeatureQualityIssue(
+                        feature_name=f,
+                        issue_type="ungrouped",
+                        severity="error",
+                        message="Feature doesn't belong to any group",
+                    )
+                )
 
     nan_ratios = {}
     total_rows = len(df)
@@ -152,8 +214,9 @@ def build_feature_quality_report(df: pd.DataFrame, feature_columns: List[str], c
         duplicate_features=dupes,
         ungrouped_features=ungrouped,
         lookahead_risk_features=lookahead,
-        generated_at_utc=datetime.now(timezone.utc)
+        generated_at_utc=datetime.now(UTC),
     )
+
 
 def assert_feature_quality_passed(report: FeatureQualityReport, config: AppConfig) -> None:
     if report.status == "fail":

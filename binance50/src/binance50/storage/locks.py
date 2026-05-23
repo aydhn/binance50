@@ -42,7 +42,7 @@ class StorageLock:
                                 # Process is dead, stale lock
                                 with contextlib.suppress(FileNotFoundError):
                                     os.unlink(lock_path)
-                                continue # Try to acquire again
+                                continue  # Try to acquire again
                 except Exception:
                     pass
                 time.sleep(0.1)

@@ -1,17 +1,21 @@
 import uuid
-import pandas as pd
-from typing import List, Tuple, Literal
-from pydantic import BaseModel
 from enum import StrEnum
+
+import pandas as pd
+from pydantic import BaseModel
+
 from binance50.config.models import AppConfig
 from binance50.core.exceptions import DivergenceDetectionError
-from .pivots import PivotPoint, PivotType, detect_price_pivots, detect_indicator_pivots
+
+from .pivots import PivotPoint, PivotType, detect_indicator_pivots, detect_price_pivots
+
 
 class DivergenceType(StrEnum):
     regular_bullish = "regular_bullish"
     regular_bearish = "regular_bearish"
     hidden_bullish = "hidden_bullish"
     hidden_bearish = "hidden_bearish"
+
 
 class DivergenceSignalCandidate(BaseModel):
     candidate_id: str
@@ -31,16 +35,15 @@ class DivergenceSignalCandidate(BaseModel):
     pivot_distance_bars: int
     score: float
     status: str = "candidate"
-    warnings: List[str] = []
+    warnings: list[str] = []
 
     class Config:
         arbitrary_types_allowed = True
 
+
 def match_price_indicator_pivots(
-    price_pivots: List[PivotPoint],
-    indicator_pivots: List[PivotPoint],
-    max_distance_bars: int
-) -> List[Tuple[PivotPoint, PivotPoint]]:
+    price_pivots: list[PivotPoint], indicator_pivots: list[PivotPoint], max_distance_bars: int
+) -> list[tuple[PivotPoint, PivotPoint]]:
     """Match price and indicator pivots that occur near each other."""
     matches = []
 
@@ -55,7 +58,7 @@ def match_price_indicator_pivots(
         end_idx = p_pivot.index + max_distance_bars
 
         best_match = None
-        min_dist = float('inf')
+        min_dist = float("inf")
 
         for idx in range(start_idx, end_idx + 1):
             if idx in ind_idx_map:
@@ -71,13 +74,18 @@ def match_price_indicator_pivots(
 
     return matches
 
-def detect_divergences_for_indicator(df: pd.DataFrame, price_source: str, indicator_source: str, config: AppConfig) -> List[DivergenceSignalCandidate]:
+
+def detect_divergences_for_indicator(
+    df: pd.DataFrame, price_source: str, indicator_source: str, config: AppConfig
+) -> list[DivergenceSignalCandidate]:
     cfg = config.indicator_v2.divergence
     if not cfg.enabled:
         return []
 
     if price_source not in df.columns or indicator_source not in df.columns:
-        raise DivergenceDetectionError(f"Missing source columns: {price_source} or {indicator_source}")
+        raise DivergenceDetectionError(
+            f"Missing source columns: {price_source} or {indicator_source}"
+        )
 
     price_pivots = detect_price_pivots(df, price_source, config)
     indicator_pivots = detect_indicator_pivots(df, indicator_source, config)
@@ -86,19 +94,19 @@ def detect_divergences_for_indicator(df: pd.DataFrame, price_source: str, indica
     matched_pivots = match_price_indicator_pivots(
         price_pivots,
         indicator_pivots,
-        max_distance_bars=2 # Allow small misalignment between price and indicator
+        max_distance_bars=2,  # Allow small misalignment between price and indicator
     )
 
     candidates = []
-    symbol = df['symbol'].iloc[0] if 'symbol' in df.columns else "unknown"
-    interval = df['interval'].iloc[0] if 'interval' in df.columns else "unknown"
+    symbol = df["symbol"].iloc[0] if "symbol" in df.columns else "unknown"
+    interval = df["interval"].iloc[0] if "interval" in df.columns else "unknown"
 
     # We need pairs of matched pivots to form a divergence
     for i in range(1, len(matched_pivots)):
         curr_price_p, curr_ind_p = matched_pivots[i]
 
         # Look back for a previous matching pivot
-        for j in range(i-1, -1, -1):
+        for j in range(i - 1, -1, -1):
             prev_price_p, prev_ind_p = matched_pivots[j]
 
             # Must be same pivot type
@@ -111,7 +119,7 @@ def detect_divergences_for_indicator(df: pd.DataFrame, price_source: str, indica
                 continue
 
             if dist_bars > cfg.max_pivot_pair_distance:
-                break # sorted by index, so older ones are even further
+                break  # sorted by index, so older ones are even further
 
             p_curr = curr_price_p.value
             p_prev = prev_price_p.value
@@ -135,7 +143,10 @@ def detect_divergences_for_indicator(df: pd.DataFrame, price_source: str, indica
                     div_type = DivergenceType.hidden_bearish
 
             if div_type:
-                if abs(p_delta_pct) >= cfg.min_price_delta_pct and abs(i_delta_pct) >= cfg.min_indicator_delta_pct:
+                if (
+                    abs(p_delta_pct) >= cfg.min_price_delta_pct
+                    and abs(i_delta_pct) >= cfg.min_indicator_delta_pct
+                ):
                     cand = DivergenceSignalCandidate(
                         candidate_id=uuid.uuid4().hex,
                         symbol=symbol,
@@ -152,14 +163,15 @@ def detect_divergences_for_indicator(df: pd.DataFrame, price_source: str, indica
                         price_delta_pct=p_delta_pct,
                         indicator_delta_pct=i_delta_pct,
                         pivot_distance_bars=dist_bars,
-                        score=0.0
+                        score=0.0,
                     )
                     if cfg.score_enabled:
                         cand.score = score_divergence(cand, config)
                     candidates.append(cand)
-                    break # Found the most recent divergence for this point
+                    break  # Found the most recent divergence for this point
 
     return candidates
+
 
 def score_divergence(candidate: DivergenceSignalCandidate, config: AppConfig) -> float:
     # A simple scoring based on delta magnitudes and distance. Max 100.
@@ -175,7 +187,8 @@ def score_divergence(candidate: DivergenceSignalCandidate, config: AppConfig) ->
 
     return min(100.0, score)
 
-def detect_all_divergences(df: pd.DataFrame, config: AppConfig) -> List[DivergenceSignalCandidate]:
+
+def detect_all_divergences(df: pd.DataFrame, config: AppConfig) -> list[DivergenceSignalCandidate]:
     cfg = config.indicator_v2.divergence
     if not cfg.enabled:
         return []
@@ -184,17 +197,23 @@ def detect_all_divergences(df: pd.DataFrame, config: AppConfig) -> List[Divergen
 
     for ind_source in cfg.indicator_sources:
         if ind_source in df.columns:
-            all_cands.extend(detect_divergences_for_indicator(df, cfg.price_source, ind_source, config))
+            all_cands.extend(
+                detect_divergences_for_indicator(df, cfg.price_source, ind_source, config)
+            )
 
     return all_cands
 
-def divergences_to_dataframe(candidates: List[DivergenceSignalCandidate]) -> pd.DataFrame:
+
+def divergences_to_dataframe(candidates: list[DivergenceSignalCandidate]) -> pd.DataFrame:
     if not candidates:
         return pd.DataFrame()
 
     return pd.DataFrame([c.model_dump() for c in candidates])
 
-def add_divergence_features(df: pd.DataFrame, candidates: List[DivergenceSignalCandidate], config: AppConfig) -> pd.DataFrame:
+
+def add_divergence_features(
+    df: pd.DataFrame, candidates: list[DivergenceSignalCandidate], config: AppConfig
+) -> pd.DataFrame:
     df = df.copy()
     cfg = config.indicator_v2.divergence
 
@@ -214,7 +233,11 @@ def add_divergence_features(df: pd.DataFrame, candidates: List[DivergenceSignalC
             df[score_col] = 0.0
 
         # The divergence is detected at the second pivot
-        idx = df.index[df['open_time'] == cand.second_pivot_time] if 'open_time' in df.columns else df.index[df.index == cand.second_pivot_time]
+        idx = (
+            df.index[df["open_time"] == cand.second_pivot_time]
+            if "open_time" in df.columns
+            else df.index[df.index == cand.second_pivot_time]
+        )
 
         if len(idx) > 0:
             df.loc[idx, flag_col] = True

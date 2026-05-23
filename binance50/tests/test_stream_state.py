@@ -7,9 +7,15 @@ from binance50.streams.state import StreamStateStore
 def test_stream_state():
     store = StreamStateStore()
     e = StreamEvent(
-        event_id="1", stream_type=StreamType.unknown, source=StreamSource.mock,
-        symbol="BTCUSDT", market_scope=MarketScope.SPOT, event_time_ms=1000,
-        received_time_ms=1010, raw_stream_name="x", raw_payload={}
+        event_id="1",
+        stream_type=StreamType.unknown,
+        source=StreamSource.mock,
+        symbol="BTCUSDT",
+        market_scope=MarketScope.SPOT,
+        event_time_ms=1000,
+        received_time_ms=1010,
+        raw_stream_name="x",
+        raw_payload={},
     )
     store.update(e)
     st = store.get_symbol_state("BTCUSDT")

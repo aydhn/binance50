@@ -8,6 +8,7 @@ from binance50.core.exceptions import StorageSchemaError
 
 
 class DatasetKind(StrEnum):
+    STRATEGY_CANDIDATES = "strategy_candidates"
     OHLCV = "ohlcv"
     INDICATORS = "indicators"
     INDICATOR_FEATURES_V2 = "indicator_features_v2"
@@ -17,6 +18,7 @@ class DatasetKind(StrEnum):
     FEATURE_STORE_FUTURE = "feature_store_future"
     BACKTEST_RESULTS_FUTURE = "backtest_results_future"
 
+
 @dataclass
 class ColumnSchema:
     name: str
@@ -24,6 +26,7 @@ class ColumnSchema:
     nullable: bool = True
     is_primary_key: bool = False
     description: str = ""
+
 
 @dataclass
 class DatasetSchema:
@@ -38,6 +41,7 @@ class DatasetSchema:
     dynamic_columns_allowed: bool = False
     dynamic_column_prefixes: list[str] = field(default_factory=list)
     disallowed_column_names: list[str] = field(default_factory=list)
+
 
 def get_ohlcv_schema() -> DatasetSchema:
     return DatasetSchema(
@@ -62,8 +66,9 @@ def get_ohlcv_schema() -> DatasetSchema:
         ],
         primary_keys=["market_scope", "symbol", "interval", "open_time"],
         partition_columns=["market_scope", "symbol", "interval"],
-        timestamp_column="open_time"
+        timestamp_column="open_time",
     )
+
 
 def get_universe_selection_schema() -> DatasetSchema:
     return DatasetSchema(
@@ -83,12 +88,13 @@ def get_universe_selection_schema() -> DatasetSchema:
             ColumnSchema("trade_count_24h", "int64"),
             ColumnSchema("spread_bps", "float64"),
             ColumnSchema("bid_qty", "float64"),
-            ColumnSchema("ask_qty", "float64")
+            ColumnSchema("ask_qty", "float64"),
         ],
         primary_keys=["selection_id", "symbol"],
         partition_columns=["market_scope"],
-        timestamp_column="generated_at_ms"
+        timestamp_column="generated_at_ms",
     )
+
 
 def get_stream_events_schema() -> DatasetSchema:
     return DatasetSchema(
@@ -100,12 +106,13 @@ def get_stream_events_schema() -> DatasetSchema:
             ColumnSchema("stream_type", "string", nullable=False),
             ColumnSchema("symbol", "string", nullable=False),
             ColumnSchema("event_time_ms", "int64", nullable=False),
-            ColumnSchema("payload", "string", nullable=False), # JSON payload
+            ColumnSchema("payload", "string", nullable=False),  # JSON payload
         ],
         primary_keys=["event_id"],
         partition_columns=["stream_type", "symbol"],
-        timestamp_column="event_time_ms"
+        timestamp_column="event_time_ms",
     )
+
 
 def get_quality_reports_schema() -> DatasetSchema:
     return DatasetSchema(
@@ -120,20 +127,72 @@ def get_quality_reports_schema() -> DatasetSchema:
             ColumnSchema("issue_type", "string", nullable=False),
             ColumnSchema("severity", "string", nullable=False),
             ColumnSchema("issue_count", "int64", nullable=False),
-            ColumnSchema("created_at_ms", "int64", nullable=False)
+            ColumnSchema("created_at_ms", "int64", nullable=False),
         ],
         primary_keys=["report_id"],
         partition_columns=["dataset_name"],
-        timestamp_column="created_at_ms"
+        timestamp_column="created_at_ms",
     )
+
+
+def get_strategy_candidates_schema() -> DatasetSchema:
+    return DatasetSchema(
+        dataset_name="strategy_candidates",
+        dataset_kind=DatasetKind.STRATEGY_CANDIDATES,
+        version=1,
+        columns=[
+            ColumnSchema("candidate_id", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("symbol", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("market_scope", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("interval", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("open_time", "int64", nullable=False, is_primary_key=True),
+            ColumnSchema("plugin_name", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("close_time", "int64", nullable=True),
+            ColumnSchema("plugin_type", "string", nullable=False),
+            ColumnSchema("direction", "string", nullable=False),
+            ColumnSchema("strength", "string", nullable=False),
+            ColumnSchema("confidence", "float64", nullable=False),
+            ColumnSchema("status", "string", nullable=False),
+            ColumnSchema("intent", "string", nullable=False),
+            ColumnSchema("expiry_bars", "int64", nullable=False),
+            ColumnSchema("explanation_summary", "string", nullable=False),
+            ColumnSchema("used_features_json", "string", nullable=False),
+            ColumnSchema("rejection_reasons_json", "string", nullable=False),
+            ColumnSchema("metadata_json", "string", nullable=False),
+            ColumnSchema("created_at_utc", "int64", nullable=False),
+            ColumnSchema("config_hash", "string", nullable=False),
+        ],
+        primary_keys=[
+            "market_scope",
+            "symbol",
+            "interval",
+            "open_time",
+            "plugin_name",
+            "candidate_id",
+        ],
+        partition_columns=["market_scope", "symbol", "interval"],
+        timestamp_column="open_time",
+        disallowed_column_names=[
+            "order_id",
+            "quantity",
+            "leverage",
+            "entry_price",
+            "exit_price",
+            "stop_loss",
+            "take_profit",
+        ],
+    )
+
 
 def get_schema_registry() -> dict[str, DatasetSchema]:
     return {
         "ohlcv": get_ohlcv_schema(),
         "universe_selection": get_universe_selection_schema(),
         "stream_events": get_stream_events_schema(),
-        "quality_reports": get_quality_reports_schema()
+        "quality_reports": get_quality_reports_schema(),
+        "strategy_candidates": get_strategy_candidates_schema(),
     }
+
 
 def validate_dataframe_schema(df: pd.DataFrame, schema: DatasetSchema) -> None:
     drift = detect_schema_drift(df, schema)
@@ -142,6 +201,7 @@ def validate_dataframe_schema(df: pd.DataFrame, schema: DatasetSchema) -> None:
     if drift["extra_columns"]:
         # We can either warn or error based on config, but core validation fails here
         raise StorageSchemaError(f"Extra columns detected: {drift['extra_columns']}")
+
 
 def detect_schema_drift(df: pd.DataFrame, schema: DatasetSchema) -> dict[str, Any]:
     expected_cols = {c.name for c in schema.columns}
@@ -168,24 +228,24 @@ def detect_schema_drift(df: pd.DataFrame, schema: DatasetSchema) -> dict[str, An
     for col in actual_cols:
         col_lower = col.lower()
         if any(secret in col_lower for secret in secret_words):
-             raise StorageSchemaError(f"Secret-like column name detected: {col}")
+            raise StorageSchemaError(f"Secret-like column name detected: {col}")
 
     # Note: we could do deeper dtype checks here, but leaving simple for now
 
     return {
-        "missing_required_columns": [c for c in missing if not next(s for s in schema.columns if s.name == c).nullable],
-        "missing_optional_columns": [c for c in missing if next(s for s in schema.columns if s.name == c).nullable],
+        "missing_required_columns": [
+            c for c in missing if not next(s for s in schema.columns if s.name == c).nullable
+        ],
+        "missing_optional_columns": [
+            c for c in missing if next(s for s in schema.columns if s.name == c).nullable
+        ],
         "extra_columns": extra,
-        "is_drifted": len(missing) > 0 or len(extra) > 0
+        "is_drifted": len(missing) > 0 or len(extra) > 0,
     }
 
+
 def schema_to_sql_columns(schema: DatasetSchema) -> list[str]:
-    type_map = {
-        "string": "TEXT",
-        "int64": "INTEGER",
-        "float64": "REAL",
-        "bool": "INTEGER"
-    }
+    type_map = {"string": "TEXT", "int64": "INTEGER", "float64": "REAL", "bool": "INTEGER"}
     sql_cols = []
     for c in schema.columns:
         sql_type = type_map.get(c.dtype, "TEXT")
@@ -198,6 +258,7 @@ def schema_to_sql_columns(schema: DatasetSchema) -> list[str]:
 
     return sql_cols
 
+
 def schema_to_pyarrow(schema: DatasetSchema) -> Any:
     import pyarrow as pa
 
@@ -205,7 +266,7 @@ def schema_to_pyarrow(schema: DatasetSchema) -> Any:
         "string": pa.string(),
         "int64": pa.int64(),
         "float64": pa.float64(),
-        "bool": pa.bool_()
+        "bool": pa.bool_(),
     }
 
     fields = []
@@ -218,20 +279,24 @@ def schema_to_pyarrow(schema: DatasetSchema) -> Any:
 INDICATOR_V2_SCHEMA = DatasetSchema(
     dataset_name="indicator_features_v2",
     dataset_kind=DatasetKind.INDICATOR_FEATURES_V2,
-    version=1, partition_columns=["market_scope", "symbol"],
+    version=1,
+    partition_columns=["market_scope", "symbol"],
     columns=[
         ColumnSchema("market_scope", "str", False, True, "Market scope (e.g. spot, usdm)"),
         ColumnSchema("symbol", "str", False, True, "Trading pair symbol"),
         ColumnSchema("interval", "str", False, True, "Timeframe interval"),
         ColumnSchema("open_time", "datetime64[ns, UTC]", False, True, "Candle open time"),
-        ColumnSchema("feature_set_id", "str", False, True, "Unique ID of the feature set definition"),
-
+        ColumnSchema(
+            "feature_set_id", "str", False, True, "Unique ID of the feature set definition"
+        ),
         ColumnSchema("close_time", "datetime64[ns, UTC]", False, False, "Candle close time"),
         ColumnSchema("feature_config_hash", "str", False, False, "Hash of the indicator v2 config"),
         ColumnSchema("is_warmup", "bool", False, False, "Whether row is in warmup period"),
-        ColumnSchema("generated_at_utc", "datetime64[ns, UTC]", False, False, "When features were computed"),
+        ColumnSchema(
+            "generated_at_utc", "datetime64[ns, UTC]", False, False, "When features were computed"
+        ),
     ],
     dynamic_columns_allowed=True,
     dynamic_column_prefixes=["div_", "mtf_", "pat_", "trend_", "mom_", "vol_", "volu_", "tr_"],
-    disallowed_column_names=["target", "label", "future_return", "next_close"]
+    disallowed_column_names=["target", "label", "future_return", "next_close"],
 )

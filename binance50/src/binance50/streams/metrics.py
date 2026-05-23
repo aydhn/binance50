@@ -21,6 +21,7 @@ class StreamMetricsSnapshot(BaseModel):
     events_by_symbol: dict[str, int] = Field(default_factory=dict)
     generated_at_utc: datetime = Field(default_factory=get_utc_now)
 
+
 class StreamMetricsCollector:
     def __init__(self) -> None:
         self.reset()
@@ -71,7 +72,7 @@ class StreamMetricsCollector:
             self._stale_events += 1
 
     def record_dispatch_result(self, result: StreamDispatchResult) -> None:
-        pass # Optional tracking for dispatch metrics
+        pass  # Optional tracking for dispatch metrics
 
     def snapshot(self) -> StreamMetricsSnapshot:
         avg_lag = (self._total_lag_ms / self._lag_count) if self._lag_count > 0 else 0.0
@@ -86,5 +87,5 @@ class StreamMetricsCollector:
             max_lag_ms=self._max_lag_ms,
             events_by_type=self._events_by_type.copy(),
             events_by_symbol=self._events_by_symbol.copy(),
-            generated_at_utc=get_utc_now()
+            generated_at_utc=get_utc_now(),
         )

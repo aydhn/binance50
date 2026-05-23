@@ -26,6 +26,7 @@ class SymbolStreamState(BaseModel):
     parse_error_count: int = 0
     warnings: list[str] = Field(default_factory=list)
 
+
 class StreamStateStore:
     def __init__(self) -> None:
         self._states: dict[str, SymbolStreamState] = {}
@@ -56,17 +57,19 @@ class StreamStateStore:
         if event.stream_type == StreamType.kline and isinstance(event, KlineStreamEvent):
             state.last_kline_open_time_by_interval[event.interval] = event.open_time
 
-        elif event.stream_type == StreamType.book_ticker and isinstance(event, BookTickerStreamEvent):
+        elif event.stream_type == StreamType.book_ticker and isinstance(
+            event, BookTickerStreamEvent
+        ):
             state.last_book_ticker = {
                 "bid": float(event.bid_price),
                 "ask": float(event.ask_price),
-                "spread_bps": event.spread_bps
+                "spread_bps": event.spread_bps,
             }
 
         elif event.stream_type == StreamType.ticker and isinstance(event, TickerStreamEvent):
             state.last_ticker = {
                 "last_price": float(event.last_price),
-                "volume": float(event.volume)
+                "volume": float(event.volume),
             }
 
     def get_symbol_state(self, symbol: str) -> SymbolStreamState | None:
@@ -88,5 +91,5 @@ class StreamStateStore:
             "tracked_symbols": len(self._states),
             "total_events": sum(s.event_count for s in self._states.values()),
             "total_stale": sum(s.stale_count for s in self._states.values()),
-            "total_duplicates": sum(s.duplicate_count for s in self._states.values())
+            "total_duplicates": sum(s.duplicate_count for s in self._states.values()),
         }

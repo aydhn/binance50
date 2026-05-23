@@ -1,18 +1,6 @@
 from typing import Any
 
 from binance50.core.exceptions import (
-    IndicatorV2Error,
-    PivotDetectionError,
-    DivergenceDetectionError,
-    MTFAlignmentError,
-    MTFLookaheadError,
-    FeatureGroupError,
-    FeatureMetadataError,
-    FeatureRegistryError,
-    FeatureQualityError,
-    PatternEngineError,
-    PatternAdapterError,
-    RepaintingRiskError,
     Binance50Error,
     BinanceApiError,
     BinanceAuthenticationError,
@@ -24,6 +12,18 @@ from binance50.core.exceptions import (
     BinanceSymbolFilterError,
     BinanceTimestampError,
     BinanceUnknownExecutionStatusError,
+    DivergenceDetectionError,
+    FeatureGroupError,
+    FeatureMetadataError,
+    FeatureQualityError,
+    FeatureRegistryError,
+    IndicatorV2Error,
+    MTFAlignmentError,
+    MTFLookaheadError,
+    PatternAdapterError,
+    PatternEngineError,
+    PivotDetectionError,
+    RepaintingRiskError,
     StreamBufferOverflowError,
     StreamConnectionDisabledError,
     StreamDuplicateEventError,
@@ -115,24 +115,13 @@ def classify_stream_error(msg: str) -> type[Binance50Error]:
     if "real connect disabled" in msg_lower or "disabled in phase 9" in msg_lower:
         return StreamConnectionDisabledError
     from binance50.core.exceptions import StreamError
+
     return StreamError
 
 
 def classify_storage_error(error: Exception) -> type[Binance50Error]:
     """Classify storage related errors."""
     from binance50.core.exceptions import (
-    IndicatorV2Error,
-    PivotDetectionError,
-    DivergenceDetectionError,
-    MTFAlignmentError,
-    MTFLookaheadError,
-    FeatureGroupError,
-    FeatureMetadataError,
-    FeatureRegistryError,
-    FeatureQualityError,
-    PatternEngineError,
-    PatternAdapterError,
-    RepaintingRiskError,
         DestructiveActionBlockedError,
         ParquetReadError,
         ParquetWriteError,
@@ -166,18 +155,6 @@ def classify_storage_error(error: Exception) -> type[Binance50Error]:
 
 def classify_indicator_error(error: Exception) -> type[Binance50Error]:
     from binance50.core.exceptions import (
-    IndicatorV2Error,
-    PivotDetectionError,
-    DivergenceDetectionError,
-    MTFAlignmentError,
-    MTFLookaheadError,
-    FeatureGroupError,
-    FeatureMetadataError,
-    FeatureRegistryError,
-    FeatureQualityError,
-    PatternEngineError,
-    PatternAdapterError,
-    RepaintingRiskError,
         IndicatorBackendError,
         IndicatorComputationError,
         IndicatorError,
@@ -198,7 +175,12 @@ def classify_indicator_error(error: Exception) -> type[Binance50Error]:
         return OptionalIndicatorBackendMissingError
     if "all nan indicator" in error_str:
         return IndicatorQualityError
-    if "future" in error_str or "target" in error_str or "label" in error_str or "lookahead" in error_str:
+    if (
+        "future" in error_str
+        or "target" in error_str
+        or "label" in error_str
+        or "lookahead" in error_str
+    ):
         return LookaheadBiasError
     if "insufficient rows" in error_str or "insufficient history" in error_str:
         return InsufficientHistoryError
@@ -206,6 +188,7 @@ def classify_indicator_error(error: Exception) -> type[Binance50Error]:
         return error.__class__
 
     return IndicatorComputationError
+
 
 def classify_indicator_v2_error(exception: Exception) -> str:
     """Classify indicator v2 exceptions to their error codes."""
@@ -236,3 +219,36 @@ def classify_indicator_v2_error(exception: Exception) -> str:
     elif isinstance(exception, IndicatorV2Error):
         return error_codes.INDICATOR_V2_FAILED
     return "UNKNOWN_ERROR"
+
+
+def classify_strategy_error(error: Exception) -> type[Binance50Error]:
+    from binance50.core.exceptions import (
+        ActionableLanguageDetectedError,
+        ExecutionObjectDetectedError,
+        StrategyCandidateError,
+        StrategyConfigError,
+        StrategyError,
+        StrategyExplanationError,
+        StrategyInputError,
+        StrategyPluginError,
+    )
+
+    error_str = str(error).lower()
+
+    if "missing required feature" in error_str:
+        return StrategyInputError
+    if "order language" in error_str or "actionable language" in error_str:
+        return ActionableLanguageDetectedError
+    if "execution object" in error_str:
+        return ExecutionObjectDetectedError
+    if "confidence" in error_str and "out of range" in error_str:
+        return StrategyCandidateError
+    if "missing explanation" in error_str:
+        return StrategyExplanationError
+    if "unsafe config" in error_str:
+        return StrategyConfigError
+
+    if isinstance(error, StrategyError):
+        return error.__class__
+
+    return StrategyPluginError

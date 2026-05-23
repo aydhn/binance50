@@ -17,7 +17,7 @@ class SnapshotRegistry:
             source=source,
             dataset_version_id="",
             metadata=json.dumps(metadata),
-            created_at_utc=datetime.now(UTC).isoformat()
+            created_at_utc=datetime.now(UTC).isoformat(),
         )
         self.catalog.add_snapshot(record)
         return record
@@ -33,21 +33,21 @@ class SnapshotRegistry:
 
     def list_snapshots(self, snapshot_type: str | None = None) -> list[SnapshotRecord]:
         if snapshot_type:
-             sql = "SELECT * FROM snapshots WHERE snapshot_type = ? ORDER BY created_at_utc DESC"
-             res = self.catalog.execute(sql, (snapshot_type,))
+            sql = "SELECT * FROM snapshots WHERE snapshot_type = ? ORDER BY created_at_utc DESC"
+            res = self.catalog.execute(sql, (snapshot_type,))
         else:
-             sql = "SELECT * FROM snapshots ORDER BY created_at_utc DESC"
-             res = self.catalog.execute(sql)
+            sql = "SELECT * FROM snapshots ORDER BY created_at_utc DESC"
+            res = self.catalog.execute(sql)
         return [SnapshotRecord(**dict(r)) for r in res]
 
     def get_snapshot(self, snapshot_id: str) -> SnapshotRecord | None:
         sql = "SELECT * FROM snapshots WHERE snapshot_id = ?"
         res = self.catalog.execute(sql, (snapshot_id,))
         if res:
-             return SnapshotRecord(**dict(res[0]))
+            return SnapshotRecord(**dict(res[0]))
         return None
 
     def link_snapshot_to_dataset(self, snapshot_id: str, version_id: str) -> None:
         sql = "UPDATE snapshots SET dataset_version_id = ? WHERE snapshot_id = ?"
         with self.catalog.transaction() as c:
-             c.execute(sql, (version_id, snapshot_id))
+            c.execute(sql, (version_id, snapshot_id))

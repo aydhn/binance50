@@ -1,16 +1,17 @@
+from typing import Any, Protocol
+
 import pandas as pd
-from typing import List, Dict, Any, Protocol
-from binance50.indicators.pattern_base import PatternCandidate, IndicatorContext
+
+from binance50.indicators.pattern_base import IndicatorContext, PatternCandidate
+
 
 class PatternBackendAdapter(Protocol):
-    def is_available(self) -> bool:
-        ...
+    def is_available(self) -> bool: ...
 
-    def list_patterns(self) -> List[str]:
-        ...
+    def list_patterns(self) -> list[str]: ...
 
-    def detect_patterns(self, df: pd.DataFrame, context: IndicatorContext) -> List[PatternCandidate]:
-        ...
+    def detect_patterns(
+        self, df: pd.DataFrame, context: IndicatorContext
+    ) -> list[PatternCandidate]: ...
 
-    def availability_report(self) -> Dict[str, Any]:
-        ...
+    def availability_report(self) -> dict[str, Any]: ...

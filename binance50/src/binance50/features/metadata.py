@@ -1,9 +1,11 @@
 import hashlib
 import json
-import pandas as pd
-from typing import Dict, List, Any
+from typing import Any
 
-def compute_feature_set_hash(df: pd.DataFrame, feature_columns: List[str]) -> str:
+import pandas as pd
+
+
+def compute_feature_set_hash(df: pd.DataFrame, feature_columns: list[str]) -> str:
     """Compute a deterministic hash for a feature set dataframe."""
     if df.empty or not feature_columns:
         return hashlib.sha256(b"empty").hexdigest()
@@ -17,12 +19,14 @@ def compute_feature_set_hash(df: pd.DataFrame, feature_columns: List[str]) -> st
 
     return hasher.hexdigest()
 
-def compute_config_hash(config_section: Dict[str, Any]) -> str:
+
+def compute_config_hash(config_section: dict[str, Any]) -> str:
     """Compute a hash of the configuration to track provenance."""
     config_str = json.dumps(config_section, sort_keys=True)
     return hashlib.sha256(config_str.encode("utf-8")).hexdigest()
 
-def summarize_feature_nan_ratios(df: pd.DataFrame, feature_columns: List[str]) -> Dict[str, float]:
+
+def summarize_feature_nan_ratios(df: pd.DataFrame, feature_columns: list[str]) -> dict[str, float]:
     """Calculate the ratio of NaN values for each feature column."""
     if df.empty or not feature_columns:
         return {}
@@ -32,19 +36,22 @@ def summarize_feature_nan_ratios(df: pd.DataFrame, feature_columns: List[str]) -
 
     return {col: float(count / total_rows) for col, count in nan_counts.items()}
 
-def summarize_feature_ranges(df: pd.DataFrame, feature_columns: List[str]) -> Dict[str, Dict[str, float]]:
+
+def summarize_feature_ranges(
+    df: pd.DataFrame, feature_columns: list[str]
+) -> dict[str, dict[str, float]]:
     """Summarize min, max, mean for numeric features."""
     if df.empty or not feature_columns:
         return {}
 
     ranges = {}
-    numeric_df = df[feature_columns].select_dtypes(include=['number'])
+    numeric_df = df[feature_columns].select_dtypes(include=["number"])
 
     for col in numeric_df.columns:
         ranges[col] = {
             "min": float(numeric_df[col].min()),
             "max": float(numeric_df[col].max()),
-            "mean": float(numeric_df[col].mean())
+            "mean": float(numeric_df[col].mean()),
         }
 
     return ranges

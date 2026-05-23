@@ -21,12 +21,16 @@ class StreamSimulationResult(BaseModel):
     buffer_report: dict = Field(default_factory=dict)
     warnings: list[str] = Field(default_factory=list)
 
+
 class StreamSimulator:
     def __init__(self, config: AppConfig) -> None:
         self.config = config
 
-    def load_fixture_events(self, fixture_names: list[str], market_scope: MarketScope) -> list[StreamEvent]:
+    def load_fixture_events(
+        self, fixture_names: list[str], market_scope: MarketScope
+    ) -> list[StreamEvent]:
         from binance50.streams.fixtures import load_stream_fixture_sequence
+
         raw_events = load_stream_fixture_sequence(fixture_names)
 
         parsed = []
@@ -42,7 +46,7 @@ class StreamSimulator:
         self,
         events: list[StreamEvent],
         buffer: StreamBuffer,
-        metrics: StreamMetricsCollector | None = None
+        metrics: StreamMetricsCollector | None = None,
     ) -> list[StreamBufferDecision]:
 
         decisions = []
@@ -58,11 +62,14 @@ class StreamSimulator:
         fixture_names: list[str],
         market_scope: MarketScope,
         buffer: StreamBuffer | None = None,
-        metrics: StreamMetricsCollector | None = None
+        metrics: StreamMetricsCollector | None = None,
     ) -> StreamSimulationResult:
 
         if buffer is None:
-            buffer = StreamBuffer(max_events=self.config.streams.buffer_max_events, drop_policy=self.config.streams.buffer_drop_policy)
+            buffer = StreamBuffer(
+                max_events=self.config.streams.buffer_max_events,
+                drop_policy=self.config.streams.buffer_drop_policy,
+            )
         if metrics is None:
             metrics = StreamMetricsCollector()
 
@@ -100,5 +107,5 @@ class StreamSimulator:
             dropped_count=dropped_count,
             invalid_count=invalid_count,
             metrics=metrics.snapshot().model_dump(),
-            buffer_report=buffer.to_report()
+            buffer_report=buffer.to_report(),
         )

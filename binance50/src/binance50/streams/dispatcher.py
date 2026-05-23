@@ -16,6 +16,7 @@ class StreamDispatchResult(BaseModel):
     error: str | None = None
     warnings: list[str] = Field(default_factory=list)
 
+
 class StreamDispatcher:
     def __init__(self) -> None:
         self._handlers: dict[StreamType, list[Callable]] = {}
@@ -41,7 +42,7 @@ class StreamDispatcher:
                 stream_type=event.stream_type,
                 handled=False,
                 success=True,
-                warnings=["No handler registered for stream type"]
+                warnings=["No handler registered for stream type"],
             )
 
         # For Phase 9, we assume single handler or simple iteration without complex threading.
@@ -58,7 +59,7 @@ class StreamDispatcher:
             except Exception as e:
                 last_success = False
                 last_error = f"Handler {handler_name} failed: {str(e)}"
-                break # stop on first failure for now
+                break  # stop on first failure for now
 
         return StreamDispatchResult(
             event_id=event.event_id,
@@ -66,7 +67,7 @@ class StreamDispatcher:
             handled=True,
             handler_name=handler_name,
             success=last_success,
-            error=last_error
+            error=last_error,
         )
 
     def dispatch_batch(self, events: list[StreamEvent]) -> list[StreamDispatchResult]:

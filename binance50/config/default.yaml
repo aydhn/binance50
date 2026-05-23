@@ -571,3 +571,136 @@ indicator_v2:
     reject_lookahead_columns: true
     detect_feature_correlation: false
     correlation_warning_threshold: 0.98
+strategies:
+  enabled: true
+  output_dataset_name: strategy_candidates
+  cache_enabled: true
+  cache_dir: data/strategies
+  export_dir: data/strategies/exports
+
+  execution_forbidden: true
+  order_creation_forbidden: true
+  paper_trade_forbidden: true
+  backtest_forbidden: true
+  live_trade_forbidden: true
+
+  require_explanations: true
+  require_feature_metadata: true
+  require_closed_candles: true
+  prevent_lookahead_bias: true
+  reject_future_columns: true
+  reject_target_columns: true
+  reject_label_columns: true
+  max_candidates_per_symbol_interval: 100
+  max_plugins_per_run: 20
+  max_conditions_per_plugin: 50
+  min_rows_required: 100
+  warmup_rows_allowed: false
+
+  candidate:
+    allowed_directions:
+      - bullish
+      - bearish
+      - neutral
+      - no_action
+    allowed_strengths:
+      - weak
+      - medium
+      - strong
+    min_confidence: 0.0
+    max_confidence: 100.0
+    default_expiry_bars: 3
+    max_expiry_bars: 50
+    allow_actionable_order_language: false
+    require_non_order_intent: true
+
+  plugins:
+    trend_following:
+      enabled: true
+      required_features:
+        - trend_ema_20
+        - trend_ema_50
+        - trend_ema_200
+        - trend_adx_14
+      min_adx: 18.0
+      strong_adx: 25.0
+      ema_fast: trend_ema_20
+      ema_mid: trend_ema_50
+      ema_slow: trend_ema_200
+
+    mean_reversion:
+      enabled: true
+      required_features:
+        - mom_rsi_14
+        - vol_bb_lower_20_2
+        - vol_bb_upper_20_2
+        - vol_bb_mid_20_2
+      rsi_oversold: 30.0
+      rsi_overbought: 70.0
+      require_bollinger_touch: true
+
+    momentum_continuation:
+      enabled: true
+      required_features:
+        - mom_rsi_14
+        - trend_macd_hist_12_26_9
+        - mom_roc_10
+      rsi_min: 50.0
+      roc_min: 0.0
+      require_macd_hist_positive_for_bullish: true
+      require_macd_hist_negative_for_bearish: true
+
+    volatility_breakout:
+      enabled: true
+      required_features:
+        - vol_atr_14
+        - vol_donchian_high_20
+        - vol_donchian_low_20
+      breakout_buffer_atr: 0.10
+      require_atr_positive: true
+
+    volume_confirmation:
+      enabled: true
+      required_features:
+        - volu_obv
+        - volu_volume_sma_20
+        - volume
+      volume_multiplier: 1.25
+      require_volume_above_average: true
+
+    divergence_candidate:
+      enabled: true
+      required_prefixes:
+        - div_
+      min_divergence_score: 40.0
+      accept_regular: true
+      accept_hidden: true
+
+    mtf_confirmation:
+      enabled: true
+      required_prefixes:
+        - mtf_
+      require_mtf_trend_agreement: false
+      min_confirming_timeframes: 1
+
+    pattern_candidate:
+      enabled: true
+      required_prefixes:
+        - pat_
+      min_pattern_confidence: 40.0
+
+    composite_skeleton:
+      enabled: true
+      aggregate_only: true
+      final_signal_scoring_deferred: true
+      min_plugins_agreeing: 2
+
+  quality:
+    reject_empty_candidate_set: false
+    warn_empty_candidate_set: true
+    reject_duplicate_candidates: true
+    reject_missing_explanation: true
+    reject_order_like_language: true
+    reject_confidence_out_of_range: true
+    warn_conflicting_candidates: true
+    max_conflicting_candidates_per_bar: 5

@@ -26,13 +26,15 @@ class NativeIndicatorAdapter(IndicatorBackendAdapter):
             "name": self.name,
             "available": True,
             "version": "1.0.0",
-            "supported_functions_count": len(self.registry._specs)
+            "supported_functions_count": len(self.registry._specs),
         }
 
     def supports_indicator(self, name: str) -> bool:
         return name in self.registry._specs
 
-    def compute(self, spec: IndicatorSpec, df: pd.DataFrame, context: IndicatorContext) -> pd.DataFrame:
+    def compute(
+        self, spec: IndicatorSpec, df: pd.DataFrame, context: IndicatorContext
+    ) -> pd.DataFrame:
         func = self.registry.get_func(spec.name)
         if not func:
             raise UnsupportedFeatureError(f"Native implementation not found for {spec.name}")

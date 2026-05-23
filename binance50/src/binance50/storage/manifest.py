@@ -30,6 +30,7 @@ class DatasetManifest:
     created_at_utc: str
     metadata: dict[str, Any]
 
+
 def build_manifest(
     dataset_name: str,
     version_id: str,
@@ -37,28 +38,30 @@ def build_manifest(
     df: pd.DataFrame,
     schema: DatasetSchema,
     quality_status: str,
-    metadata: dict | None = None
+    metadata: dict | None = None,
 ) -> DatasetManifest:
 
     file_records = []
     # Note: In a real app we'd query the parquet store to calculate hashes
     for f in files:
-         file_records.append({
-             "file_id": uuid.uuid4().hex,
-             "file_path": str(f.absolute()), # Or relative
-             "file_format": "parquet",
-             "compression": "zstd",
-             "row_count": len(df) // len(files) if files else 0, # Approximation
-             "file_size_bytes": f.stat().st_size if f.exists() else 0,
-             "file_hash": "hash_placeholder",
-             "partition_values": {}
-         })
+        file_records.append(
+            {
+                "file_id": uuid.uuid4().hex,
+                "file_path": str(f.absolute()),  # Or relative
+                "file_format": "parquet",
+                "compression": "zstd",
+                "row_count": len(df) // len(files) if files else 0,  # Approximation
+                "file_size_bytes": f.stat().st_size if f.exists() else 0,
+                "file_hash": "hash_placeholder",
+                "partition_values": {},
+            }
+        )
 
     min_t = None
     max_t = None
     if schema.timestamp_column and schema.timestamp_column in df.columns and not df.empty:
-         min_t = int(df[schema.timestamp_column].min())
-         max_t = int(df[schema.timestamp_column].max())
+        min_t = int(df[schema.timestamp_column].min())
+        max_t = int(df[schema.timestamp_column].max())
 
     return DatasetManifest(
         manifest_id=uuid.uuid4().hex,
@@ -73,8 +76,9 @@ def build_manifest(
         max_time_ms=max_t,
         quality_status=quality_status,
         created_at_utc=datetime.now(UTC).isoformat(),
-        metadata=metadata or {}
+        metadata=metadata or {},
     )
+
 
 def write_manifest(manifest: DatasetManifest, config: AppConfig) -> Path:
     man_dir = get_manifest_dir(config)
@@ -84,12 +88,13 @@ def write_manifest(manifest: DatasetManifest, config: AppConfig) -> Path:
     safe_metadata = manifest.metadata.copy()
     for k in safe_metadata:
         if any(secret in k.lower() for secret in ["key", "secret", "token", "pwd"]):
-             safe_metadata[k] = "***REDACTED***"
+            safe_metadata[k] = "***REDACTED***"
     manifest.metadata = safe_metadata
 
-    with open(path, 'w') as f:
+    with open(path, "w") as f:
         json.dump(asdict(manifest), f, indent=2)
     return path
+
 
 def read_manifest(path: Path) -> DatasetManifest:
     try:
@@ -99,28 +104,32 @@ def read_manifest(path: Path) -> DatasetManifest:
     except Exception as e:
         raise StorageManifestError(f"Failed to read manifest: {e}")
 
+
 def validate_manifest(manifest: DatasetManifest, config: AppConfig) -> None:
     if not manifest.files and manifest.row_count > 0:
         raise StorageManifestError("Manifest claims rows but has no files")
 
     # Real logic would verify file hashes against physical files here
 
+
 def manifest_to_catalog_records(manifest: DatasetManifest) -> list[FileManifestRecord]:
     records = []
     for f in manifest.files:
-         records.append(FileManifestRecord(
-             file_id=f["file_id"],
-             version_id=manifest.version_id,
-             dataset_name=manifest.dataset_name,
-             file_path=f["file_path"],
-             file_format=f["file_format"],
-             compression=f["compression"],
-             row_count=f["row_count"],
-             file_size_bytes=f["file_size_bytes"],
-             file_hash=f["file_hash"],
-             min_open_time=manifest.min_time_ms or 0,
-             max_open_time=manifest.max_time_ms or 0,
-             partition_values=json.dumps(f["partition_values"]),
-             created_at_utc=manifest.created_at_utc
-         ))
+        records.append(
+            FileManifestRecord(
+                file_id=f["file_id"],
+                version_id=manifest.version_id,
+                dataset_name=manifest.dataset_name,
+                file_path=f["file_path"],
+                file_format=f["file_format"],
+                compression=f["compression"],
+                row_count=f["row_count"],
+                file_size_bytes=f["file_size_bytes"],
+                file_hash=f["file_hash"],
+                min_open_time=manifest.min_time_ms or 0,
+                max_open_time=manifest.max_time_ms or 0,
+                partition_values=json.dumps(f["partition_values"]),
+                created_at_utc=manifest.created_at_utc,
+            )
+        )
     return records

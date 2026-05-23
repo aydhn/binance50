@@ -1,8 +1,9 @@
 import pandas as pd
-from typing import List
+
 from binance50.core.exceptions import IndicatorV2Error
 
-def lag_features(df: pd.DataFrame, columns: List[str], lags: List[int]) -> pd.DataFrame:
+
+def lag_features(df: pd.DataFrame, columns: list[str], lags: list[int]) -> pd.DataFrame:
     """Safely apply lag to features, ensuring no negative (future) lags."""
     if not columns or not lags:
         return df
@@ -23,7 +24,8 @@ def lag_features(df: pd.DataFrame, columns: List[str], lags: List[int]) -> pd.Da
 
     return result_df
 
-def rolling_feature_stats(df: pd.DataFrame, columns: List[str], periods: List[int]) -> pd.DataFrame:
+
+def rolling_feature_stats(df: pd.DataFrame, columns: list[str], periods: list[int]) -> pd.DataFrame:
     """Safely apply rolling stats to features, strictly non-centered."""
     if not columns or not periods:
         return df
@@ -49,7 +51,10 @@ def rolling_feature_stats(df: pd.DataFrame, columns: List[str], periods: List[in
 
     return result_df
 
-def expanding_feature_stats(df: pd.DataFrame, columns: List[str], min_periods: int = 1) -> pd.DataFrame:
+
+def expanding_feature_stats(
+    df: pd.DataFrame, columns: list[str], min_periods: int = 1
+) -> pd.DataFrame:
     """Apply expanding window stats safely."""
     if not columns:
         return df

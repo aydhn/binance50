@@ -11,6 +11,7 @@ def test_stream_simulator():
     assert res.accepted_count == 1
     assert res.invalid_count == 0
 
+
 def test_stream_simulator_invalid():
     config = AppConfig()
     sim = StreamSimulator(config)

@@ -21,7 +21,9 @@ def get_profile_data_dir(profile_name: str) -> Path:
     p.mkdir(parents=True, exist_ok=True)
     return p
 
+
 def get_root_dir() -> Path:
     import os
+
     # Root is typically where src/ is located
     return Path(os.path.abspath(__file__)).parent.parent.parent.parent

@@ -161,7 +161,9 @@ class IndicatorsConfig(BaseModel):
 """
 
 if "class IndicatorsConfig" not in content:
-    content = content.replace("class AppConfig(BaseModel):", indicator_config_classes + "\nclass AppConfig(BaseModel):")
+    content = content.replace(
+        "class AppConfig(BaseModel):", indicator_config_classes + "\nclass AppConfig(BaseModel):"
+    )
 
     # Add indicators to AppConfig
     app_config_pattern = r"class AppConfig\(BaseModel\):.*?(?=\n\n|\Z)"
@@ -170,7 +172,7 @@ if "class IndicatorsConfig" not in content:
         r"(class AppConfig\(BaseModel\):.*?)(\n[ \t]*def )",
         r"\1\n    indicators: IndicatorsConfig = Field(default_factory=IndicatorsConfig)\2",
         content,
-        flags=re.DOTALL
+        flags=re.DOTALL,
     )
 
 file_path.write_text(content)

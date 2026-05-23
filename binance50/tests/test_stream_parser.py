@@ -28,14 +28,15 @@ def test_parse_kline():
             "q": "173355.00",
             "V": "5.0",
             "Q": "82550.00",
-            "B": "0"
-        }
+            "B": "0",
+        },
     }
     res = parse_stream_payload(raw, MarketScope.SPOT, StreamSource.fixture)
     assert res.success
     assert isinstance(res.event, KlineStreamEvent)
     assert res.event.close == Decimal("16510.00")
     assert res.event.is_closed is True
+
 
 def test_parse_combined():
     raw = {
@@ -48,14 +49,15 @@ def test_parse_combined():
             "a": "25202.00",
             "A": "40.66",
             "e": "bookTicker",
-            "E": 1672531260000
-        }
+            "E": 1672531260000,
+        },
     }
     res = parse_combined_stream_payload(raw, MarketScope.SPOT, StreamSource.fixture)
     assert res.success
     assert isinstance(res.event, BookTickerStreamEvent)
     assert res.event.symbol == "BTCUSDT"
     assert res.event.raw_stream_name == "btcusdt@bookTicker"
+
 
 def test_parse_missing_fields():
     raw = {"e": "kline", "E": 1000}

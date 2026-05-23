@@ -27,6 +27,7 @@ class StreamEvent(BaseModel):
         d = self.model_dump()
         return d
 
+
 class KlineStreamEvent(StreamEvent):
     interval: str
     open_time: int
@@ -42,12 +43,14 @@ class KlineStreamEvent(StreamEvent):
     taker_buy_quote_volume: Decimal
     is_closed: bool
 
+
 class BookTickerStreamEvent(StreamEvent):
     bid_price: Decimal
     bid_qty: Decimal
     ask_price: Decimal
     ask_qty: Decimal
     spread_bps: float | None = None
+
 
 class MiniTickerStreamEvent(StreamEvent):
     close_price: Decimal
@@ -56,6 +59,7 @@ class MiniTickerStreamEvent(StreamEvent):
     low_price: Decimal
     total_traded_base_volume: Decimal
     total_traded_quote_volume: Decimal
+
 
 class TickerStreamEvent(StreamEvent):
     price_change: Decimal
@@ -68,6 +72,7 @@ class TickerStreamEvent(StreamEvent):
     close_time: int
     trade_count: int
 
+
 class TradeStreamEvent(StreamEvent):
     trade_id: int
     price: Decimal
@@ -76,6 +81,7 @@ class TradeStreamEvent(StreamEvent):
     seller_order_id: int
     trade_time_ms: int
     is_buyer_market_maker: bool
+
 
 class AggTradeStreamEvent(StreamEvent):
     aggregate_trade_id: int
@@ -86,12 +92,14 @@ class AggTradeStreamEvent(StreamEvent):
     trade_time_ms: int
     is_buyer_market_maker: bool
 
+
 class DepthUpdateStreamEvent(StreamEvent):
     first_update_id: int
     final_update_id: int
     previous_final_update_id: int | None = None
     bids: list[tuple[Decimal, Decimal]]
     asks: list[tuple[Decimal, Decimal]]
+
 
 class MarkPriceStreamEvent(StreamEvent):
     mark_price: Decimal
@@ -100,12 +108,14 @@ class MarkPriceStreamEvent(StreamEvent):
     funding_rate: Decimal
     next_funding_time: int
 
+
 class StreamParseResult(BaseModel):
     success: bool
     event: StreamEvent | None = None
     error: str | None = None
     warnings: list[str] = Field(default_factory=list)
     raw_payload_hash: str | None = None
+
 
 class StreamBatch(BaseModel):
     batch_id: str

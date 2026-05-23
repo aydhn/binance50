@@ -15,6 +15,7 @@ def test_sqlite_catalog_init(tmp_path):
     assert conn is not None
     cat.close()
 
+
 def test_sqlite_catalog_upsert(tmp_path):
     config = AppConfig()
     db_path = tmp_path / "test.sqlite"
