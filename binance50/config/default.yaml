@@ -455,3 +455,119 @@ indicators:
     detect_inf: true
     detect_extreme_values: true
     extreme_zscore_threshold: 20.0
+indicator_v2:
+  enabled: true
+  output_dataset_name: indicator_features_v2
+  cache_enabled: true
+  cache_dir: data/indicators_v2
+  export_dir: data/indicators_v2/exports
+  prevent_lookahead_bias: true
+  require_closed_candles: true
+  reject_future_columns: true
+  max_feature_columns: 1000
+  max_feature_groups: 100
+  max_mtf_sources_per_run: 5
+  pivots:
+    enabled: true
+    method: causal_window
+    left_window: 3
+    min_prominence_pct: 0.1
+    min_distance_bars: 3
+    use_centered_window: false
+    allow_repainting: false
+    confirm_after_bars: 0
+    max_pivots_per_series: 5000
+  divergence:
+    enabled: true
+    lookback_bars: 100
+    max_pivot_pair_distance: 50
+    min_pivot_distance: 3
+    price_source: close
+    indicator_sources:
+    - mom_rsi_14
+    - trend_macd_hist_12_26_9
+    - mom_stoch_k_14_3_3
+    - mom_cci_20
+    - volu_obv
+    - volu_mfi_14
+    - volu_cmf_20
+    detect_regular: true
+    detect_hidden: true
+    require_price_pivot: true
+    require_indicator_pivot: true
+    min_indicator_delta_pct: 0.05
+    min_price_delta_pct: 0.05
+    score_enabled: true
+    max_divergence_score: 100.0
+    output_flags: true
+    output_scores: true
+  mtf:
+    enabled: true
+    base_intervals:
+    - 1m
+    - 5m
+    - 15m
+    higher_intervals:
+    - 15m
+    - 1h
+    - 4h
+    - 1d
+    alignment_method: asof_backward
+    require_higher_tf_closed: true
+    max_alignment_tolerance_bars: 1
+    add_higher_tf_prefix: true
+    prefix_template: mtf_{interval}_
+    disallow_forward_alignment: true
+    disallow_nearest_alignment: true
+    drop_unmatched_rows: false
+    mark_unmatched_rows: true
+  feature_groups:
+    enabled: true
+    groups:
+      trend:
+        prefixes:
+        - trend_
+      momentum:
+        prefixes:
+        - mom_
+      volatility:
+        prefixes:
+        - vol_
+      volume:
+        prefixes:
+        - volu_
+      transforms:
+        prefixes:
+        - tr_
+      divergence:
+        prefixes:
+        - div_
+      mtf:
+        prefixes:
+        - mtf_
+      patterns:
+        prefixes:
+        - pat_
+    require_group_metadata: true
+    allow_ungrouped_features: false
+  patterns:
+    enabled: true
+    native_pattern_skeleton_enabled: true
+    talib_pattern_adapter_enabled: true
+    fail_if_talib_missing: false
+    output_prefix: pat_
+    supported_initial_patterns:
+    - doji_skeleton
+    - hammer_skeleton
+    - engulfing_skeleton
+    full_pattern_engine_deferred: true
+  quality:
+    reject_all_nan_feature: true
+    reject_inf: true
+    warn_high_nan_ratio: true
+    max_nan_ratio: 0.5
+    reject_duplicate_feature_names: true
+    reject_unregistered_feature: true
+    reject_lookahead_columns: true
+    detect_feature_correlation: false
+    correlation_warning_threshold: 0.98

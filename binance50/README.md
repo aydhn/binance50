@@ -135,3 +135,19 @@ The Indicator Engine is designed to securely and deterministically compute techn
 - `python -m binance50.cli indicator-quality-check`
 - `python -m binance50.cli indicator-safety-check`
 - `python -m binance50.cli indicator-health`
+
+### Indicator V2 Features
+- **Divergence Candidate**: Identifies possible market divergences based on strictly backward pivots. They do not constitute actionable trade signals on their own.
+- **Causal Pivots**: Local extremes generated without lookahead bias.
+- **Multi-Timeframe Alignment**: Robust mechanism strictly aligning completed higher-timeframe candles to current ones.
+- **Feature Grouping**: Tagging mechanism categorizing indicators (trend, momentum, volume, etc.).
+
+**CLI Commands:**
+- `python -m binance50.cli indicator-v2-config`
+- `python -m binance50.cli pivot-detect-fixture --symbol BTCUSDT --scope spot --interval 1m`
+- `python -m binance50.cli divergence-detect-fixture --symbol BTCUSDT --scope spot --interval 1m`
+- `python -m binance50.cli mtf-align-fixtures --base-interval 1m --higher-interval 1h`
+- `python -m binance50.cli pattern-backends`
+- `python -m binance50.cli indicator-v2-compute-fixture --symbol BTCUSDT --scope spot --interval 1m`
+- `python -m binance50.cli indicator-v2-safety-check`
+- `python -m binance50.cli indicator-v2-health`
