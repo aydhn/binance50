@@ -85,7 +85,7 @@ def indicator_health():
     print_json(data=build_indicator_health_report(config))
 """
 
-if "@app.command(name=\"indicator-config\")" not in content:
+if '@app.command(name="indicator-config")' not in content:
     content += "\n" + cli_commands
 
 file_path.write_text(content)
@@ -105,5 +105,8 @@ doctor_patch = """
 # We don't bother doing a strict AST insertion for doctor, we rely on check_project.py tests for it if it's there.
 # Let's quickly insert it before `return healthy`.
 content = file_path.read_text()
-content = content.replace("    if not healthy:\n        raise typer.Exit(1)", doctor_patch + "    if not healthy:\n        raise typer.Exit(1)")
+content = content.replace(
+    "    if not healthy:\n        raise typer.Exit(1)",
+    doctor_patch + "    if not healthy:\n        raise typer.Exit(1)",
+)
 file_path.write_text(content)

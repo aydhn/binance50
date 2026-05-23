@@ -15,6 +15,7 @@ def test_stream_guard_blocks_real_connect():
     with pytest.raises(StreamConnectionDisabledError):
         assert_real_stream_connect_allowed(config)
 
+
 def test_stream_safety_report():
     config = AppConfig()
     rep = build_stream_safety_report(config)

@@ -8,15 +8,22 @@ def test_dispatcher():
     disp = StreamDispatcher()
 
     calls = []
+
     def handler(ev):
         calls.append(ev.event_id)
 
     disp.register_handler(StreamType.kline, handler)
 
     e = StreamEvent(
-        event_id="123", stream_type=StreamType.kline,
-        source=StreamSource.mock, symbol="BTC", market_scope=MarketScope.SPOT,
-        event_time_ms=0, received_time_ms=0, raw_stream_name="x", raw_payload={}
+        event_id="123",
+        stream_type=StreamType.kline,
+        source=StreamSource.mock,
+        symbol="BTC",
+        market_scope=MarketScope.SPOT,
+        event_time_ms=0,
+        received_time_ms=0,
+        raw_stream_name="x",
+        raw_payload={},
     )
 
     res = disp.dispatch(e)
@@ -24,12 +31,19 @@ def test_dispatcher():
     assert res.success
     assert "123" in calls
 
+
 def test_dispatcher_unhandled():
     disp = StreamDispatcher()
     e = StreamEvent(
-        event_id="123", stream_type=StreamType.book_ticker,
-        source=StreamSource.mock, symbol="BTC", market_scope=MarketScope.SPOT,
-        event_time_ms=0, received_time_ms=0, raw_stream_name="x", raw_payload={}
+        event_id="123",
+        stream_type=StreamType.book_ticker,
+        source=StreamSource.mock,
+        symbol="BTC",
+        market_scope=MarketScope.SPOT,
+        event_time_ms=0,
+        received_time_ms=0,
+        raw_stream_name="x",
+        raw_payload={},
     )
     res = disp.dispatch(e)
     assert not res.handled

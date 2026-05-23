@@ -85,12 +85,19 @@ def import_indicator_result(result: IndicatorRunResult, config: AppConfig) -> Da
 # Patch DatasetKind in schemas.py
 schema_file = Path("src/binance50/storage/schemas.py")
 schema_content = schema_file.read_text()
-if "INDICATORS = \"indicators\"" not in schema_content:
-    schema_content = schema_content.replace("    OHLCV = \"ohlcv\"", "    OHLCV = \"ohlcv\"\n    INDICATORS = \"indicators\"")
+if 'INDICATORS = "indicators"' not in schema_content:
+    schema_content = schema_content.replace(
+        '    OHLCV = "ohlcv"', '    OHLCV = "ohlcv"\n    INDICATORS = "indicators"'
+    )
     schema_file.write_text(schema_content)
 
 if "def import_indicator_result" not in content:
-    content = "from binance50.indicators.models import IndicatorRunResult\n" + content + "\n" + importer_code
+    content = (
+        "from binance50.indicators.models import IndicatorRunResult\n"
+        + content
+        + "\n"
+        + importer_code
+    )
     file_path.write_text(content)
 
 print("Patched schemas and importers")

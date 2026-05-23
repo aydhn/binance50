@@ -9,11 +9,19 @@ from binance50.streams.models import BookTickerStreamEvent
 def test_realtime_store():
     store = RealtimeMarketDataStore()
     e = BookTickerStreamEvent(
-        event_id="1", stream_type=StreamType.book_ticker, source=StreamSource.mock,
-        symbol="BTCUSDT", market_scope=MarketScope.SPOT, event_time_ms=0,
-        received_time_ms=0, raw_stream_name="x", raw_payload={},
-        bid_price=Decimal("10"), bid_qty=Decimal("1"),
-        ask_price=Decimal("11"), ask_qty=Decimal("1")
+        event_id="1",
+        stream_type=StreamType.book_ticker,
+        source=StreamSource.mock,
+        symbol="BTCUSDT",
+        market_scope=MarketScope.SPOT,
+        event_time_ms=0,
+        received_time_ms=0,
+        raw_stream_name="x",
+        raw_payload={},
+        bid_price=Decimal("10"),
+        bid_qty=Decimal("1"),
+        ask_price=Decimal("11"),
+        ask_qty=Decimal("1"),
     )
     store.update_from_event(e)
 

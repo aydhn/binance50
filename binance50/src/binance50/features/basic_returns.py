@@ -13,6 +13,7 @@ def add_past_returns(df: pd.DataFrame, periods: list[int]) -> pd.DataFrame:
 
     return df
 
+
 def add_past_log_returns(df: pd.DataFrame, periods: list[int]) -> pd.DataFrame:
     df = df.copy()
     if "close" not in df.columns:
@@ -22,6 +23,7 @@ def add_past_log_returns(df: pd.DataFrame, periods: list[int]) -> pd.DataFrame:
         df[f"past_log_return_{p}"] = log_returns(df["close"], period=p)
 
     return df
+
 
 def add_past_rolling_volatility(df: pd.DataFrame, periods: list[int]) -> pd.DataFrame:
     df = df.copy()

@@ -29,11 +29,13 @@ def test_config_safe():
     with pytest.raises(UnsafeConfigurationError):
         assert_indicator_config_safe(config)
 
+
 def test_input_safe():
     config = AppConfig()
     df = pd.DataFrame({"close": [1, 2], "future_return": [0.1, 0.2]})
     with pytest.raises(LookaheadBiasError):
         assert_indicator_input_safe(df, config)
+
 
 def test_output_safe():
     config = AppConfig()
@@ -42,11 +44,13 @@ def test_output_safe():
     with pytest.raises(UnsafeConfigurationError):
         assert_indicator_output_safe(df, config)
 
+
 def test_backend_allowed():
     config = AppConfig()
     assert_backend_allowed("native", config)
     with pytest.raises(IndicatorBackendError):
         assert_backend_allowed("unsupported", config)
+
 
 def test_safety_report():
     config = AppConfig()

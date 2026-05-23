@@ -4,7 +4,7 @@ with open("src/binance50/cli.py") as f:
 # Since we appended commands to the end of the file, we might have added them AFTER `if __name__ == "__main__":`
 # Let's check where they are
 if 'if __name__ == "__main__":' in content:
-    lines = content.split('\n')
+    lines = content.split("\n")
     idx = -1
     for i, line in enumerate(lines):
         if line.startswith('if __name__ == "__main__":'):

@@ -21,7 +21,7 @@ def build_stream_name(
     interval: str | None = None,
     depth_levels: int | None = None,
     speed_ms: int | None = None,
-    market_scope: MarketScope = MarketScope.SPOT
+    market_scope: MarketScope = MarketScope.SPOT,
 ) -> str:
     sym = normalize_symbol_for_stream(symbol)
 
@@ -53,13 +53,16 @@ def build_stream_name(
     else:
         raise ValueError(f"Unsupported stream type builder for {stream_type.value}")
 
+
 def build_ticker_stream_name(symbol: str) -> str:
     sym = normalize_symbol_for_stream(symbol)
     return f"{sym}@ticker"
 
+
 def build_mark_price_stream_name(symbol: str) -> str:
     sym = normalize_symbol_for_stream(symbol)
     return f"{sym}@markPrice"
+
 
 def parse_stream_name(stream_name: str) -> dict:
     parts = stream_name.split("@")
@@ -84,7 +87,11 @@ def parse_stream_name(stream_name: str) -> dict:
     elif stream_suffix == "bookTicker":
         stream_type = StreamType.book_ticker
     elif stream_suffix.startswith("depth"):
-        stream_type = StreamType.partial_depth if any(x.isdigit() for x in stream_suffix) else StreamType.diff_depth
+        stream_type = (
+            StreamType.partial_depth
+            if any(x.isdigit() for x in stream_suffix)
+            else StreamType.diff_depth
+        )
     elif stream_suffix == "markPrice":
         stream_type = StreamType.mark_price
     else:
@@ -96,8 +103,10 @@ def parse_stream_name(stream_name: str) -> dict:
         "interval": interval,
     }
 
+
 def normalize_stream_symbol(symbol: str) -> str:
     return normalize_symbol_for_stream(symbol).lower()
+
 
 def validate_stream_name_with_config(stream_name: str, config: AppConfig) -> None:
     validate_stream_name(stream_name)

@@ -23,7 +23,7 @@ def test_indicator_spec_to_dict():
         output_columns=["trend_sma_20"],
         min_lookback=20,
         description="Simple Moving Average",
-        version=1
+        version=1,
     )
     d = spec.to_dict(redacted=True)
     assert d["name"] == "sma_20"
@@ -34,6 +34,7 @@ def test_indicator_spec_to_dict():
     assert d["output_columns"] == ["trend_sma_20"]
     assert d["min_lookback"] == 20
     assert d["description"] == "Simple Moving Average"
+
 
 def test_indicator_run_request_to_dict():
     req = IndicatorRunRequest(
@@ -47,7 +48,7 @@ def test_indicator_run_request_to_dict():
         end_time_ms=2000,
         include_input_columns=True,
         request_id="req1",
-        correlation_id="cor1"
+        correlation_id="cor1",
     )
     d = req.to_dict()
     assert d["symbol"] == "BTCUSDT"
@@ -59,6 +60,7 @@ def test_indicator_run_request_to_dict():
     assert d["start_time_ms"] == 1000
     assert d["end_time_ms"] == 2000
     assert d["include_input_columns"] is True
+
 
 def test_indicator_frame_metadata_to_dict():
     meta = IndicatorFrameMetadata(
@@ -78,7 +80,7 @@ def test_indicator_frame_metadata_to_dict():
         input_hash="hash1",
         output_hash="hash2",
         config_hash="hash3",
-        warnings=[]
+        warnings=[],
     )
     d = meta.to_dict()
     assert d["symbol"] == "BTCUSDT"
@@ -86,6 +88,7 @@ def test_indicator_frame_metadata_to_dict():
     assert d["input_hash"] == "hash1"
     assert d["output_hash"] == "hash2"
     assert d["config_hash"] == "hash3"
+
 
 def test_indicator_column_metadata_to_dict():
     meta = IndicatorColumnMetadata(
@@ -99,15 +102,18 @@ def test_indicator_column_metadata_to_dict():
         first_valid_open_time=1000,
         last_valid_open_time=2000,
         status=IndicatorOutputStatus.VALID,
-        warnings=[]
+        warnings=[],
     )
     d = meta.to_dict()
     assert d["column_name"] == "trend_sma_20"
     assert d["status"] == "valid"
 
+
 def test_indicator_run_result_to_dict():
     req = IndicatorRunRequest("BTC", MarketScope.SPOT, "1m", "ohlcv", "native", [])
-    meta = IndicatorFrameMetadata("BTC", MarketScope.SPOT, "1m", "native", 10, 10, 0, 0, 0, 0, 0, 10, "", "", "", "")
+    meta = IndicatorFrameMetadata(
+        "BTC", MarketScope.SPOT, "1m", "native", 10, 10, 0, 0, 0, 0, 0, 10, "", "", "", ""
+    )
     df = pd.DataFrame()
     res = IndicatorRunResult(req, df, meta)
     d = res.to_dict()

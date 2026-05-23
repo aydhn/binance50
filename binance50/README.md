@@ -151,3 +151,22 @@ The Indicator Engine is designed to securely and deterministically compute techn
 - `python -m binance50.cli indicator-v2-compute-fixture --symbol BTCUSDT --scope spot --interval 1m`
 - `python -m binance50.cli indicator-v2-safety-check`
 - `python -m binance50.cli indicator-v2-health`
+
+## Strategy Engine (Phase 13)
+The Strategy engine applies structured, declarative rules across computed indicators to generate `SignalCandidate` models.
+
+**Key Safety Principles:**
+- **No Orders:** Output candidates are explicitly denied the vocabulary or parameters to execute trades.
+- **Rule Determinism:** Uses `RuleBlock` logic arrays ensuring the inputs mathematically correspond to specific candidates.
+- **Auditable Explanations:** Every emitted candidate is packaged with a `StrategyExplanation`, explicitly listing exactly which features passed or failed thresholds.
+
+Commands:
+```bash
+python -m binance50.cli strategy-config
+python -m binance50.cli strategy-list
+python -m binance50.cli strategy-plugin-health
+python -m binance50.cli strategy-run-fixture --symbol BTCUSDT --scope spot --interval 1m
+python -m binance50.cli strategy-quality-check
+python -m binance50.cli strategy-safety-check
+python -m binance50.cli strategy-health
+```

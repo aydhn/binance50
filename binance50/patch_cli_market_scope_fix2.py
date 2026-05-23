@@ -23,10 +23,14 @@ from binance50.market_data.realtime_store import RealtimeMarketDataStore
 """
 
 # Let's remove any previous bad imports
-content = re.sub(r'from binance50\.core\.enums import MarketScope\n+', '', content)
-content = re.sub(r'from binance50\.streams\.event_types import StreamType[\s\S]*?from binance50\.market_data\.realtime_store import RealtimeMarketDataStore', '', content)
+content = re.sub(r"from binance50\.core\.enums import MarketScope\n+", "", content)
+content = re.sub(
+    r"from binance50\.streams\.event_types import StreamType[\s\S]*?from binance50\.market_data\.realtime_store import RealtimeMarketDataStore",
+    "",
+    content,
+)
 
-lines = content.split('\n')
+lines = content.split("\n")
 import_idx = 0
 for i, line in enumerate(lines):
     if line.startswith("import") or line.startswith("from"):

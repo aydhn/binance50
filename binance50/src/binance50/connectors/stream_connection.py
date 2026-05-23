@@ -31,8 +31,10 @@ class StreamConnectionManager:
 
     def status(self) -> dict:
         return {
-            "active_connections": len([l for l in self._lifecycles.values() if l.status == "active"]),
-            "total_connections_tracked": len(self._lifecycles)
+            "active_connections": len(
+                [l for l in self._lifecycles.values() if l.status == "active"]
+            ),
+            "total_connections_tracked": len(self._lifecycles),
         }
 
     def reconnect_if_needed(self) -> dict:

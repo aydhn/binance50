@@ -213,3 +213,33 @@ The Indicator Engine V2 builds upon the V1 base and adds higher-level abstractio
 - **Feature Grouping & Metadata Registry**: Maintains provenance and statistics for all generated columns.
 - **Lookahead-safe feature pipeline**: Preempts the possibility of target/label leakage in the features layer.
 - **No Trade Signals in Phase 12**: Signals, backtesting, and ML are explicitly excluded from this phase to focus on stable structural feature engineering.
+
+## Strategy Engine (Phase 13)
+The Strategy Engine orchestrates trading ideas over market and indicator data.
+
+### Strategy Plugin Architecture
+Strategies are implemented as dynamically loaded plugins adhering to the `StrategyPluginProtocol`. They operate in strict isolation, preventing a single failure from halting the execution pipeline.
+
+### Rule DSL
+A declarative domain-specific language (DSL) is provided (`RuleBlock` and `RuleCondition`) to enable the rapid assembly of evaluation criteria, simplifying the creation of deterministic bounds mapping features to decisions.
+
+### SignalCandidate Model
+Strategies exclusively emit `SignalCandidate` objects. This model explicitly lacks execution intent elements like order types, pricing, or quantities. This decoupling forces strategies to suggest market opinions independently of execution capabilities.
+
+### Built-in Strategy Plugins
+Phase 13 establishes basic skeletons:
+- Trend Following
+- Mean Reversion
+- Momentum Continuation
+- Volatility Breakout
+- Volume Confirmation
+- Divergence Candidate
+- Multi-timeframe Confirmation
+- Pattern Candidate
+- Composite Skeleton (defers final decisions until scoring phase)
+
+### Explanations and Decision Traceability
+The `StrategyExplanation` model provides rigorous traceability, documenting exactly which feature conditions passed or failed when generating a candidate, fulfilling strict algorithmic explainability mandates.
+
+### Why No Execution in Phase 13?
+To adhere to the "Secure by Default" and "Test Driven" principles, execution structures are withheld. Phase 13 merely provides deterministic data classification. Actual trades wait for execution gating and risk engines.

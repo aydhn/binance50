@@ -27,6 +27,7 @@ def safe_decimal(value: Any) -> Decimal | None:
     except (InvalidOperation, TypeError, ValueError):
         return None
 
+
 def detect_stream_type(payload: dict, stream_name: str | None = None) -> StreamType:
     e_val = payload.get("e")
     if e_val == "kline":
@@ -42,7 +43,7 @@ def detect_stream_type(payload: dict, stream_name: str | None = None) -> StreamT
     elif e_val == "aggTrade":
         return StreamType.agg_trade
     elif e_val == "depthUpdate":
-        return StreamType.diff_depth # Spot diff depth uses e=depthUpdate
+        return StreamType.diff_depth  # Spot diff depth uses e=depthUpdate
     elif e_val == "markPriceUpdate":
         return StreamType.mark_price
 
@@ -52,7 +53,10 @@ def detect_stream_type(payload: dict, stream_name: str | None = None) -> StreamT
 
     return StreamType.unknown
 
-def parse_combined_stream_payload(payload: dict, market_scope: MarketScope, source: StreamSource = StreamSource.fixture) -> StreamParseResult:
+
+def parse_combined_stream_payload(
+    payload: dict, market_scope: MarketScope, source: StreamSource = StreamSource.fixture
+) -> StreamParseResult:
     if "stream" not in payload or "data" not in payload:
         return StreamParseResult(success=False, error="Invalid combined payload format")
 
@@ -61,7 +65,13 @@ def parse_combined_stream_payload(payload: dict, market_scope: MarketScope, sour
 
     return parse_stream_payload(data, market_scope, source, stream_name=stream_name)
 
-def parse_stream_payload(payload: dict, market_scope: MarketScope, source: StreamSource = StreamSource.fixture, stream_name: str | None = None) -> StreamParseResult:
+
+def parse_stream_payload(
+    payload: dict,
+    market_scope: MarketScope,
+    source: StreamSource = StreamSource.fixture,
+    stream_name: str | None = None,
+) -> StreamParseResult:
     if "stream" in payload and "data" in payload:
         return parse_combined_stream_payload(payload, market_scope, source)
 
@@ -70,7 +80,12 @@ def parse_stream_payload(payload: dict, market_scope: MarketScope, source: Strea
     try:
         stream_type = detect_stream_type(payload, stream_name)
         if stream_type == StreamType.unknown:
-            return StreamParseResult(success=False, error="Unknown stream type", raw_payload_hash=raw_hash, warnings=["Unknown stream type detected"])
+            return StreamParseResult(
+                success=False,
+                error="Unknown stream type",
+                raw_payload_hash=raw_hash,
+                warnings=["Unknown stream type detected"],
+            )
 
         if stream_type == StreamType.kline:
             event = parse_kline_event(payload, market_scope, source)
@@ -89,16 +104,25 @@ def parse_stream_payload(payload: dict, market_scope: MarketScope, source: Strea
         elif stream_type == StreamType.mark_price:
             event = parse_mark_price_event(payload, market_scope, source)
         else:
-            return StreamParseResult(success=False, error=f"Parser not implemented for {stream_type}", raw_payload_hash=raw_hash)
+            return StreamParseResult(
+                success=False,
+                error=f"Parser not implemented for {stream_type}",
+                raw_payload_hash=raw_hash,
+            )
 
         if stream_name:
             event.raw_stream_name = stream_name
 
         return StreamParseResult(success=True, event=event, raw_payload_hash=raw_hash)
     except Exception as e:
-        return StreamParseResult(success=False, error=f"Parse exception: {str(e)}", raw_payload_hash=raw_hash)
+        return StreamParseResult(
+            success=False, error=f"Parse exception: {str(e)}", raw_payload_hash=raw_hash
+        )
 
-def _get_base_event_fields(payload: dict, stream_type: StreamType, market_scope: MarketScope, source: StreamSource) -> dict:
+
+def _get_base_event_fields(
+    payload: dict, stream_type: StreamType, market_scope: MarketScope, source: StreamSource
+) -> dict:
     from binance50.core.time_utils import get_current_time_ms
 
     # "s" is common for symbol. If not present (e.g. some bookTickers), try other fields or rely on caller to patch.
@@ -120,10 +144,13 @@ def _get_base_event_fields(payload: dict, stream_type: StreamType, market_scope:
         "received_time_ms": get_current_time_ms(),
         "raw_stream_name": "unknown",
         "raw_payload": payload,
-        "status": StreamEventStatus.valid
+        "status": StreamEventStatus.valid,
     }
 
-def parse_kline_event(payload: dict, market_scope: MarketScope, source: StreamSource) -> KlineStreamEvent:
+
+def parse_kline_event(
+    payload: dict, market_scope: MarketScope, source: StreamSource
+) -> KlineStreamEvent:
     base = _get_base_event_fields(payload, StreamType.kline, market_scope, source)
     if "k" not in payload:
         raise ValueError("Missing 'k' field in kline event")
@@ -143,17 +170,20 @@ def parse_kline_event(payload: dict, market_scope: MarketScope, source: StreamSo
         number_of_trades=int(k["n"]),
         taker_buy_base_volume=safe_decimal(k["V"]),
         taker_buy_quote_volume=safe_decimal(k["Q"]),
-        is_closed=bool(k["x"])
+        is_closed=bool(k["x"]),
     )
 
-def parse_book_ticker_event(payload: dict, market_scope: MarketScope, source: StreamSource) -> BookTickerStreamEvent:
+
+def parse_book_ticker_event(
+    payload: dict, market_scope: MarketScope, source: StreamSource
+) -> BookTickerStreamEvent:
     base = _get_base_event_fields(payload, StreamType.book_ticker, market_scope, source)
 
     bid = safe_decimal(payload.get("b"))
     ask = safe_decimal(payload.get("a"))
 
     if bid is None or ask is None:
-         raise ValueError("Missing bid/ask fields in book_ticker event")
+        raise ValueError("Missing bid/ask fields in book_ticker event")
 
     spread = None
     if ask > 0 and bid > 0:
@@ -165,10 +195,13 @@ def parse_book_ticker_event(payload: dict, market_scope: MarketScope, source: St
         bid_qty=safe_decimal(payload.get("B", 0)),
         ask_price=ask,
         ask_qty=safe_decimal(payload.get("A", 0)),
-        spread_bps=spread
+        spread_bps=spread,
     )
 
-def parse_mini_ticker_event(payload: dict, market_scope: MarketScope, source: StreamSource) -> MiniTickerStreamEvent:
+
+def parse_mini_ticker_event(
+    payload: dict, market_scope: MarketScope, source: StreamSource
+) -> MiniTickerStreamEvent:
     base = _get_base_event_fields(payload, StreamType.mini_ticker, market_scope, source)
     return MiniTickerStreamEvent(
         **base,
@@ -177,10 +210,13 @@ def parse_mini_ticker_event(payload: dict, market_scope: MarketScope, source: St
         high_price=safe_decimal(payload["h"]),
         low_price=safe_decimal(payload["l"]),
         total_traded_base_volume=safe_decimal(payload["v"]),
-        total_traded_quote_volume=safe_decimal(payload["q"])
+        total_traded_quote_volume=safe_decimal(payload["q"]),
     )
 
-def parse_ticker_event(payload: dict, market_scope: MarketScope, source: StreamSource) -> TickerStreamEvent:
+
+def parse_ticker_event(
+    payload: dict, market_scope: MarketScope, source: StreamSource
+) -> TickerStreamEvent:
     base = _get_base_event_fields(payload, StreamType.ticker, market_scope, source)
     return TickerStreamEvent(
         **base,
@@ -192,10 +228,13 @@ def parse_ticker_event(payload: dict, market_scope: MarketScope, source: StreamS
         quote_volume=safe_decimal(payload["q"]),
         open_time=int(payload.get("O", 0)),
         close_time=int(payload.get("C", 0)),
-        trade_count=int(payload.get("n", 0))
+        trade_count=int(payload.get("n", 0)),
     )
 
-def parse_trade_event(payload: dict, market_scope: MarketScope, source: StreamSource) -> TradeStreamEvent:
+
+def parse_trade_event(
+    payload: dict, market_scope: MarketScope, source: StreamSource
+) -> TradeStreamEvent:
     base = _get_base_event_fields(payload, StreamType.trade, market_scope, source)
     return TradeStreamEvent(
         **base,
@@ -205,10 +244,13 @@ def parse_trade_event(payload: dict, market_scope: MarketScope, source: StreamSo
         buyer_order_id=int(payload["b"]),
         seller_order_id=int(payload["a"]),
         trade_time_ms=int(payload["T"]),
-        is_buyer_market_maker=bool(payload["m"])
+        is_buyer_market_maker=bool(payload["m"]),
     )
 
-def parse_agg_trade_event(payload: dict, market_scope: MarketScope, source: StreamSource) -> AggTradeStreamEvent:
+
+def parse_agg_trade_event(
+    payload: dict, market_scope: MarketScope, source: StreamSource
+) -> AggTradeStreamEvent:
     base = _get_base_event_fields(payload, StreamType.agg_trade, market_scope, source)
     return AggTradeStreamEvent(
         **base,
@@ -218,10 +260,13 @@ def parse_agg_trade_event(payload: dict, market_scope: MarketScope, source: Stre
         first_trade_id=int(payload["f"]),
         last_trade_id=int(payload["l"]),
         trade_time_ms=int(payload["T"]),
-        is_buyer_market_maker=bool(payload["m"])
+        is_buyer_market_maker=bool(payload["m"]),
     )
 
-def parse_depth_update_event(payload: dict, market_scope: MarketScope, source: StreamSource) -> DepthUpdateStreamEvent:
+
+def parse_depth_update_event(
+    payload: dict, market_scope: MarketScope, source: StreamSource
+) -> DepthUpdateStreamEvent:
     base = _get_base_event_fields(payload, StreamType.diff_depth, market_scope, source)
 
     bids = [(safe_decimal(p), safe_decimal(q)) for p, q in payload.get("b", [])]
@@ -233,10 +278,13 @@ def parse_depth_update_event(payload: dict, market_scope: MarketScope, source: S
         final_update_id=int(payload.get("u", 0)),
         previous_final_update_id=int(payload.get("pu", 0)) if "pu" in payload else None,
         bids=bids,
-        asks=asks
+        asks=asks,
     )
 
-def parse_mark_price_event(payload: dict, market_scope: MarketScope, source: StreamSource) -> MarkPriceStreamEvent:
+
+def parse_mark_price_event(
+    payload: dict, market_scope: MarketScope, source: StreamSource
+) -> MarkPriceStreamEvent:
     base = _get_base_event_fields(payload, StreamType.mark_price, market_scope, source)
     return MarkPriceStreamEvent(
         **base,
@@ -244,5 +292,5 @@ def parse_mark_price_event(payload: dict, market_scope: MarketScope, source: Str
         index_price=safe_decimal(payload["i"]),
         estimated_settle_price=safe_decimal(payload["P"]),
         funding_rate=safe_decimal(payload["r"]),
-        next_funding_time=int(payload["T"])
+        next_funding_time=int(payload["T"]),
     )

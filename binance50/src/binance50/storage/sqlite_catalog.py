@@ -28,7 +28,7 @@ class SQLiteCatalog:
                 self._conn = sqlite3.connect(
                     self.path,
                     timeout=self.config.storage.sqlite.busy_timeout_ms / 1000.0,
-                    check_same_thread=False
+                    check_same_thread=False,
                 )
                 self._conn.row_factory = sqlite3.Row
                 # Apply pragmas
@@ -102,10 +102,19 @@ class SQLiteCatalog:
                 description=excluded.description
         """
         with self.transaction() as c:
-            c.execute(sql, (
-                record.dataset_id, record.dataset_name, record.dataset_kind, record.schema_version,
-                record.status, record.created_at_utc, record.updated_at_utc, record.description
-            ))
+            c.execute(
+                sql,
+                (
+                    record.dataset_id,
+                    record.dataset_name,
+                    record.dataset_kind,
+                    record.schema_version,
+                    record.status,
+                    record.created_at_utc,
+                    record.updated_at_utc,
+                    record.description,
+                ),
+            )
 
     def create_dataset_version(self, record: DatasetVersionRecord) -> str:
         sql = """
@@ -116,11 +125,23 @@ class SQLiteCatalog:
         """
         with self.transaction() as c:
             # Enforce single active version logic here or in dataset_registry
-            c.execute(sql, (
-                record.version_id, record.dataset_id, record.version_number, record.source, record.row_count,
-                record.start_time_ms, record.end_time_ms, record.data_hash, record.manifest_path,
-                record.quality_status, record.created_at_utc, record.is_active
-            ))
+            c.execute(
+                sql,
+                (
+                    record.version_id,
+                    record.dataset_id,
+                    record.version_number,
+                    record.source,
+                    record.row_count,
+                    record.start_time_ms,
+                    record.end_time_ms,
+                    record.data_hash,
+                    record.manifest_path,
+                    record.quality_status,
+                    record.created_at_utc,
+                    record.is_active,
+                ),
+            )
         return record.version_id
 
     def add_file_manifest(self, record: FileManifestRecord) -> None:
@@ -131,11 +152,24 @@ class SQLiteCatalog:
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
         with self.transaction() as c:
-            c.execute(sql, (
-                record.file_id, record.version_id, record.dataset_name, record.file_path, record.file_format,
-                record.compression, record.row_count, record.file_size_bytes, record.file_hash,
-                record.min_open_time, record.max_open_time, record.partition_values, record.created_at_utc
-            ))
+            c.execute(
+                sql,
+                (
+                    record.file_id,
+                    record.version_id,
+                    record.dataset_name,
+                    record.file_path,
+                    record.file_format,
+                    record.compression,
+                    record.row_count,
+                    record.file_size_bytes,
+                    record.file_hash,
+                    record.min_open_time,
+                    record.max_open_time,
+                    record.partition_values,
+                    record.created_at_utc,
+                ),
+            )
 
     def add_quality_index(self, record: QualityIndexRecord) -> None:
         sql = """
@@ -145,11 +179,22 @@ class SQLiteCatalog:
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
         with self.transaction() as c:
-            c.execute(sql, (
-                record.quality_id, record.version_id, record.dataset_name, record.symbol, record.interval,
-                record.issue_type, record.severity, record.issue_count, record.first_seen_open_time,
-                record.last_seen_open_time, record.created_at_utc
-            ))
+            c.execute(
+                sql,
+                (
+                    record.quality_id,
+                    record.version_id,
+                    record.dataset_name,
+                    record.symbol,
+                    record.interval,
+                    record.issue_type,
+                    record.severity,
+                    record.issue_count,
+                    record.first_seen_open_time,
+                    record.last_seen_open_time,
+                    record.created_at_utc,
+                ),
+            )
 
     def add_snapshot(self, record: SnapshotRecord) -> None:
         sql = """
@@ -158,10 +203,17 @@ class SQLiteCatalog:
             ) VALUES (?, ?, ?, ?, ?, ?)
         """
         with self.transaction() as c:
-            c.execute(sql, (
-                record.snapshot_id, record.snapshot_type, record.source, record.dataset_version_id,
-                record.metadata, record.created_at_utc
-            ))
+            c.execute(
+                sql,
+                (
+                    record.snapshot_id,
+                    record.snapshot_type,
+                    record.source,
+                    record.dataset_version_id,
+                    record.metadata,
+                    record.created_at_utc,
+                ),
+            )
 
     def add_job(self, record: StorageJobRecord) -> None:
         sql = """
@@ -170,10 +222,18 @@ class SQLiteCatalog:
             ) VALUES (?, ?, ?, ?, ?, ?, ?)
         """
         with self.transaction() as c:
-            c.execute(sql, (
-                record.job_id, record.job_type, record.status, record.started_at_utc,
-                record.finished_at_utc, record.error, record.metadata
-            ))
+            c.execute(
+                sql,
+                (
+                    record.job_id,
+                    record.job_type,
+                    record.status,
+                    record.started_at_utc,
+                    record.finished_at_utc,
+                    record.error,
+                    record.metadata,
+                ),
+            )
 
     # --- FETCHERS ---
 
@@ -199,7 +259,9 @@ class SQLiteCatalog:
         sql = "SELECT * FROM file_manifests WHERE version_id = ?"
         return [FileManifestRecord(**dict(row)) for row in self.execute(sql, (version_id,))]
 
-    def get_latest_active_version(self, dataset_name: str, symbol: str | None = None, interval: str | None = None) -> DatasetVersionRecord | None:
+    def get_latest_active_version(
+        self, dataset_name: str, symbol: str | None = None, interval: str | None = None
+    ) -> DatasetVersionRecord | None:
         # A simple active version fetch. Filtering by symbol/interval could mean finding the version where file_manifests have those partitions.
         ds = self.get_dataset(dataset_name)
         if not ds:

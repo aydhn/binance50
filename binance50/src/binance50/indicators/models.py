@@ -14,20 +14,24 @@ class IndicatorGroup(StrEnum):
     VOLUME = "volume"
     TRANSFORM = "transform"
 
+
 class IndicatorBackend(StrEnum):
     NATIVE = "native"
     TALIB_OPTIONAL = "talib_optional"
     PANDAS_TA_OPTIONAL = "pandas_ta_optional"
+
 
 class IndicatorOutputStatus(StrEnum):
     VALID = "valid"
     WARNING = "warning"
     INVALID = "invalid"
 
+
 class IndicatorWarmupStatus(StrEnum):
     WARMUP = "warmup"
     VALID = "valid"
     INSUFFICIENT_HISTORY = "insufficient_history"
+
 
 @dataclass
 class IndicatorSpec:
@@ -51,8 +55,9 @@ class IndicatorSpec:
             "output_columns": self.output_columns,
             "min_lookback": self.min_lookback,
             "description": self.description,
-            "version": self.version
+            "version": self.version,
         }
+
 
 @dataclass
 class IndicatorRunRequest:
@@ -80,8 +85,9 @@ class IndicatorRunRequest:
             "end_time_ms": self.end_time_ms,
             "include_input_columns": self.include_input_columns,
             "request_id": self.request_id,
-            "correlation_id": self.correlation_id
+            "correlation_id": self.correlation_id,
         }
+
 
 @dataclass
 class IndicatorFrameMetadata:
@@ -121,8 +127,9 @@ class IndicatorFrameMetadata:
             "input_hash": self.input_hash,
             "output_hash": self.output_hash,
             "config_hash": self.config_hash,
-            "warnings": self.warnings
+            "warnings": self.warnings,
         }
+
 
 @dataclass
 class IndicatorColumnMetadata:
@@ -150,8 +157,9 @@ class IndicatorColumnMetadata:
             "first_valid_open_time": self.first_valid_open_time,
             "last_valid_open_time": self.last_valid_open_time,
             "status": self.status.value,
-            "warnings": self.warnings
+            "warnings": self.warnings,
         }
+
 
 @dataclass
 class IndicatorRunResult:
@@ -168,5 +176,5 @@ class IndicatorRunResult:
             "metadata": self.metadata.to_dict(redacted) if self.metadata else None,
             "success": self.success,
             "error": self.error,
-            "row_count": len(self.output_df) if self.output_df is not None else 0
+            "row_count": len(self.output_df) if self.output_df is not None else 0,
         }

@@ -12,6 +12,7 @@ class DatasetRecord:
     updated_at_utc: str
     description: str
 
+
 @dataclass
 class DatasetVersionRecord:
     version_id: str
@@ -26,6 +27,7 @@ class DatasetVersionRecord:
     quality_status: str
     created_at_utc: str
     is_active: int  # 0 or 1 for sqlite
+
 
 @dataclass
 class FileManifestRecord:
@@ -43,6 +45,7 @@ class FileManifestRecord:
     partition_values: str  # JSON string
     created_at_utc: str
 
+
 @dataclass
 class QualityIndexRecord:
     quality_id: str
@@ -57,6 +60,7 @@ class QualityIndexRecord:
     last_seen_open_time: int
     created_at_utc: str
 
+
 @dataclass
 class SnapshotRecord:
     snapshot_id: str
@@ -65,6 +69,7 @@ class SnapshotRecord:
     dataset_version_id: str
     metadata: str  # JSON string
     created_at_utc: str
+
 
 @dataclass
 class StorageJobRecord:

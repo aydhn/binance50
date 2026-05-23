@@ -17,9 +17,17 @@ class DatasetRegistry:
     def _assert_dataset_allowed(self, dataset_name: str) -> None:
         if self.config.storage.safety.block_unknown_dataset_names:
             if dataset_name not in self.config.storage.datasets.allowed_dataset_names:
-                raise DatasetRegistryError(f"Dataset {dataset_name} is not in allowed_dataset_names")
+                raise DatasetRegistryError(
+                    f"Dataset {dataset_name} is not in allowed_dataset_names"
+                )
 
-    def register_dataset(self, dataset_name: str, dataset_kind: DatasetKind, schema: DatasetSchema, description: str | None = None) -> DatasetRecord:
+    def register_dataset(
+        self,
+        dataset_name: str,
+        dataset_kind: DatasetKind,
+        schema: DatasetSchema,
+        description: str | None = None,
+    ) -> DatasetRecord:
         self._assert_dataset_allowed(dataset_name)
 
         existing = self.catalog.get_dataset(dataset_name)
@@ -40,16 +48,20 @@ class DatasetRegistry:
                 status="active",
                 created_at_utc=now,
                 updated_at_utc=now,
-                description=description or ""
+                description=description or "",
             )
 
         self.catalog.upsert_dataset(record)
         return record
 
-    def register_version(self, dataset_name: str, manifest: DatasetManifest, source: str, quality_status: str) -> DatasetVersionRecord:
+    def register_version(
+        self, dataset_name: str, manifest: DatasetManifest, source: str, quality_status: str
+    ) -> DatasetVersionRecord:
         dataset = self.catalog.get_dataset(dataset_name)
         if not dataset:
-            raise DatasetRegistryError(f"Dataset {dataset_name} not registered. Call register_dataset first.")
+            raise DatasetRegistryError(
+                f"Dataset {dataset_name} not registered. Call register_dataset first."
+            )
 
         latest_version = self.catalog.list_versions(dataset_name)
         v_num = latest_version[0].version_number + 1 if latest_version else 1
@@ -66,27 +78,35 @@ class DatasetRegistry:
             manifest_path=f"{manifest.dataset_name}_{manifest.version_id}.json",
             quality_status=quality_status,
             created_at_utc=datetime.now(UTC).isoformat(),
-            is_active=0 # Default to inactive, requires explicit activation
+            is_active=0,  # Default to inactive, requires explicit activation
         )
         self.catalog.create_dataset_version(record)
         return record
 
     def activate_version(self, version_id: str) -> None:
         # Fetch the version to get dataset_id
-        res = self.catalog.execute("SELECT dataset_id FROM dataset_versions WHERE version_id = ?", (version_id,))
+        res = self.catalog.execute(
+            "SELECT dataset_id FROM dataset_versions WHERE version_id = ?", (version_id,)
+        )
         if not res:
-             raise DatasetRegistryError(f"Version {version_id} not found")
+            raise DatasetRegistryError(f"Version {version_id} not found")
         dataset_id = res[0][0]
 
         with self.catalog.transaction() as c:
             # Deactivate all
-            c.execute("UPDATE dataset_versions SET is_active = 0 WHERE dataset_id = ?", (dataset_id,))
+            c.execute(
+                "UPDATE dataset_versions SET is_active = 0 WHERE dataset_id = ?", (dataset_id,)
+            )
             # Activate target
-            c.execute("UPDATE dataset_versions SET is_active = 1 WHERE version_id = ?", (version_id,))
+            c.execute(
+                "UPDATE dataset_versions SET is_active = 1 WHERE version_id = ?", (version_id,)
+            )
 
     def deactivate_version(self, version_id: str) -> None:
         with self.catalog.transaction() as c:
-            c.execute("UPDATE dataset_versions SET is_active = 0 WHERE version_id = ?", (version_id,))
+            c.execute(
+                "UPDATE dataset_versions SET is_active = 0 WHERE version_id = ?", (version_id,)
+            )
 
     def get_active_version(self, dataset_name: str) -> DatasetVersionRecord | None:
         return self.catalog.get_latest_active_version(dataset_name)

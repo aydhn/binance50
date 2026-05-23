@@ -28,11 +28,12 @@ def test_kline_event():
         number_of_trades=5,
         taker_buy_base_volume=Decimal("5"),
         taker_buy_quote_volume=Decimal("500"),
-        is_closed=True
+        is_closed=True,
     )
     assert k.is_closed
     d = k.dump_redacted()
     assert "event_id" in d
+
 
 def test_book_ticker_event():
     b = BookTickerStreamEvent(
@@ -49,9 +50,10 @@ def test_book_ticker_event():
         bid_qty=Decimal("1"),
         ask_price=Decimal("101.0"),
         ask_qty=Decimal("2"),
-        spread_bps=100.0
+        spread_bps=100.0,
     )
     assert b.spread_bps == 100.0
+
 
 def test_mark_price_event():
     m = MarkPriceStreamEvent(
@@ -68,6 +70,6 @@ def test_mark_price_event():
         index_price=Decimal("100"),
         estimated_settle_price=Decimal("100"),
         funding_rate=Decimal("0.01"),
-        next_funding_time=200
+        next_funding_time=200,
     )
     assert m.funding_rate == Decimal("0.01")

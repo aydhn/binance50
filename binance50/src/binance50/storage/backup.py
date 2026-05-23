@@ -29,7 +29,7 @@ class StorageBackupManager:
         manifest_dir = get_manifest_dir(self.config)
         backup_path = self._generate_backup_path("manifests", reason).with_suffix(".zip")
         if manifest_dir.exists() and any(manifest_dir.iterdir()):
-             shutil.make_archive(str(backup_path.with_suffix("")), 'zip', manifest_dir)
+            shutil.make_archive(str(backup_path.with_suffix("")), "zip", manifest_dir)
         return backup_path
 
     def backup_storage_metadata(self, reason: str) -> Path:
@@ -46,15 +46,15 @@ class StorageBackupManager:
 
         to_delete = []
         if len(backups) > max_b:
-             to_delete = backups[:-max_b]
+            to_delete = backups[:-max_b]
 
         if not dry_run:
-             for f in to_delete:
-                  f.unlink()
+            for f in to_delete:
+                f.unlink()
 
         return {
             "total_backups": len(backups),
             "kept": len(backups) - len(to_delete),
             "deleted": len(to_delete),
-            "dry_run": dry_run
+            "dry_run": dry_run,
         }

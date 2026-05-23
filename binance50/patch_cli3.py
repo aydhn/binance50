@@ -20,7 +20,7 @@ from binance50.market_data.realtime_store import RealtimeMarketDataStore
 """
 
 if "build_subscription_plan" not in content:
-    lines = content.split('\n')
+    lines = content.split("\n")
     import_idx = 0
     for i, line in enumerate(lines):
         if line.startswith("import") or line.startswith("from"):
@@ -135,7 +135,10 @@ if "def stream_config" not in content:
         s_rep = build_stream_safety_report(config)
         console.print("Stream Safety:", s_rep)
 """
-    content = content.replace('console.print("[green]Doctor check complete.[/green]")', doctor_check + '\n        console.print("[green]Doctor check complete.[/green]")')
+    content = content.replace(
+        'console.print("[green]Doctor check complete.[/green]")',
+        doctor_check + '\n        console.print("[green]Doctor check complete.[/green]")',
+    )
 
     with open("src/binance50/cli.py", "w") as f:
         f.write(content)

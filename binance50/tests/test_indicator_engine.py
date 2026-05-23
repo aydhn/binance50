@@ -12,16 +12,19 @@ from binance50.indicators.registry import IndicatorRegistry
 
 @pytest.fixture
 def sample_data():
-    return pd.DataFrame({
-        "open_time": np.arange(1000, 1100),
-        "close_time": np.arange(1001, 1101),
-        "open": np.random.uniform(10, 20, 100),
-        "high": np.random.uniform(20, 25, 100),
-        "low": np.random.uniform(5, 10, 100),
-        "close": np.random.uniform(10, 20, 100),
-        "volume": np.random.uniform(100, 1000, 100),
-        "is_closed": [True] * 100
-    })
+    return pd.DataFrame(
+        {
+            "open_time": np.arange(1000, 1100),
+            "close_time": np.arange(1001, 1101),
+            "open": np.random.uniform(10, 20, 100),
+            "high": np.random.uniform(20, 25, 100),
+            "low": np.random.uniform(5, 10, 100),
+            "close": np.random.uniform(10, 20, 100),
+            "volume": np.random.uniform(100, 1000, 100),
+            "is_closed": [True] * 100,
+        }
+    )
+
 
 def test_engine_compute_default(sample_data):
     config = AppConfig()
@@ -43,6 +46,7 @@ def test_engine_compute_default(sample_data):
     assert res.metadata.indicator_count == 1
     assert res.metadata.warmup_rows == 20
 
+
 def test_engine_drop_incomplete(sample_data):
     config = AppConfig()
     config.indicators.min_rows_required = 10
@@ -61,6 +65,7 @@ def test_engine_drop_incomplete(sample_data):
     res = engine.compute(data, req)
     assert res.success is True
     assert len(res.output_df) == 99
+
 
 def test_engine_future_column_fails(sample_data):
     config = AppConfig()

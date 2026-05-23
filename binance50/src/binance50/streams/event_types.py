@@ -14,6 +14,7 @@ class StreamType(StrEnum):
     force_order = "forceOrder"
     unknown = "unknown"
 
+
 class StreamEventStatus(StrEnum):
     valid = "valid"
     warning = "warning"
@@ -22,12 +23,14 @@ class StreamEventStatus(StrEnum):
     duplicate = "duplicate"
     out_of_order = "out_of_order"
 
+
 class StreamSource(StrEnum):
     fixture = "fixture"
     replay = "replay"
     mock = "mock"
     binance_spot_ws = "binance_spot_ws"
     binance_usdm_ws = "binance_usdm_ws"
+
 
 class StreamRoute(StrEnum):
     spot_raw = "spot_raw"

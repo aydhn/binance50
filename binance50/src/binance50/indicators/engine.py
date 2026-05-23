@@ -35,7 +35,9 @@ from binance50.safety.indicator_guard import (
 
 
 class IndicatorEngine:
-    def __init__(self, config: AppConfig, registry: IndicatorRegistry, adapter: IndicatorBackendAdapter):
+    def __init__(
+        self, config: AppConfig, registry: IndicatorRegistry, adapter: IndicatorBackendAdapter
+    ):
         self.config = config
         self.registry = registry
         self.adapter = adapter
@@ -69,8 +71,13 @@ class IndicatorEngine:
 
             for spec in specs:
                 ctx = build_indicator_context(
-                    self.config, request.symbol, request.market_scope,
-                    request.interval, request.backend, spec.input_columns, request.correlation_id
+                    self.config,
+                    request.symbol,
+                    request.market_scope,
+                    request.interval,
+                    request.backend,
+                    spec.input_columns,
+                    request.correlation_id,
                 )
 
                 try:
@@ -99,9 +106,15 @@ class IndicatorEngine:
             warmup_summary = summarize_warmup(df, output_columns, max_lookback)
 
             # Compute hashes
-            input_hash = hashlib.sha256(pd.util.hash_pandas_object(df[["open_time", "close"]]).values).hexdigest()
-            output_hash = hashlib.sha256(pd.util.hash_pandas_object(df[output_columns]).values).hexdigest()
-            config_hash = hashlib.sha256(json.dumps(request.to_dict(), sort_keys=True).encode()).hexdigest()
+            input_hash = hashlib.sha256(
+                pd.util.hash_pandas_object(df[["open_time", "close"]]).values
+            ).hexdigest()
+            output_hash = hashlib.sha256(
+                pd.util.hash_pandas_object(df[output_columns]).values
+            ).hexdigest()
+            config_hash = hashlib.sha256(
+                json.dumps(request.to_dict(), sort_keys=True).encode()
+            ).hexdigest()
 
             start_open = int(df["open_time"].min())
             end_open = int(df["open_time"].max())
@@ -122,7 +135,7 @@ class IndicatorEngine:
                 generated_at_utc=datetime.now(UTC).isoformat(),
                 input_hash=input_hash,
                 output_hash=output_hash,
-                config_hash=config_hash
+                config_hash=config_hash,
             )
 
             # Drop input columns if requested
@@ -133,16 +146,19 @@ class IndicatorEngine:
 
         except Exception as e:
             from binance50.core.error_classifier import classify_indicator_error
+
             classify_indicator_error(e)
             return IndicatorRunResult(request, pd.DataFrame(), None, None, False, str(e))
 
-    def compute_default(self, df: pd.DataFrame, symbol: str, market_scope: MarketScope, interval: str) -> IndicatorRunResult:
+    def compute_default(
+        self, df: pd.DataFrame, symbol: str, market_scope: MarketScope, interval: str
+    ) -> IndicatorRunResult:
         req = IndicatorRunRequest(
             symbol=symbol,
             market_scope=market_scope,
             interval=interval,
             input_dataset_name="ohlcv",
             backend=self.config.indicators.default_backend,
-            indicator_specs=[]
+            indicator_specs=[],
         )
         return self.compute(df, req)

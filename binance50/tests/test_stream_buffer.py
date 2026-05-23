@@ -14,8 +14,9 @@ def _make_event(eid: str) -> StreamEvent:
         event_time_ms=0,
         received_time_ms=0,
         raw_stream_name="test",
-        raw_payload={}
+        raw_payload={},
     )
+
 
 def test_buffer_push_pop():
     buf = StreamBuffer(max_events=10)
@@ -28,6 +29,7 @@ def test_buffer_push_pop():
     assert out.event_id == "1"
     assert buf.size() == 0
 
+
 def test_buffer_overflow_reject():
     buf = StreamBuffer(max_events=2, drop_policy="reject_new")
     buf.push(_make_event("1"))
@@ -38,6 +40,7 @@ def test_buffer_overflow_reject():
     assert dec.dropped
     assert dec.reason == "buffer_full"
     assert buf.size() == 2
+
 
 def test_buffer_duplicate():
     buf = StreamBuffer(max_events=10)

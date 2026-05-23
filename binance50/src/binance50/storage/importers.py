@@ -27,9 +27,12 @@ from binance50.storage.sqlite_catalog import SQLiteCatalog
 def _ensure_dataset(registry: DatasetRegistry, name: str, kind: DatasetKind, schema):
     existing = registry.catalog.get_dataset(name)
     if not existing:
-         registry.register_dataset(name, kind, schema)
+        registry.register_dataset(name, kind, schema)
 
-def import_ohlcv_dataframe(df: pd.DataFrame, symbol: str, market_scope: str, interval: str, source: str, config: AppConfig) -> DatasetManifest:
+
+def import_ohlcv_dataframe(
+    df: pd.DataFrame, symbol: str, market_scope: str, interval: str, source: str, config: AppConfig
+) -> DatasetManifest:
     # Ensure dataset
     catalog = SQLiteCatalog(config)
     registry = DatasetRegistry(config, catalog)
@@ -43,7 +46,9 @@ def import_ohlcv_dataframe(df: pd.DataFrame, symbol: str, market_scope: str, int
 
     # Build manifest
     version_id = uuid.uuid4().hex
-    manifest = build_manifest(ds_name, version_id, paths, df, schema, quality_status="pass", metadata={"source": source})
+    manifest = build_manifest(
+        ds_name, version_id, paths, df, schema, quality_status="pass", metadata={"source": source}
+    )
     write_manifest(manifest, config)
 
     # Register version
@@ -52,7 +57,7 @@ def import_ohlcv_dataframe(df: pd.DataFrame, symbol: str, market_scope: str, int
     # Add files to catalog
     records = manifest_to_catalog_records(manifest)
     for r in records:
-         catalog.add_file_manifest(r)
+        catalog.add_file_manifest(r)
 
     # Update Data Index
     di = DataIndex(catalog)
@@ -64,10 +69,14 @@ def import_ohlcv_dataframe(df: pd.DataFrame, symbol: str, market_scope: str, int
 
     return manifest
 
-def import_ohlcv_cache(symbol: str, market_scope: str, interval: str, config: AppConfig) -> DatasetManifest:
+
+def import_ohlcv_cache(
+    symbol: str, market_scope: str, interval: str, config: AppConfig
+) -> DatasetManifest:
     # Logic to load from old cache and route to new via dataframe
     # This acts as a bridge. For actual data fetching see old cache
     pass
+
 
 def import_universe_selection(result: dict, config: AppConfig) -> DatasetManifest:
     catalog = SQLiteCatalog(config)
@@ -78,22 +87,32 @@ def import_universe_selection(result: dict, config: AppConfig) -> DatasetManifes
 
     df = pd.DataFrame(result.get("selections", []))
     if df.empty:
-         from binance50.core.exceptions import DataValidationError
-         raise DataValidationError("Empty universe selection result")
+        from binance50.core.exceptions import DataValidationError
+
+        raise DataValidationError("Empty universe selection result")
 
     store = ParquetDatasetStore(config)
     paths = store.write_dataset(df, ds_name, schema, mode="append")
 
     version_id = uuid.uuid4().hex
-    manifest = build_manifest(ds_name, version_id, paths, df, schema, quality_status="pass", metadata={"source": "fixture"})
+    manifest = build_manifest(
+        ds_name,
+        version_id,
+        paths,
+        df,
+        schema,
+        quality_status="pass",
+        metadata={"source": "fixture"},
+    )
     write_manifest(manifest, config)
     registry.register_version(ds_name, manifest, "fixture", "pass")
     records = manifest_to_catalog_records(manifest)
     for r in records:
-         catalog.add_file_manifest(r)
+        catalog.add_file_manifest(r)
     registry.activate_version(version_id)
 
     return manifest
+
 
 def import_stream_events(events: list, config: AppConfig) -> DatasetManifest:
     catalog = SQLiteCatalog(config)
@@ -107,15 +126,24 @@ def import_stream_events(events: list, config: AppConfig) -> DatasetManifest:
     paths = store.write_dataset(df, ds_name, schema, mode="append")
 
     version_id = uuid.uuid4().hex
-    manifest = build_manifest(ds_name, version_id, paths, df, schema, quality_status="pass", metadata={"source": "fixture"})
+    manifest = build_manifest(
+        ds_name,
+        version_id,
+        paths,
+        df,
+        schema,
+        quality_status="pass",
+        metadata={"source": "fixture"},
+    )
     write_manifest(manifest, config)
     registry.register_version(ds_name, manifest, "fixture", "pass")
     records = manifest_to_catalog_records(manifest)
     for r in records:
-         catalog.add_file_manifest(r)
+        catalog.add_file_manifest(r)
     registry.activate_version(version_id)
 
     return manifest
+
 
 def import_quality_report(report: dict, config: AppConfig) -> DatasetManifest:
     # First, import it into the Quality Index (SQLite)
@@ -135,12 +163,20 @@ def import_quality_report(report: dict, config: AppConfig) -> DatasetManifest:
     paths = store.write_dataset(df, ds_name, schema, mode="append")
 
     version_id = uuid.uuid4().hex
-    manifest = build_manifest(ds_name, version_id, paths, df, schema, quality_status="pass", metadata={"source": "fixture"})
+    manifest = build_manifest(
+        ds_name,
+        version_id,
+        paths,
+        df,
+        schema,
+        quality_status="pass",
+        metadata={"source": "fixture"},
+    )
     write_manifest(manifest, config)
     registry.register_version(ds_name, manifest, "fixture", "pass")
     records = manifest_to_catalog_records(manifest)
     for r in records:
-         catalog.add_file_manifest(r)
+        catalog.add_file_manifest(r)
     registry.activate_version(version_id)
 
     return manifest
@@ -175,7 +211,7 @@ def import_indicator_result(result: IndicatorRunResult, config: AppConfig) -> Da
         ColumnSchema("open_time", "int64", nullable=False, is_primary_key=True),
         ColumnSchema("close_time", "int64", nullable=False),
         ColumnSchema("config_hash", "string", nullable=False, is_primary_key=True),
-        ColumnSchema("is_warmup", "bool", nullable=False)
+        ColumnSchema("is_warmup", "bool", nullable=False),
     ]
 
     # Exclude base columns from dynamic discovery
@@ -193,10 +229,11 @@ def import_indicator_result(result: IndicatorRunResult, config: AppConfig) -> Da
         columns=base_cols + dynamic_cols,
         primary_keys=["market_scope", "symbol", "interval", "open_time", "config_hash"],
         partition_columns=["market_scope", "symbol", "interval"],
-        timestamp_column="open_time"
+        timestamp_column="open_time",
     )
 
     from binance50.storage.importers import _ensure_dataset
+
     _ensure_dataset(registry, ds_name, DatasetKind.INDICATORS, schema)
 
     store = ParquetDatasetStore(config)
@@ -214,23 +251,27 @@ def import_indicator_result(result: IndicatorRunResult, config: AppConfig) -> Da
     metadata = {
         "source": "indicator_engine",
         "backend": result.request.backend,
-        "indicator_count": result.metadata.indicator_count
+        "indicator_count": result.metadata.indicator_count,
     }
-    manifest = build_manifest(ds_name, version_id, paths, df_to_save, schema, quality_status="pass", metadata=metadata)
+    manifest = build_manifest(
+        ds_name, version_id, paths, df_to_save, schema, quality_status="pass", metadata=metadata
+    )
     write_manifest(manifest, config)
     registry.register_version(ds_name, manifest, "indicator_engine", "pass")
 
     records = manifest_to_catalog_records(manifest)
     for r in records:
-         catalog.add_file_manifest(r)
+        catalog.add_file_manifest(r)
 
     registry.activate_version(version_id)
 
     return manifest
 
+
 def import_indicator_v2_result(result, config: AppConfig) -> DatasetManifest:
     import uuid
 
+    from binance50.core.exceptions import FeatureQualityError
     from binance50.storage.dataset_registry import DatasetRegistry
     from binance50.storage.manifest import (
         build_manifest,
@@ -238,9 +279,8 @@ def import_indicator_v2_result(result, config: AppConfig) -> DatasetManifest:
         write_manifest,
     )
     from binance50.storage.parquet_store import ParquetDatasetStore
-    from binance50.storage.schemas import DatasetKind, INDICATOR_V2_SCHEMA
+    from binance50.storage.schemas import INDICATOR_V2_SCHEMA, DatasetKind
     from binance50.storage.sqlite_catalog import SQLiteCatalog
-    from binance50.core.exceptions import FeatureQualityError
 
     if not result.success or result.output_df is None:
         raise ValueError("Cannot import failed indicator v2 result")
@@ -265,7 +305,7 @@ def import_indicator_v2_result(result, config: AppConfig) -> DatasetManifest:
 
     metadata = {
         "source": "indicator_engine_v2",
-        "request_id": result.request.request_id if result.request else None
+        "request_id": result.request.request_id if result.request else None,
     }
 
     if result.feature_set_metadata:
@@ -274,7 +314,9 @@ def import_indicator_v2_result(result, config: AppConfig) -> DatasetManifest:
         metadata["feature_count"] = result.feature_set_metadata.feature_count
         metadata["config_hash"] = result.feature_set_metadata.config_hash
 
-    manifest = build_manifest(ds_name, version_id, paths, df, schema, quality_status="pass", metadata=metadata)
+    manifest = build_manifest(
+        ds_name, version_id, paths, df, schema, quality_status="pass", metadata=metadata
+    )
     write_manifest(manifest, config)
 
     registry.register_version(ds_name, manifest, "indicator_engine_v2", "pass")
@@ -286,4 +328,79 @@ def import_indicator_v2_result(result, config: AppConfig) -> DatasetManifest:
     # Automatically activate if quality checks passed (checked above)
     registry.activate_version(version_id)
 
+    return manifest
+
+
+def import_strategy_result(result, config: AppConfig):
+    import uuid
+
+    from binance50.core.exceptions import StrategyQualityError
+    from binance50.storage.dataset_registry import DatasetRegistry
+    from binance50.storage.manifest import (
+        build_manifest,
+        manifest_to_catalog_records,
+        write_manifest,
+    )
+    from binance50.storage.parquet_store import ParquetDatasetStore
+    from binance50.storage.schemas import DatasetKind, get_strategy_candidates_schema
+    from binance50.storage.sqlite_catalog import SQLiteCatalog
+
+    if not result.success:
+        raise ValueError("Cannot import failed strategy result")
+
+    if result.quality_report and result.quality_report.status == "fail":
+        raise StrategyQualityError("Cannot import strategy result that failed quality checks")
+
+    # Extra runtime safety assertion
+    from binance50.safety.strategy_guard import assert_no_execution_objects
+
+    for c in result.candidates:
+        assert_no_execution_objects(c)
+
+    catalog = SQLiteCatalog(config)
+    registry = DatasetRegistry(config, catalog)
+    schema = get_strategy_candidates_schema()
+    ds_name = config.strategies.output_dataset_name
+
+    from binance50.storage.importers import _ensure_dataset
+
+    _ensure_dataset(registry, ds_name, DatasetKind.STRATEGY_CANDIDATES, schema)
+
+    from binance50.strategies.candidates import candidates_to_dataframe
+
+    df = candidates_to_dataframe(result.candidates)
+
+    if df.empty:
+        # Optionally allow importing empty frames if acceptable
+        return None
+
+    store = ParquetDatasetStore(config)
+
+    # Needs config_hash in dataframe for schema compliance
+    df["config_hash"] = result.metadata.config_hash
+
+    paths = store.write_dataset(df, ds_name, schema, mode="append")
+
+    version_id = uuid.uuid4().hex
+    metadata = {
+        "source": "strategy_engine",
+        "request_id": result.request.request_id,
+        "config_hash": result.metadata.config_hash,
+        "candidates_count": len(result.candidates),
+        "explanation_metadata": [
+            c.explanation.summary for c in result.candidates[:5]
+        ],  # Keep partial
+    }
+
+    manifest = build_manifest(
+        ds_name, version_id, paths, df, schema, quality_status="pass", metadata=metadata
+    )
+    write_manifest(manifest, config)
+    registry.register_version(ds_name, manifest, "strategy_engine", "pass")
+
+    records = manifest_to_catalog_records(manifest)
+    for r in records:
+        catalog.add_file_manifest(r)
+
+    registry.activate_version(version_id)
     return manifest

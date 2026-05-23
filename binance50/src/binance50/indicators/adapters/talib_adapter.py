@@ -16,6 +16,7 @@ class TalibIndicatorAdapter(IndicatorBackendAdapter):
 
         try:
             import talib
+
             self._available = True
             self._version = talib.__version__
             self._talib = talib
@@ -34,18 +35,23 @@ class TalibIndicatorAdapter(IndicatorBackendAdapter):
             "name": self.name,
             "available": self._available,
             "version": self._version,
-            "supported_functions_count": len(self._talib.get_functions()) if self._available else 0
+            "supported_functions_count": len(self._talib.get_functions()) if self._available else 0,
         }
 
     def supports_indicator(self, name: str) -> bool:
         if not self._available:
             return False
         # Simplistic mapping or true if we support fallback mapping
-        return False # Not implemented fully in Phase 11
+        return False  # Not implemented fully in Phase 11
 
-    def compute(self, spec: IndicatorSpec, df: pd.DataFrame, context: IndicatorContext) -> pd.DataFrame:
+    def compute(
+        self, spec: IndicatorSpec, df: pd.DataFrame, context: IndicatorContext
+    ) -> pd.DataFrame:
         if not self._available:
-             from binance50.core.exceptions import OptionalIndicatorBackendMissingError
-             raise OptionalIndicatorBackendMissingError("TA-Lib is not installed")
+            from binance50.core.exceptions import OptionalIndicatorBackendMissingError
 
-        raise UnsupportedFeatureError(f"TA-Lib computation not fully mapped for {spec.name} in Phase 11")
+            raise OptionalIndicatorBackendMissingError("TA-Lib is not installed")
+
+        raise UnsupportedFeatureError(
+            f"TA-Lib computation not fully mapped for {spec.name} in Phase 11"
+        )

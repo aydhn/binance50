@@ -20,6 +20,7 @@ class StreamReplayResult(BaseModel):
     speed_multiplier: float
     warnings: list[str] = Field(default_factory=list)
 
+
 class StreamReplayEngine:
     def __init__(self, config: AppConfig) -> None:
         self.config = config
@@ -28,7 +29,7 @@ class StreamReplayEngine:
         self,
         events: list[StreamEvent],
         speed_multiplier: float,
-        dispatcher: StreamDispatcher | None = None
+        dispatcher: StreamDispatcher | None = None,
     ) -> StreamReplayResult:
         from binance50.core.time_utils import get_utc_now
 
@@ -39,7 +40,7 @@ class StreamReplayEngine:
             return StreamReplayResult(
                 replay_id=f"rep_{int(get_utc_now().timestamp())}",
                 speed_multiplier=speed_multiplier,
-                warnings=["No events to replay"]
+                warnings=["No events to replay"],
             )
 
         events = sorted(events, key=lambda e: e.event_time_ms)
@@ -76,7 +77,7 @@ class StreamReplayEngine:
             failed_count=failed_count,
             duration_simulated_ms=simulated_duration,
             duration_wall_ms=wall_duration_ms,
-            speed_multiplier=speed_multiplier
+            speed_multiplier=speed_multiplier,
         )
 
     def replay_fixture_sequence(
@@ -84,7 +85,7 @@ class StreamReplayEngine:
         fixture_names: list[str],
         market_scope: MarketScope,
         speed_multiplier: float,
-        dispatcher: StreamDispatcher | None = None
+        dispatcher: StreamDispatcher | None = None,
     ) -> StreamReplayResult:
         sim = StreamSimulator(self.config)
         events = sim.load_fixture_events(fixture_names, market_scope)
@@ -95,4 +96,5 @@ def save_replay_events_to_warehouse(events: list, config) -> "Any":
     if not config.storage.enabled:
         return None
     from binance50.storage.importers import import_stream_events
+
     return import_stream_events(events, config)

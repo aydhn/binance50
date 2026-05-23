@@ -17,6 +17,7 @@ class StreamBufferDecision(BaseModel):
     event_status: StreamEventStatus
     warnings: list[str]
 
+
 class StreamBuffer:
     def __init__(
         self,
@@ -24,7 +25,7 @@ class StreamBuffer:
         drop_policy: Literal["reject_new", "drop_oldest", "drop_newest"] = "reject_new",
         warn_threshold_pct: float = 80.0,
         detect_duplicates: bool = True,
-        duplicate_cache_size: int = 5000
+        duplicate_cache_size: int = 5000,
     ) -> None:
         self.max_events = max_events
         self.drop_policy = drop_policy
@@ -64,7 +65,7 @@ class StreamBuffer:
                     buffer_size=len(self._buffer),
                     usage_pct=self._usage_pct_internal(),
                     event_status=event.status,
-                    warnings=["Duplicate event detected"]
+                    warnings=["Duplicate event detected"],
                 )
 
             current_size = len(self._buffer)
@@ -77,7 +78,7 @@ class StreamBuffer:
                         buffer_size=current_size,
                         usage_pct=100.0,
                         event_status=event.status,
-                        warnings=["Buffer overflow - reject_new policy"]
+                        warnings=["Buffer overflow - reject_new policy"],
                     )
                 elif self.drop_policy == "drop_oldest":
                     self._buffer.popleft()
@@ -89,9 +90,9 @@ class StreamBuffer:
                         buffer_size=self.max_events,
                         usage_pct=100.0,
                         event_status=event.status,
-                        warnings=["Buffer overflow - drop_oldest policy"]
+                        warnings=["Buffer overflow - drop_oldest policy"],
                     )
-                else: # drop_newest
+                else:  # drop_newest
                     self._buffer.pop()
                     self._buffer.append(event)
                     return StreamBufferDecision(
@@ -101,7 +102,7 @@ class StreamBuffer:
                         buffer_size=self.max_events,
                         usage_pct=100.0,
                         event_status=event.status,
-                        warnings=["Buffer overflow - drop_newest policy"]
+                        warnings=["Buffer overflow - drop_newest policy"],
                     )
 
             # Normal append
@@ -118,7 +119,7 @@ class StreamBuffer:
                 buffer_size=len(self._buffer),
                 usage_pct=pct,
                 event_status=event.status,
-                warnings=warnings
+                warnings=warnings,
             )
 
     def pop(self) -> StreamEvent | None:
@@ -170,5 +171,5 @@ class StreamBuffer:
                 "usage_pct": self._usage_pct_internal(),
                 "drop_policy": self.drop_policy,
                 "warn_threshold_pct": self.warn_threshold_pct,
-                "duplicate_cache_size": len(self._duplicate_cache)
+                "duplicate_cache_size": len(self._duplicate_cache),
             }

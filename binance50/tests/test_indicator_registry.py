@@ -18,6 +18,7 @@ def test_registry_default_build():
     assert registry.get("macd_12_26_9").name == "macd_12_26_9"
     assert registry.get("rsi_14").name == "rsi_14"
 
+
 def test_registry_duplicate_register():
     config = AppConfig()
     registry = IndicatorRegistry(config)
@@ -28,12 +29,14 @@ def test_registry_duplicate_register():
     with pytest.raises(IndicatorRegistryError):
         registry.register(spec)
 
+
 def test_registry_get_not_found():
     config = AppConfig()
     registry = IndicatorRegistry(config)
 
     with pytest.raises(IndicatorRegistryError):
         registry.get("nonexistent")
+
 
 def test_registry_filters():
     config = AppConfig()
@@ -45,11 +48,13 @@ def test_registry_filters():
     native_specs = registry.list_specs(backend=IndicatorBackend.NATIVE)
     assert len(native_specs) > 0
 
+
 def test_registry_max_specs():
     config = AppConfig()
     config.indicators.max_indicator_specs_per_run = 0
     with pytest.raises(IndicatorRegistryError):
-        IndicatorRegistry(config) # Fails during default build
+        IndicatorRegistry(config)  # Fails during default build
+
 
 def test_registry_validate_specs():
     config = AppConfig()

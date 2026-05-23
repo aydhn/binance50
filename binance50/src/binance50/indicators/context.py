@@ -18,6 +18,7 @@ class IndicatorContext:
     now_ms: int = field(default_factory=lambda: int(time.time() * 1000))
     correlation_id: str = ""
 
+
 def build_indicator_context(
     config: AppConfig,
     symbol: str,
@@ -25,7 +26,7 @@ def build_indicator_context(
     interval: str,
     backend: str,
     input_columns: list[str],
-    correlation_id: str = ""
+    correlation_id: str = "",
 ) -> IndicatorContext:
     return IndicatorContext(
         config=config,
@@ -34,8 +35,9 @@ def build_indicator_context(
         interval=interval,
         backend=backend,
         input_columns=input_columns,
-        correlation_id=correlation_id
+        correlation_id=correlation_id,
     )
+
 
 def context_to_metadata(context: IndicatorContext) -> dict[str, Any]:
     return {
@@ -45,5 +47,5 @@ def context_to_metadata(context: IndicatorContext) -> dict[str, Any]:
         "backend": context.backend,
         "now_ms": context.now_ms,
         "correlation_id": context.correlation_id,
-        "input_columns_count": len(context.input_columns)
+        "input_columns_count": len(context.input_columns),
     }

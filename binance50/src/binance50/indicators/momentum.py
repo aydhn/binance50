@@ -12,12 +12,12 @@ def rsi(close: pd.Series, period: int = 14) -> pd.Series:
     down_s = pd.Series(down, index=close.index)
 
     def _smma(series, length):
-        res = series.ewm(alpha=1/length, adjust=False, min_periods=length).mean()
+        res = series.ewm(alpha=1 / length, adjust=False, min_periods=length).mean()
         sma_val = series.rolling(window=length, min_periods=length).mean()
         mask = ~res.isna()
         first_valid = mask.idxmax() if mask.any() else None
         if first_valid is not None:
-             res.loc[first_valid] = sma_val.loc[first_valid]
+            res.loc[first_valid] = sma_val.loc[first_valid]
         return res
 
     rs_up = _smma(up_s, period)
@@ -34,7 +34,15 @@ def rsi(close: pd.Series, period: int = 14) -> pd.Series:
 
     return pd.Series(res, index=close.index, name=f"mom_rsi_{period}")
 
-def stochastic(high: pd.Series, low: pd.Series, close: pd.Series, k_period: int = 14, d_period: int = 3, smooth_k: int = 3) -> pd.DataFrame:
+
+def stochastic(
+    high: pd.Series,
+    low: pd.Series,
+    close: pd.Series,
+    k_period: int = 14,
+    d_period: int = 3,
+    smooth_k: int = 3,
+) -> pd.DataFrame:
     lowest_low = low.rolling(window=k_period, min_periods=k_period).min()
     highest_high = high.rolling(window=k_period, min_periods=k_period).max()
 
@@ -47,12 +55,21 @@ def stochastic(high: pd.Series, low: pd.Series, close: pd.Series, k_period: int 
 
     slow_d = slow_k.rolling(window=d_period, min_periods=d_period).mean()
 
-    return pd.DataFrame({
-        f"mom_stoch_k_{k_period}_{d_period}_{smooth_k}": slow_k,
-        f"mom_stoch_d_{k_period}_{d_period}_{smooth_k}": slow_d
-    })
+    return pd.DataFrame(
+        {
+            f"mom_stoch_k_{k_period}_{d_period}_{smooth_k}": slow_k,
+            f"mom_stoch_d_{k_period}_{d_period}_{smooth_k}": slow_d,
+        }
+    )
 
-def stoch_rsi(close: pd.Series, rsi_period: int = 14, stoch_period: int = 14, k_period: int = 3, d_period: int = 3) -> pd.DataFrame:
+
+def stoch_rsi(
+    close: pd.Series,
+    rsi_period: int = 14,
+    stoch_period: int = 14,
+    k_period: int = 3,
+    d_period: int = 3,
+) -> pd.DataFrame:
     rsi_vals = rsi(close, rsi_period)
 
     lowest_rsi = rsi_vals.rolling(window=stoch_period, min_periods=stoch_period).min()
@@ -62,18 +79,23 @@ def stoch_rsi(close: pd.Series, rsi_period: int = 14, stoch_period: int = 14, k_
     stoch_rsi_k = stoch_rsi_k.rolling(window=k_period, min_periods=k_period).mean()
     stoch_rsi_d = stoch_rsi_k.rolling(window=d_period, min_periods=d_period).mean()
 
-    return pd.DataFrame({
-        f"mom_stoch_rsi_k_{rsi_period}_{stoch_period}_{k_period}_{d_period}": stoch_rsi_k,
-        f"mom_stoch_rsi_d_{rsi_period}_{stoch_period}_{k_period}_{d_period}": stoch_rsi_d
-    })
+    return pd.DataFrame(
+        {
+            f"mom_stoch_rsi_k_{rsi_period}_{stoch_period}_{k_period}_{d_period}": stoch_rsi_k,
+            f"mom_stoch_rsi_d_{rsi_period}_{stoch_period}_{k_period}_{d_period}": stoch_rsi_d,
+        }
+    )
+
 
 def roc(close: pd.Series, period: int = 10) -> pd.Series:
     res = 100 * (close - close.shift(period)) / close.shift(period).replace(0, np.nan)
     return pd.Series(res, index=close.index, name=f"mom_roc_{period}")
 
+
 def momentum(close: pd.Series, period: int = 10) -> pd.Series:
     res = close - close.shift(period)
     return pd.Series(res, index=close.index, name=f"mom_mom_{period}")
+
 
 def cci(high: pd.Series, low: pd.Series, close: pd.Series, period: int = 20) -> pd.Series:
     tp = (high + low + close) / 3.0
@@ -86,6 +108,7 @@ def cci(high: pd.Series, low: pd.Series, close: pd.Series, period: int = 20) -> 
 
     res = (tp - sma_tp) / (0.015 * mad.replace(0, np.nan))
     return pd.Series(res, index=close.index, name=f"mom_cci_{period}")
+
 
 def williams_r(high: pd.Series, low: pd.Series, close: pd.Series, period: int = 14) -> pd.Series:
     highest_high = high.rolling(window=period, min_periods=period).max()

@@ -1,7 +1,7 @@
 import re
 from typing import Literal
 
-from pydantic import BaseModel, Field, SecretStr, model_validator, field_validator
+from pydantic import BaseModel, Field, SecretStr, field_validator, model_validator
 
 from binance50.core.enums import (
     AccountDomain,
@@ -449,7 +449,6 @@ class MarketDataConfig(BaseModel):
         return self
 
 
-
 from typing import Literal
 
 
@@ -461,19 +460,48 @@ class StreamLifecycleConfig(BaseModel):
     reconnect_backoff_initial_seconds: float = 1.0
     reconnect_backoff_max_seconds: float = 60.0
 
+
 class StreamsConfig(BaseModel):
     enabled: bool = True
     market_stream_real_connect_enabled: bool = False
     use_combined_streams: bool = True
-    default_stream_types: list[str] = Field(default_factory=lambda: ["kline", "bookTicker", "miniTicker"])
-    allowed_stream_types: list[str] = Field(default_factory=lambda: [
-        "kline", "miniTicker", "ticker", "bookTicker", "partialDepth",
-        "diffDepth", "trade", "aggTrade", "markPrice", "forceOrder"
-    ])
+    default_stream_types: list[str] = Field(
+        default_factory=lambda: ["kline", "bookTicker", "miniTicker"]
+    )
+    allowed_stream_types: list[str] = Field(
+        default_factory=lambda: [
+            "kline",
+            "miniTicker",
+            "ticker",
+            "bookTicker",
+            "partialDepth",
+            "diffDepth",
+            "trade",
+            "aggTrade",
+            "markPrice",
+            "forceOrder",
+        ]
+    )
     default_kline_interval: str = "1m"
-    allowed_kline_intervals: list[str] = Field(default_factory=lambda: [
-        "1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "8h", "12h", "1d", "3d", "1w", "1M"
-    ])
+    allowed_kline_intervals: list[str] = Field(
+        default_factory=lambda: [
+            "1m",
+            "3m",
+            "5m",
+            "15m",
+            "30m",
+            "1h",
+            "2h",
+            "4h",
+            "6h",
+            "8h",
+            "12h",
+            "1d",
+            "3d",
+            "1w",
+            "1M",
+        ]
+    )
     max_symbols_per_stream_plan: int = Field(default=20, ge=1, le=50)
     max_streams_per_connection_spot: int = Field(default=1024, le=1024)
     max_streams_per_connection_usdm: int = Field(default=1024, le=1024)
@@ -497,14 +525,19 @@ class StreamsConfig(BaseModel):
     def validate_streams(self) -> "StreamsConfig":
         if self.market_stream_real_connect_enabled:
             from binance50.core.exceptions import ConfigValidationError
-            raise ConfigValidationError("market_stream_real_connect_enabled=True is blocked in Phase 9")
+
+            raise ConfigValidationError(
+                "market_stream_real_connect_enabled=True is blocked in Phase 9"
+            )
 
         for st in self.default_stream_types:
             if st not in self.allowed_stream_types:
                 raise ValueError(f"default_stream_type {st} must be in allowed_stream_types")
 
         if self.default_kline_interval not in self.allowed_kline_intervals:
-            raise ValueError(f"default_kline_interval {self.default_kline_interval} must be in allowed_kline_intervals")
+            raise ValueError(
+                f"default_kline_interval {self.default_kline_interval} must be in allowed_kline_intervals"
+            )
 
         return self
 
@@ -534,6 +567,7 @@ class ParquetStorageConfig(BaseModel):
             raise ValueError("max_rows_per_file must be greater than row_group_size")
         return self
 
+
 class SQLiteStorageConfig(BaseModel):
     enabled: bool = True
     journal_mode: Literal["WAL", "DELETE", "TRUNCATE", "PERSIST", "MEMORY", "OFF"] = "WAL"
@@ -545,6 +579,7 @@ class SQLiteStorageConfig(BaseModel):
     vacuum_on_compaction: bool = False
     backup_before_migration: bool = True
 
+
 class StoragePartitioningConfig(BaseModel):
     by_market_scope: bool = True
     by_symbol: bool = True
@@ -553,22 +588,31 @@ class StoragePartitioningConfig(BaseModel):
     by_month: bool = True
     by_day: bool = False
 
+
 class StorageDatasetsConfig(BaseModel):
     ohlcv_dataset_name: str = "ohlcv"
     universe_dataset_name: str = "universe_selection"
     stream_events_dataset_name: str = "stream_events"
     quality_dataset_name: str = "quality_reports"
-    allowed_dataset_names: list[str] = Field(default_factory=lambda: [
-        "ohlcv", "universe_selection", "stream_events", "quality_reports",
-        "feature_store_future", "backtest_results_future"
-    ], min_length=1)
+    allowed_dataset_names: list[str] = Field(
+        default_factory=lambda: [
+            "ohlcv",
+            "universe_selection",
+            "stream_events",
+            "quality_reports",
+            "feature_store_future",
+            "backtest_results_future",
+        ],
+        min_length=1,
+    )
 
     @model_validator(mode="after")
     def validate_datasets(self) -> "StorageDatasetsConfig":
         for name in self.allowed_dataset_names:
-            if not re.match(r'^[a-z0-9_]+$', name):
+            if not re.match(r"^[a-z0-9_]+$", name):
                 raise ValueError(f"dataset name {name} must be a safe slug")
         return self
+
 
 class StorageIntegrityConfig(BaseModel):
     compute_file_hash: bool = True
@@ -578,6 +622,7 @@ class StorageIntegrityConfig(BaseModel):
     reject_schema_drift: bool = True
     reject_duplicate_primary_keys: bool = True
     reject_empty_dataset: bool = True
+
 
 class StorageRetentionConfig(BaseModel):
     enabled: bool = False
@@ -592,12 +637,14 @@ class StorageRetentionConfig(BaseModel):
             raise ValueError("max_versions_per_dataset must be >= keep_latest_versions")
         return self
 
+
 class StorageBackupConfig(BaseModel):
     enabled: bool = True
     backup_catalog: bool = True
     backup_manifests: bool = True
     backup_parquet_metadata_only: bool = True
     max_backups: int = Field(default=20, ge=1, le=100)
+
 
 class StorageSafetyConfig(BaseModel):
     allow_delete: bool = False
@@ -606,6 +653,7 @@ class StorageSafetyConfig(BaseModel):
     block_paths_outside_project: bool = True
     block_secret_columns: bool = True
     block_unknown_dataset_names: bool = True
+
 
 class StorageConfig(BaseModel):
     enabled: bool = True
@@ -629,11 +677,11 @@ class StorageConfig(BaseModel):
     safety: StorageSafetyConfig = Field(default_factory=StorageSafetyConfig)
 
 
-
 class IndicatorWarmupPolicyConfig(BaseModel):
     keep_warmup_rows: bool = True
     mark_warmup_rows: bool = True
     min_valid_ratio: float = Field(default=0.70, ge=0.0, le=1.0)
+
 
 class MacdConfig(BaseModel):
     enabled: bool = True
@@ -641,13 +689,16 @@ class MacdConfig(BaseModel):
     slow: int = Field(default=26, gt=1)
     signal: int = Field(default=9, gt=1)
 
+
 class AdxConfig(BaseModel):
     enabled: bool = True
     period: int = Field(default=14, gt=1)
 
+
 class AroonConfig(BaseModel):
     enabled: bool = True
     period: int = Field(default=14, gt=1)
+
 
 class IndicatorTrendConfig(BaseModel):
     enabled: bool = True
@@ -660,11 +711,13 @@ class IndicatorTrendConfig(BaseModel):
     adx: AdxConfig = Field(default_factory=AdxConfig)
     aroon: AroonConfig = Field(default_factory=AroonConfig)
 
+
 class StochasticConfig(BaseModel):
     enabled: bool = True
     k_period: int = Field(default=14, gt=1)
     d_period: int = Field(default=3, gt=0)
     smooth_k: int = Field(default=3, gt=0)
+
 
 class StochRsiConfig(BaseModel):
     enabled: bool = True
@@ -672,6 +725,7 @@ class StochRsiConfig(BaseModel):
     stoch_period: int = Field(default=14, gt=1)
     k_period: int = Field(default=3, gt=0)
     d_period: int = Field(default=3, gt=0)
+
 
 class IndicatorMomentumConfig(BaseModel):
     enabled: bool = True
@@ -683,10 +737,12 @@ class IndicatorMomentumConfig(BaseModel):
     cci_periods: list[int] = Field(default_factory=lambda: [14, 20])
     willr_periods: list[int] = Field(default_factory=lambda: [14])
 
+
 class BollingerConfig(BaseModel):
     enabled: bool = True
     period: int = Field(default=20, gt=1)
     stddev: float = Field(default=2.0, gt=0.0)
+
 
 class KeltnerConfig(BaseModel):
     enabled: bool = True
@@ -694,9 +750,11 @@ class KeltnerConfig(BaseModel):
     atr_period: int = Field(default=14, gt=1)
     multiplier: float = Field(default=2.0, gt=0.0)
 
+
 class DonchianConfig(BaseModel):
     enabled: bool = True
     period: int = Field(default=20, gt=1)
+
 
 class IndicatorVolatilityConfig(BaseModel):
     enabled: bool = True
@@ -707,10 +765,12 @@ class IndicatorVolatilityConfig(BaseModel):
     donchian: DonchianConfig = Field(default_factory=DonchianConfig)
     rolling_std_periods: list[int] = Field(default_factory=lambda: [10, 20, 50])
 
+
 class VwapConfig(BaseModel):
     enabled: bool = True
     session_mode: str = "rolling"
     rolling_period: int = Field(default=20, gt=1)
+
 
 class IndicatorVolumeConfig(BaseModel):
     enabled: bool = True
@@ -722,6 +782,7 @@ class IndicatorVolumeConfig(BaseModel):
     volume_sma_periods: list[int] = Field(default_factory=lambda: [20, 50])
     volume_ema_periods: list[int] = Field(default_factory=lambda: [20])
 
+
 class IndicatorTransformsConfig(BaseModel):
     enabled: bool = True
     returns_periods: list[int] = Field(default_factory=lambda: [1, 3, 5, 10])
@@ -732,6 +793,7 @@ class IndicatorTransformsConfig(BaseModel):
     weighted_close: bool = True
     median_price: bool = True
 
+
 class IndicatorQualityConfig(BaseModel):
     reject_all_nan_indicator: bool = True
     reject_constant_indicator: bool = False
@@ -741,12 +803,17 @@ class IndicatorQualityConfig(BaseModel):
     detect_extreme_values: bool = True
     extreme_zscore_threshold: float = Field(default=20.0, gt=0.0)
 
+
 class IndicatorsConfig(BaseModel):
     enabled: bool = True
     default_backend: str = "native"
-    allowed_backends: list[str] = Field(default_factory=lambda: ["native", "talib_optional", "pandas_ta_optional"])
+    allowed_backends: list[str] = Field(
+        default_factory=lambda: ["native", "talib_optional", "pandas_ta_optional"]
+    )
     fail_if_optional_backend_missing: bool = False
-    input_source_priority: list[str] = Field(default_factory=lambda: ["warehouse", "market_data_cache", "fixture"])
+    input_source_priority: list[str] = Field(
+        default_factory=lambda: ["warehouse", "market_data_cache", "fixture"]
+    )
     output_dataset_name: str = "indicators"
     cache_enabled: bool = True
     cache_dir: str = "data/indicators"
@@ -762,20 +829,15 @@ class IndicatorsConfig(BaseModel):
     float_precision: Literal["float32", "float64"] = "float64"
     fill_policy: Literal["none", "ffill", "bfill", "zero"] = "none"
     warmup_policy: IndicatorWarmupPolicyConfig = Field(default_factory=IndicatorWarmupPolicyConfig)
-    default_periods: dict[str, int] = Field(default_factory=lambda: {
-        "short": 9,
-        "medium": 14,
-        "long": 21,
-        "slow": 50,
-        "very_slow": 200
-    })
+    default_periods: dict[str, int] = Field(
+        default_factory=lambda: {"short": 9, "medium": 14, "long": 21, "slow": 50, "very_slow": 200}
+    )
     trend: IndicatorTrendConfig = Field(default_factory=IndicatorTrendConfig)
     momentum: IndicatorMomentumConfig = Field(default_factory=IndicatorMomentumConfig)
     volatility: IndicatorVolatilityConfig = Field(default_factory=IndicatorVolatilityConfig)
     volume: IndicatorVolumeConfig = Field(default_factory=IndicatorVolumeConfig)
     transforms: IndicatorTransformsConfig = Field(default_factory=IndicatorTransformsConfig)
     quality: IndicatorQualityConfig = Field(default_factory=IndicatorQualityConfig)
-
 
 
 class PivotConfig(BaseModel):
@@ -814,7 +876,7 @@ class DivergenceConfig(BaseModel):
     max_pivot_pair_distance: int = Field(default=50, ge=1)
     min_pivot_distance: int = Field(default=3, ge=1)
     price_source: str = "close"
-    indicator_sources: list[str] = Field(default_factory=lambda: ['mom_rsi_14'], min_length=1)
+    indicator_sources: list[str] = Field(default_factory=lambda: ["mom_rsi_14"], min_length=1)
     detect_regular: bool = True
     detect_hidden: bool = True
     require_price_pivot: bool = True
@@ -912,6 +974,183 @@ class IndicatorV2Config(BaseModel):
     quality: IndicatorV2QualityConfig = Field(default_factory=IndicatorV2QualityConfig)
 
 
+class StrategyCandidateConfig(BaseModel):
+    allowed_directions: list[str] = Field(
+        default_factory=lambda: ["bullish", "bearish", "neutral", "no_action"]
+    )
+    allowed_strengths: list[str] = Field(default_factory=lambda: ["weak", "medium", "strong"])
+    min_confidence: float = Field(default=0.0, ge=0.0)
+    max_confidence: float = Field(default=100.0, le=100.0)
+    default_expiry_bars: int = Field(default=3, ge=1)
+    max_expiry_bars: int = Field(default=50, ge=1)
+    allow_actionable_order_language: bool = False
+    require_non_order_intent: bool = True
+
+    @field_validator("allow_actionable_order_language")
+    def validate_actionable_language(cls, v: bool) -> bool:
+        if v:
+            raise ValueError("allow_actionable_order_language must be False in Phase 13")
+        return v
+
+    @field_validator("require_non_order_intent")
+    def validate_non_order_intent(cls, v: bool) -> bool:
+        if not v:
+            raise ValueError("require_non_order_intent must be True in Phase 13")
+        return v
+
+    @model_validator(mode="after")
+    def validate_expiry(self) -> "StrategyCandidateConfig":
+        if self.default_expiry_bars > self.max_expiry_bars:
+            raise ValueError("default_expiry_bars cannot exceed max_expiry_bars")
+        if self.min_confidence > self.max_confidence:
+            raise ValueError("min_confidence cannot exceed max_confidence")
+        return self
+
+
+class StrategyPluginConfig(BaseModel):
+    enabled: bool = True
+    required_features: list[str] = Field(default_factory=list)
+    required_prefixes: list[str] = Field(default_factory=list)
+
+
+class TrendFollowingPluginConfig(StrategyPluginConfig):
+    min_adx: float = Field(default=18.0)
+    strong_adx: float = Field(default=25.0)
+    ema_fast: str = "trend_ema_20"
+    ema_mid: str = "trend_ema_50"
+    ema_slow: str = "trend_ema_200"
+
+
+class MeanReversionPluginConfig(StrategyPluginConfig):
+    rsi_oversold: float = Field(default=30.0)
+    rsi_overbought: float = Field(default=70.0)
+    require_bollinger_touch: bool = True
+
+
+class MomentumContinuationPluginConfig(StrategyPluginConfig):
+    rsi_min: float = Field(default=50.0)
+    roc_min: float = Field(default=0.0)
+    require_macd_hist_positive_for_bullish: bool = True
+    require_macd_hist_negative_for_bearish: bool = True
+
+
+class VolatilityBreakoutPluginConfig(StrategyPluginConfig):
+    breakout_buffer_atr: float = Field(default=0.10, ge=0.0)
+    require_atr_positive: bool = True
+
+
+class VolumeConfirmationPluginConfig(StrategyPluginConfig):
+    volume_multiplier: float = Field(default=1.25, ge=1.0)
+    require_volume_above_average: bool = True
+
+
+class DivergenceCandidatePluginConfig(StrategyPluginConfig):
+    min_divergence_score: float = Field(default=40.0, ge=0.0)
+    accept_regular: bool = True
+    accept_hidden: bool = True
+
+
+class MTFConfirmationPluginConfig(StrategyPluginConfig):
+    require_mtf_trend_agreement: bool = False
+    min_confirming_timeframes: int = Field(default=1, ge=1)
+
+
+class PatternCandidatePluginConfig(StrategyPluginConfig):
+    min_pattern_confidence: float = Field(default=40.0, ge=0.0)
+
+
+class CompositeSkeletonPluginConfig(StrategyPluginConfig):
+    aggregate_only: bool = True
+    final_signal_scoring_deferred: bool = True
+    min_plugins_agreeing: int = Field(default=2, ge=1)
+
+    @field_validator("final_signal_scoring_deferred")
+    def validate_deferred(cls, v: bool) -> bool:
+        if not v:
+            raise ValueError("final_signal_scoring_deferred must be True in Phase 13")
+        return v
+
+
+class StrategyPluginsContainerConfig(BaseModel):
+    trend_following: TrendFollowingPluginConfig = Field(default_factory=TrendFollowingPluginConfig)
+    mean_reversion: MeanReversionPluginConfig = Field(default_factory=MeanReversionPluginConfig)
+    momentum_continuation: MomentumContinuationPluginConfig = Field(
+        default_factory=MomentumContinuationPluginConfig
+    )
+    volatility_breakout: VolatilityBreakoutPluginConfig = Field(
+        default_factory=VolatilityBreakoutPluginConfig
+    )
+    volume_confirmation: VolumeConfirmationPluginConfig = Field(
+        default_factory=VolumeConfirmationPluginConfig
+    )
+    divergence_candidate: DivergenceCandidatePluginConfig = Field(
+        default_factory=DivergenceCandidatePluginConfig
+    )
+    mtf_confirmation: MTFConfirmationPluginConfig = Field(
+        default_factory=MTFConfirmationPluginConfig
+    )
+    pattern_candidate: PatternCandidatePluginConfig = Field(
+        default_factory=PatternCandidatePluginConfig
+    )
+    composite_skeleton: CompositeSkeletonPluginConfig = Field(
+        default_factory=CompositeSkeletonPluginConfig
+    )
+
+
+class StrategyQualityConfig(BaseModel):
+    reject_empty_candidate_set: bool = False
+    warn_empty_candidate_set: bool = True
+    reject_duplicate_candidates: bool = True
+    reject_missing_explanation: bool = True
+    reject_order_like_language: bool = True
+    reject_confidence_out_of_range: bool = True
+    warn_conflicting_candidates: bool = True
+    max_conflicting_candidates_per_bar: int = Field(default=5, ge=1)
+
+
+class StrategiesConfig(BaseModel):
+    enabled: bool = True
+    output_dataset_name: str = "strategy_candidates"
+    cache_enabled: bool = True
+    cache_dir: str = "data/strategies"
+    export_dir: str = "data/strategies/exports"
+
+    execution_forbidden: bool = True
+    order_creation_forbidden: bool = True
+    paper_trade_forbidden: bool = True
+    backtest_forbidden: bool = True
+    live_trade_forbidden: bool = True
+
+    require_explanations: bool = True
+    require_feature_metadata: bool = True
+    require_closed_candles: bool = True
+    prevent_lookahead_bias: bool = True
+    reject_future_columns: bool = True
+    reject_target_columns: bool = True
+    reject_label_columns: bool = True
+
+    max_candidates_per_symbol_interval: int = Field(default=100, ge=1)
+    max_plugins_per_run: int = Field(default=20, ge=1, le=100)
+    max_conditions_per_plugin: int = Field(default=50, ge=1, le=500)
+    min_rows_required: int = Field(default=100, ge=1)
+    warmup_rows_allowed: bool = False
+
+    candidate: StrategyCandidateConfig = Field(default_factory=StrategyCandidateConfig)
+    plugins: StrategyPluginsContainerConfig = Field(default_factory=StrategyPluginsContainerConfig)
+    quality: StrategyQualityConfig = Field(default_factory=StrategyQualityConfig)
+
+    @field_validator(
+        "execution_forbidden",
+        "order_creation_forbidden",
+        "live_trade_forbidden",
+        "backtest_forbidden",
+        "paper_trade_forbidden",
+    )
+    def validate_forbidden(cls, v: bool, info) -> bool:
+        if not v:
+            raise ValueError(f"{info.field_name} must be True in Phase 13")
+        return v
+
 
 class AppConfig(BaseModel):
     project: ProjectConfig = ProjectConfig()
@@ -933,6 +1172,7 @@ class AppConfig(BaseModel):
     streams: StreamsConfig = StreamsConfig()
     storage: StorageConfig = StorageConfig()
     indicators: IndicatorsConfig = Field(default_factory=IndicatorsConfig)
+    strategies: StrategiesConfig = Field(default_factory=StrategiesConfig)
 
     @model_validator(mode="after")
     def validate_live_trading(self) -> "AppConfig":

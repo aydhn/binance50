@@ -8,7 +8,9 @@ class QualityIndex:
     def __init__(self, catalog):
         self.catalog = catalog
 
-    def index_quality_report(self, version_id: str, dataset_name: str, report: dict) -> list[QualityIndexRecord]:
+    def index_quality_report(
+        self, version_id: str, dataset_name: str, report: dict
+    ) -> list[QualityIndexRecord]:
         records = []
         now = datetime.now(UTC).isoformat()
 
@@ -25,25 +27,27 @@ class QualityIndex:
             issues.append(("NEGATIVE_PRICE", "critical", 1))
 
         for issue_type, severity, count in issues:
-             record = QualityIndexRecord(
-                 quality_id=uuid.uuid4().hex,
-                 version_id=version_id,
-                 dataset_name=dataset_name,
-                 symbol=symbol,
-                 interval=interval,
-                 issue_type=issue_type,
-                 severity=severity,
-                 issue_count=count,
-                 first_seen_open_time=0, # placeholder
-                 last_seen_open_time=0,
-                 created_at_utc=now
-             )
-             records.append(record)
-             self.catalog.add_quality_index(record)
+            record = QualityIndexRecord(
+                quality_id=uuid.uuid4().hex,
+                version_id=version_id,
+                dataset_name=dataset_name,
+                symbol=symbol,
+                interval=interval,
+                issue_type=issue_type,
+                severity=severity,
+                issue_count=count,
+                first_seen_open_time=0,  # placeholder
+                last_seen_open_time=0,
+                created_at_utc=now,
+            )
+            records.append(record)
+            self.catalog.add_quality_index(record)
 
         return records
 
-    def summarize_quality(self, dataset_name: str, symbol: str | None = None, interval: str | None = None) -> dict:
+    def summarize_quality(
+        self, dataset_name: str, symbol: str | None = None, interval: str | None = None
+    ) -> dict:
         sql = "SELECT severity, COUNT(*) as cnt FROM quality_index WHERE dataset_name = ?"
         params = [dataset_name]
         if symbol:
@@ -57,11 +61,13 @@ class QualityIndex:
         res = self.catalog.execute(sql, tuple(params))
         summary = {"critical": 0, "high": 0, "medium": 0, "low": 0}
         for r in res:
-             if r["severity"] in summary:
-                 summary[r["severity"]] = r["cnt"]
+            if r["severity"] in summary:
+                summary[r["severity"]] = r["cnt"]
         return summary
 
-    def list_quality_issues(self, dataset_name: str, severity: str | None = None) -> list[QualityIndexRecord]:
+    def list_quality_issues(
+        self, dataset_name: str, severity: str | None = None
+    ) -> list[QualityIndexRecord]:
         sql = "SELECT * FROM quality_index WHERE dataset_name = ?"
         params = [dataset_name]
         if severity:
@@ -75,5 +81,8 @@ class QualityIndex:
         sql = "SELECT COUNT(*) FROM quality_index WHERE version_id = ? AND severity = 'critical'"
         res = self.catalog.execute(sql, (version_id,))
         if res and res[0][0] > 0:
-             from binance50.core.exceptions import QualityIndexError
-             raise QualityIndexError(f"Critical quality issues found for dataset {dataset_name} version {version_id}")
+            from binance50.core.exceptions import QualityIndexError
+
+            raise QualityIndexError(
+                f"Critical quality issues found for dataset {dataset_name} version {version_id}"
+            )

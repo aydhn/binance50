@@ -25,7 +25,9 @@ class RealtimeMarketDataStore:
 
             if st == StreamType.book_ticker and isinstance(event, BookTickerStreamEvent):
                 self._book_tickers[sym] = event
-            elif st in (StreamType.ticker, StreamType.mini_ticker) and isinstance(event, (TickerStreamEvent, MiniTickerStreamEvent)):
+            elif st in (StreamType.ticker, StreamType.mini_ticker) and isinstance(
+                event, (TickerStreamEvent, MiniTickerStreamEvent)
+            ):
                 self._tickers[sym] = event
             elif st == StreamType.kline and isinstance(event, KlineStreamEvent):
                 key = (sym, event.interval)
@@ -68,7 +70,7 @@ class RealtimeMarketDataStore:
                 "tickers_count": len(self._tickers),
                 "closed_klines_count": len(self._closed_klines),
                 "open_klines_count": len(self._open_klines),
-                "symbols": self.list_symbols()
+                "symbols": self.list_symbols(),
             }
 
     def clear(self) -> None:

@@ -8,7 +8,13 @@ from binance50.safety.stream_guard import assert_real_stream_connect_allowed
 
 if "StreamSubscriptionPlan" not in content:
     import re
-    content = re.sub(r'from binance50\.rate_limit\.websocket_limits import \([\s\S]*?\)', 'from binance50.rate_limit.websocket_limits import validate_stream_count\n' + import_statement.strip(), content)
+
+    content = re.sub(
+        r"from binance50\.rate_limit\.websocket_limits import \([\s\S]*?\)",
+        "from binance50.rate_limit.websocket_limits import validate_stream_count\n"
+        + import_statement.strip(),
+        content,
+    )
 
     # replace build_stream_url with build_stream_url_from_plan
     # add subscribe, unsubscribe, receive_loop

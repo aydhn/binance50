@@ -12,17 +12,21 @@ def test_build_kline():
     name = build_stream_name("BTCUSDT", StreamType.kline, interval="1m")
     assert name == "btcusdt@kline_1m"
 
+
 def test_build_book_ticker():
     name = build_stream_name("BTCUSDT", StreamType.book_ticker)
     assert name == "btcusdt@bookTicker"
+
 
 def test_build_invalid_interval():
     with pytest.raises(ValueError):
         build_stream_name("BTCUSDT", StreamType.kline, interval="99m")
 
+
 def test_build_mark_price_spot_fails():
     with pytest.raises(ValueError):
         build_stream_name("BTCUSDT", StreamType.mark_price, market_scope=MarketScope.SPOT)
+
 
 def test_parse_stream_name():
     p1 = parse_stream_name("btcusdt@kline_1m")

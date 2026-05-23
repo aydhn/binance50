@@ -32,6 +32,7 @@ def test_native_adapter():
     assert len(res) == 10
     assert "trend_sma_9" in res.columns
 
+
 def test_talib_adapter():
     adapter = TalibIndicatorAdapter()
     assert adapter.name == "talib_optional"
@@ -43,6 +44,7 @@ def test_talib_adapter():
     if not adapter.is_available():
         with pytest.raises(OptionalIndicatorBackendMissingError):
             adapter.compute(None, pd.DataFrame(), None)
+
 
 def test_pandas_ta_adapter():
     adapter = PandasTaIndicatorAdapter()

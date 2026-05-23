@@ -29,7 +29,12 @@ new_methods = """
         return d
 """
 
-content = re.sub(r'    def to_dict\(self, redacted: bool = True\) -> dict\[str, Any\]:[\s\S]*?        }', new_methods, content, count=1)
+content = re.sub(
+    r"    def to_dict\(self, redacted: bool = True\) -> dict\[str, Any\]:[\s\S]*?        }",
+    new_methods,
+    content,
+    count=1,
+)
 
 with open("src/binance50/core/exceptions.py", "w") as f:
     f.write(content)
