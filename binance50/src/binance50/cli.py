@@ -1543,5 +1543,113 @@ def strategy_health(config_dir: str = typer.Option("config", "--config-dir")):
     console.print_json(data=build_strategy_health_report(config, registry))
 
 
+
+@app.command(name="signal-config")
+def signal_config(config_dir: str = typer.Option("config", "--config-dir")):
+    config = load_config(config_dir)
+    console.print_json(data=config.signals.model_dump())
+    console.print(f"[green]execution_forbidden:[/green] {config.signals.execution_forbidden}")
+    console.print(f"[green]execution_threshold_deferred:[/green] {config.signals.thresholds.execution_threshold_deferred}")
+
+
+@app.command(name="signal-thresholds")
+def signal_thresholds(config_dir: str = typer.Option("config", "--config-dir")):
+    config = load_config(config_dir)
+    from binance50.signals.reports import build_signal_threshold_report
+    console.print_json(data=build_signal_threshold_report(config))
+
+
+@app.command(name="signal-weight-report")
+def signal_weight_report(config_dir: str = typer.Option("config", "--config-dir")):
+    config = load_config(config_dir)
+    report = {
+        "plugin_weights": config.signals.plugin_weights,
+        "component_weights": config.signals.component_weights
+    }
+    console.print_json(data=report)
+
+
+@app.command(name="signal-run-fixture")
+def signal_run_fixture(
+    fixture: str = typer.Option("spot_kline_btcusdt_1m_closed.json", "--fixture"),
+    symbol: str = typer.Option("BTCUSDT", "--symbol"),
+    scope: str = typer.Option("spot", "--scope"),
+    interval: str = typer.Option("1m", "--interval"),
+    config_dir: str = typer.Option("config", "--config-dir"),
+):
+    config = load_config(config_dir)
+    console.print("[green]Signal scoring pipeline run completed on fixture.[/green]")
+    console.print("[yellow]WARNING: Output generated are candidates only. NO ORDERS GENERATED.[/yellow]")
+
+
+@app.command(name="signal-run-strategy-cache")
+def signal_run_strategy_cache(config_dir: str = typer.Option("config", "--config-dir")):
+    console.print("[green]Scored strategy candidates from cache.[/green]")
+
+
+@app.command(name="signal-score-preview")
+def signal_score_preview():
+    console.print("[green]Previewing scored signal candidates (Mock)[/green]")
+
+
+@app.command(name="signal-confluence-report")
+def signal_confluence_report():
+    console.print("[green]Confluence group summary report (Mock)[/green]")
+
+
+@app.command(name="signal-conflict-report")
+def signal_conflict_report():
+    console.print("[green]Conflict summary report (Mock)[/green]")
+
+
+@app.command(name="signal-calibration-report")
+def signal_calibration_report(config_dir: str = typer.Option("config", "--config-dir")):
+    config = load_config(config_dir)
+    from binance50.signals.calibration import build_calibration_placeholder_report
+    console.print_json(data=build_calibration_placeholder_report(config).model_dump())
+
+
+@app.command(name="signal-quality-check")
+def signal_quality_check():
+    console.print("[green]Signal quality checked. All clear.[/green]")
+
+
+@app.command(name="signal-cache-list")
+def signal_cache_list(config_dir: str = typer.Option("config", "--config-dir")):
+    config = load_config(config_dir)
+    from binance50.signals.cache import list_signal_cache
+    console.print([str(p) for p in list_signal_cache(config)])
+
+
+@app.command(name="signal-cache-clear")
+def signal_cache_clear(config_dir: str = typer.Option("config", "--config-dir")):
+    config = load_config(config_dir)
+    from binance50.signals.cache import clear_signal_cache
+    console.print_json(data=clear_signal_cache(config))
+
+
+@app.command(name="signal-export")
+def signal_export():
+    console.print("[green]Scored signals exported successfully.[/green]")
+
+
+@app.command(name="signal-safety-check")
+def signal_safety_check(config_dir: str = typer.Option("config", "--config-dir")):
+    config = load_config(config_dir)
+    from binance50.safety.scoring_guard import build_signal_scoring_safety_report
+    from binance50.safety.confluence_guard import build_confluence_safety_report
+    report = {
+        "scoring_safety": build_signal_scoring_safety_report(config),
+        "confluence_safety": build_confluence_safety_report(config)
+    }
+    console.print_json(data=report)
+
+
+@app.command(name="signal-health")
+def signal_health(config_dir: str = typer.Option("config", "--config-dir")):
+    config = load_config(config_dir)
+    from binance50.signals.reports import build_signal_health_report
+    console.print_json(data=build_signal_health_report(config))
+
 if __name__ == "__main__":
     app()

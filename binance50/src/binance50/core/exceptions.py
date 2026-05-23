@@ -785,3 +785,79 @@ class ActionableLanguageDetectedError(StrategyError):
 
 class RuntimeInvariantFailedError(Binance50Error):
     pass
+
+# Phase 14 Signal Exceptions
+class SignalError(Binance50Error):
+    pass
+
+
+class SignalConfigError(SignalError):
+    def __init__(self, message: str, **kwargs: Any) -> None:
+        kwargs.setdefault("error_code", error_codes.SIGNAL_CONFIG_INVALID)
+        super().__init__(message, **kwargs)
+
+
+class SignalScoringError(SignalError):
+    def __init__(self, message: str, **kwargs: Any) -> None:
+        kwargs.setdefault("error_code", error_codes.SIGNAL_SCORING_FAILED)
+        super().__init__(message, **kwargs)
+
+
+class SignalValidationError(SignalError):
+    def __init__(self, message: str, **kwargs: Any) -> None:
+        kwargs.setdefault("error_code", error_codes.SIGNAL_VALIDATION_FAILED)
+        super().__init__(message, **kwargs)
+
+
+class SignalQualityError(SignalError):
+    def __init__(self, message: str, **kwargs: Any) -> None:
+        kwargs.setdefault("error_code", error_codes.SIGNAL_QUALITY_FAILED)
+        super().__init__(message, **kwargs)
+
+
+class SignalCacheError(SignalError):
+    def __init__(self, message: str, **kwargs: Any) -> None:
+        kwargs.setdefault("error_code", error_codes.SIGNAL_CACHE_FAILED)
+        super().__init__(message, **kwargs)
+
+
+class SignalConfluenceError(SignalError):
+    def __init__(self, message: str, **kwargs: Any) -> None:
+        kwargs.setdefault("error_code", error_codes.SIGNAL_CONFLUENCE_FAILED)
+        super().__init__(message, **kwargs)
+
+
+class SignalConflictError(SignalError):
+    def __init__(self, message: str, **kwargs: Any) -> None:
+        kwargs.setdefault("error_code", error_codes.SIGNAL_CONFLICT_FAILED)
+        super().__init__(message, **kwargs)
+
+
+class SignalCalibrationError(SignalError):
+    def __init__(self, message: str, **kwargs: Any) -> None:
+        kwargs.setdefault("error_code", error_codes.SIGNAL_CALIBRATION_FAILED)
+        super().__init__(message, **kwargs)
+
+
+class SignalThresholdError(SignalError):
+    def __init__(self, message: str, **kwargs: Any) -> None:
+        kwargs.setdefault("error_code", error_codes.SIGNAL_THRESHOLD_INVALID)
+        super().__init__(message, **kwargs)
+
+
+class ScoreOutOfRangeError(SignalError):
+    def __init__(self, message: str, **kwargs: Any) -> None:
+        kwargs.setdefault("error_code", error_codes.SCORE_OUT_OF_RANGE)
+        super().__init__(message, **kwargs)
+
+
+class ScoreBreakdownMissingError(SignalError):
+    def __init__(self, message: str, **kwargs: Any) -> None:
+        kwargs.setdefault("error_code", error_codes.SCORE_BREAKDOWN_MISSING)
+        super().__init__(message, **kwargs)
+
+
+class ExecutionThresholdForbiddenError(SignalError):
+    def __init__(self, message: str, **kwargs: Any) -> None:
+        kwargs.setdefault("error_code", error_codes.EXECUTION_THRESHOLD_FORBIDDEN)
+        super().__init__(message, **kwargs)

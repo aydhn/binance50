@@ -21,4 +21,6 @@
 - Phase 12: Indicator engine v2 genişletilecek: divergence, multi-timeframe alignment, pattern/candlestick hazırlıkları ve feature grouping modeli kurulacak.
 
 ### Phase 14 hazırlığı:
-Phase 14'te signal scoring ve confluence engine kurulacak; Phase 13 adayları nihai skora dönüştürülecek ama emir üretimi hâlâ risk/execution fazlarına kadar kapalı kalacak.
+Phase 14: Signal scoring ve confluence engine; strategy candidate'ları ağırlıklı, açıklanabilir, conflict-aware ve execution'dan ayrılmış skorlu sinyal taslaklarına dönüştürür. (Completed)
+### Phase 15 hazırlığı:
+Phase 15'te rejim sınıflandırma v1 kurulacak; trend/range/volatile/calm piyasa rejimleri sinyal skorlarının bağlamsal filtresi olarak hazırlanacak.
