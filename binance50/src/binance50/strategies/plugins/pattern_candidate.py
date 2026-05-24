@@ -48,7 +48,7 @@ class PatternCandidatePlugin(StrategyPluginProtocol):
 
         pat_cols = [c for c in df.columns if c.startswith("pat_")]
 
-        for idx, row in df.iterrows():
+        for _idx, row in df.iterrows():
             for c in pat_cols:
                 val = row.get(c, 0)
                 if pd.isna(val) or val == 0:

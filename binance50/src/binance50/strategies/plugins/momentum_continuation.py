@@ -46,7 +46,7 @@ class MomentumContinuationPlugin(StrategyPluginProtocol):
         candidates = []
         pcfg = context.config.strategies.plugins.momentum_continuation
 
-        for idx, row in df.iterrows():
+        for _idx, row in df.iterrows():
             rsi = row.get("mom_rsi_14", 50)
             macd_hist = row.get("trend_macd_hist_12_26_9", 0)
             roc = row.get("mom_roc_10", 0)

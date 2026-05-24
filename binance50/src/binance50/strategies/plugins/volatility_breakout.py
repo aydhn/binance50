@@ -46,7 +46,7 @@ class VolatilityBreakoutPlugin(StrategyPluginProtocol):
         candidates = []
         pcfg = context.config.strategies.plugins.volatility_breakout
 
-        for idx, row in df.iterrows():
+        for _idx, row in df.iterrows():
             close = row.get("close", 0)
             atr = row.get("vol_atr_14", 0)
             donchian_h = row.get("vol_donchian_high_20", 0)

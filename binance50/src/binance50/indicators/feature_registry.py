@@ -60,6 +60,6 @@ class FeatureRegistry:
         return {
             "total_features": len(self._features),
             "total_feature_sets": len(self._feature_sets),
-            "groups": list(set(f.group for f in self._features.values() if f.group)),
+            "groups": list({f.group for f in self._features.values() if f.group}),
             "is_safe": True,
         }

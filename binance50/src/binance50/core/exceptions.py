@@ -922,56 +922,69 @@ class RiskError(Binance50Error):
 
 class RiskConfigError(RiskError):
     def __init__(self, message: str, details: dict | None = None) -> None:
-        super().__init__(message, details=details) # RISK_CONFIG_INVALID
+        super().__init__(message, details=details)  # RISK_CONFIG_INVALID
+
 
 class RiskValidationError(RiskError):
     def __init__(self, message: str, details: dict | None = None) -> None:
-        super().__init__(message, details=details) # RISK_VALIDATION_FAILED
+        super().__init__(message, details=details)  # RISK_VALIDATION_FAILED
+
 
 class RiskPolicyError(RiskError):
     def __init__(self, message: str, details: dict | None = None) -> None:
-        super().__init__(message, details=details) # RISK_POLICY_FAILED
+        super().__init__(message, details=details)  # RISK_POLICY_FAILED
+
 
 class RiskAssessmentError(RiskError):
     def __init__(self, message: str, details: dict | None = None) -> None:
-        super().__init__(message, details=details) # RISK_ASSESSMENT_FAILED
+        super().__init__(message, details=details)  # RISK_ASSESSMENT_FAILED
+
 
 class RiskQualityError(RiskError):
     def __init__(self, message: str, details: dict | None = None) -> None:
-        super().__init__(message, details=details) # RISK_QUALITY_FAILED
+        super().__init__(message, details=details)  # RISK_QUALITY_FAILED
+
 
 class RiskCacheError(RiskError):
     def __init__(self, message: str, details: dict | None = None) -> None:
-        super().__init__(message, details=details) # RISK_CACHE_FAILED
+        super().__init__(message, details=details)  # RISK_CACHE_FAILED
+
 
 class RiskLimitError(RiskError):
     def __init__(self, message: str, details: dict | None = None) -> None:
-        super().__init__(message, details=details) # RISK_LIMIT_EXCEEDED
+        super().__init__(message, details=details)  # RISK_LIMIT_EXCEEDED
+
 
 class RiskExposureError(RiskError):
     def __init__(self, message: str, details: dict | None = None) -> None:
-        super().__init__(message, details=details) # RISK_EXPOSURE_FAILED
+        super().__init__(message, details=details)  # RISK_EXPOSURE_FAILED
+
 
 class RiskNotionalError(RiskError):
     def __init__(self, message: str, details: dict | None = None) -> None:
-        super().__init__(message, details=details) # RISK_NOTIONAL_FAILED
+        super().__init__(message, details=details)  # RISK_NOTIONAL_FAILED
+
 
 class RiskFilterError(RiskError):
     def __init__(self, message: str, details: dict | None = None) -> None:
-        super().__init__(message, details=details) # RISK_FILTER_FAILED
+        super().__init__(message, details=details)  # RISK_FILTER_FAILED
+
 
 class RiskLeverageError(RiskError):
     def __init__(self, message: str, details: dict | None = None) -> None:
-        super().__init__(message, details=details) # RISK_LEVERAGE_FAILED
+        super().__init__(message, details=details)  # RISK_LEVERAGE_FAILED
+
 
 class RiskFrequencyError(RiskError):
     def __init__(self, message: str, details: dict | None = None) -> None:
-        super().__init__(message, details=details) # RISK_FREQUENCY_FAILED
+        super().__init__(message, details=details)  # RISK_FREQUENCY_FAILED
+
 
 class RiskExecutionForbiddenError(RiskError):
     def __init__(self, message: str, details: dict | None = None) -> None:
-        super().__init__(message, details=details) # RISK_EXECUTION_FORBIDDEN
+        super().__init__(message, details=details)  # RISK_EXECUTION_FORBIDDEN
+
 
 class RiskOrderObjectDetectedError(RiskError):
     def __init__(self, message: str, details: dict | None = None) -> None:
-        super().__init__(message, details=details) # RISK_ORDER_OBJECT_DETECTED
+        super().__init__(message, details=details)  # RISK_ORDER_OBJECT_DETECTED

@@ -291,3 +291,15 @@ The risk engine v1 is a non-execution risk evaluation layer. It acts as an inter
 - **Frequency/Rate Model**: Places ceilings on how frequently candidates can be generated or approved per symbol and globally.
 
 **No Execution Guarantee**: Phase 16 intentionally avoids generating real orders, position sizing, entry/exit prices, or interacting with live APIs. Risk assessments have intents such as `risk_review`, `future_backtest_candidate`, and `paper_review_candidate`, but never `live_trade`.
+
+## Phase 17: Paper Trading Engine v1
+The Paper trading engine simulates risk-approved candidates without executing real orders. It operates strictly locally using simulated constructs.
+- **Paper Account Model**: Maintains simulated cash and equity balances without querying Binance.
+- **Paper Ledger**: An append-only structure that records all simulation events including candidate evaluation, fills, and position lifecycle.
+- **Paper Fill Simulation**: By default, simulates fills based on the open price of the bar following the signal.
+- **Paper Position State**: Manages open and closed simulated positions. Supports checking margin and opposing signal constraints.
+- **Paper Portfolio Snapshots**: Periodically captures mark-to-market snapshots reflecting current local equity and unrealized PnL.
+- **Paper PnL v1**: Simplistic PnL calculations factoring in estimated slippage and fees.
+- **Paper Journal**: Logs every closed paper trade along with an explanation linking the source signal and risk regime context.
+- **Risk Assessment Integration**: The engine solely accepts RiskAssessment payloads that have the status `approved_for_paper_review` or similar, ignoring rejected signals.
+- **Why no real exchange?**: Phase 17 focuses entirely on a sandboxed validation of sequential execution without financial risk or network variability.

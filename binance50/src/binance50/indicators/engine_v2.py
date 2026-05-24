@@ -103,7 +103,7 @@ class IndicatorEngineV2:
 
             # 5. Feature Groups & Metadata
             # Build feature group report
-            group_report = build_feature_group_report(df, self.config)
+            build_feature_group_report(df, self.config)
 
             # 6. Quality V2
             quality_report = build_feature_quality_report(

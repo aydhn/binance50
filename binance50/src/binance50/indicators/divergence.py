@@ -142,33 +142,32 @@ def detect_divergences_for_indicator(
                 elif cfg.detect_hidden and p_curr < p_prev and i_curr > i_prev:
                     div_type = DivergenceType.hidden_bearish
 
-            if div_type:
-                if (
-                    abs(p_delta_pct) >= cfg.min_price_delta_pct
-                    and abs(i_delta_pct) >= cfg.min_indicator_delta_pct
-                ):
-                    cand = DivergenceSignalCandidate(
-                        candidate_id=uuid.uuid4().hex,
-                        symbol=symbol,
-                        interval=interval,
-                        divergence_type=div_type,
-                        price_source=price_source,
-                        indicator_source=indicator_source,
-                        first_pivot_time=prev_price_p.open_time,
-                        second_pivot_time=curr_price_p.open_time,
-                        first_price_value=p_prev,
-                        second_price_value=p_curr,
-                        first_indicator_value=i_prev,
-                        second_indicator_value=i_curr,
-                        price_delta_pct=p_delta_pct,
-                        indicator_delta_pct=i_delta_pct,
-                        pivot_distance_bars=dist_bars,
-                        score=0.0,
-                    )
-                    if cfg.score_enabled:
-                        cand.score = score_divergence(cand, config)
-                    candidates.append(cand)
-                    break  # Found the most recent divergence for this point
+            if div_type and (
+                abs(p_delta_pct) >= cfg.min_price_delta_pct
+                and abs(i_delta_pct) >= cfg.min_indicator_delta_pct
+            ):
+                cand = DivergenceSignalCandidate(
+                    candidate_id=uuid.uuid4().hex,
+                    symbol=symbol,
+                    interval=interval,
+                    divergence_type=div_type,
+                    price_source=price_source,
+                    indicator_source=indicator_source,
+                    first_pivot_time=prev_price_p.open_time,
+                    second_pivot_time=curr_price_p.open_time,
+                    first_price_value=p_prev,
+                    second_price_value=p_curr,
+                    first_indicator_value=i_prev,
+                    second_indicator_value=i_curr,
+                    price_delta_pct=p_delta_pct,
+                    indicator_delta_pct=i_delta_pct,
+                    pivot_distance_bars=dist_bars,
+                    score=0.0,
+                )
+                if cfg.score_enabled:
+                    cand.score = score_divergence(cand, config)
+                candidates.append(cand)
+                break  # Found the most recent divergence for this point
 
     return candidates
 

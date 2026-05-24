@@ -17,7 +17,7 @@ def test_backward_asof_alignment(config: AppConfig):
 
     # Higher: every 5 minutes
     # Closes at 10:00, 10:05
-    h_times = pd.date_range("2023-01-01 09:55:00", periods=2, freq="5min")
+    pd.date_range("2023-01-01 09:55:00", periods=2, freq="5min")
     h_df = pd.DataFrame(
         {
             "close_time": [

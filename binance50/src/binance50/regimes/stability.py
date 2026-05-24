@@ -38,7 +38,7 @@ def compute_regime_stability(
         return classifications
     labels = [c.regime for c in classifications]
     w = config.regimes.stability.stability_window
-    flip_counts = compute_flip_count(labels, w)
+    compute_flip_count(labels, w)
     for i, classification in enumerate(classifications):
         start_idx = max(0, i - w + 1)
         window_labels = labels[start_idx : i + 1]

@@ -69,14 +69,13 @@ def validate_score_breakdown(breakdown: SignalScoreBreakdown | None, config: App
             raise ScoreBreakdownMissingError("Score breakdown is missing")
         return
 
-    if config.signals.scoring.clamp_scores:
-        if (
-            breakdown.final_score < config.signals.scoring.min_score
-            or breakdown.final_score > config.signals.scoring.max_score
-        ):
-            from binance50.core.exceptions import ScoreOutOfRangeError
+    if config.signals.scoring.clamp_scores and (
+        breakdown.final_score < config.signals.scoring.min_score
+        or breakdown.final_score > config.signals.scoring.max_score
+    ):
+        from binance50.core.exceptions import ScoreOutOfRangeError
 
-            raise ScoreOutOfRangeError(f"Score {breakdown.final_score} is out of bounds")
+        raise ScoreOutOfRangeError(f"Score {breakdown.final_score} is out of bounds")
 
 
 def validate_no_future_target_label_columns(df: pd.DataFrame) -> None:

@@ -92,10 +92,7 @@ def detect_order_like_language(text: str) -> bool:
         return True
     if re.search(r"sell \d+", text_lower):
         return True
-    if re.search(r"qty[:=]\s*\d+", text_lower):
-        return True
-
-    return False
+    return bool(re.search(r"qty[:=]\s*\d+", text_lower))
 
 
 def validate_candidate(candidate: SignalCandidate, config: AppConfig) -> None:

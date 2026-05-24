@@ -48,7 +48,7 @@ class DivergenceCandidatePlugin(StrategyPluginProtocol):
 
         div_cols = [c for c in df.columns if c.startswith("div_") and "score" in c]
 
-        for idx, row in df.iterrows():
+        for _idx, row in df.iterrows():
             for c in div_cols:
                 score = row.get(c, 0)
                 if pd.isna(score) or score < pcfg.min_divergence_score:

@@ -50,7 +50,7 @@ class MTFConfirmationPlugin(StrategyPluginProtocol):
         if not mtf_cols:
             return candidates
 
-        for idx, row in df.iterrows():
+        for _idx, row in df.iterrows():
             # Simplistic: just checking if any MTF indicator is strongly aligned
             bullish_count = 0
             bearish_count = 0

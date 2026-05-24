@@ -45,7 +45,7 @@ def compute_mtf_tolerance_ms(
         "4h": 14400000,
         "1d": 86400000,
     }
-    base_ms = interval_map.get(base_interval, 60000)
+    interval_map.get(base_interval, 60000)
     higher_ms = interval_map.get(higher_interval, 3600000)
 
     return higher_ms * max_alignment_tolerance_bars
@@ -79,7 +79,7 @@ def align_higher_tf_to_base(
         raise MTFAlignmentError("Missing required time columns for alignment")
 
     if request.require_higher_tf_closed and "is_closed" in higher_df.columns:
-        h_df = higher_df[higher_df["is_closed"] == True].copy()
+        h_df = higher_df[higher_df["is_closed"]].copy()
     else:
         h_df = higher_df.copy()
 

@@ -55,10 +55,7 @@ def build_feature_metadata_for_columns(
 
     # Calculate nan ratios
     total_rows = len(df)
-    if total_rows > 0:
-        nan_counts = df[features].isna().sum()
-    else:
-        nan_counts = pd.Series(0, index=features)
+    nan_counts = df[features].isna().sum() if total_rows > 0 else pd.Series(0, index=features)
 
     for col in features:
         group = infer_feature_group(col, config)
@@ -97,7 +94,7 @@ def build_feature_set_metadata(
     interval = df["interval"].iloc[0] if "interval" in df.columns else "unknown"
 
     features = build_feature_metadata_for_columns(df, config)
-    groups = list(set(f.group for f in features if f.group))
+    groups = list({f.group for f in features if f.group})
 
     return FeatureSetMetadata(
         feature_set_id=uuid.uuid4().hex,

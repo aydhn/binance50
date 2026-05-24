@@ -13,7 +13,9 @@ def assert_no_regime_lookahead(df: pd.DataFrame, config: AppConfig) -> None:
             raise RegimeLeakageError(f"Lookahead bias detected: Found column '{c}'")
 
 
-def assert_no_centered_rolling_usage(config: AppConfig, metadata: dict[str, Any] = {}) -> None:
+def assert_no_centered_rolling_usage(config: AppConfig, metadata: dict[str, Any] = None) -> None:
+    if metadata is None:
+        metadata = {}
     if metadata.get("centered_rolling", False):
         raise RegimeLeakageError("Lookahead bias detected: Centered rolling window is forbidden.")
 
