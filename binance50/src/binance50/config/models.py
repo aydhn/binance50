@@ -1531,8 +1531,245 @@ class RegimesConfig(BaseModel):
         return self
 
 
+class RiskAccountConfig(BaseModel):
+    account_equity_source: str = "simulated_config_only"
+    simulated_account_equity_usdt: float = Field(1000.0, gt=0)
+    allow_real_balance_fetch: bool = False
+    allow_account_api: bool = False
+    equity_currency: str = "USDT"
+
+    @model_validator(mode="after")
+    def validate_safety(self) -> "RiskAccountConfig":
+        if self.allow_real_balance_fetch:
+            raise ValueError("allow_real_balance_fetch must be False in this phase")
+        if self.allow_account_api:
+            raise ValueError("allow_account_api must be False in this phase")
+        return self
+
+
+class RiskGlobalLimitsConfig(BaseModel):
+    max_total_risk_pct: float = Field(2.0, ge=0)
+    max_daily_loss_pct: float = Field(1.0, ge=0)
+    max_weekly_loss_pct: float = Field(3.0, ge=0)
+    max_monthly_loss_pct: float = Field(6.0, ge=0)
+    max_open_risk_candidates: int = Field(5, ge=1)
+    max_correlated_candidates: int = Field(3, ge=1)
+    max_symbols_with_risk: int = Field(5, ge=1)
+    max_candidates_per_hour: int = Field(20, ge=1)
+    max_candidates_per_day: int = Field(100, ge=1)
+    min_signal_score_for_risk_review: float = Field(65.0, ge=0, le=100)
+    min_signal_score_for_future_backtest: float = Field(70.0, ge=0, le=100)
+    min_signal_score_for_paper_review: float = Field(75.0, ge=0, le=100)
+
+
+class RiskPositionConfig(BaseModel):
+    enabled: bool = True
+    mode: str = "hypothetical_only"
+    max_position_risk_pct: float = Field(0.25, ge=0, le=5)
+    max_symbol_exposure_pct: float = Field(10.0, ge=0, le=100)
+    max_total_exposure_pct: float = Field(30.0, ge=0, le=100)
+    min_notional_usdt: float = Field(10.0, ge=0)
+    max_notional_per_candidate_usdt: float = Field(100.0, ge=0)
+    allow_fractional_quantity_estimate: bool = True
+    round_to_lot_size_for_estimate: bool = True
+    produce_order_quantity: bool = False
+    produce_entry_price: bool = False
+    produce_exit_price: bool = False
+    produce_stop_loss: bool = False
+    produce_take_profit: bool = False
+
+    @model_validator(mode="after")
+    def validate_safety(self) -> "RiskPositionConfig":
+        if self.produce_order_quantity:
+            raise ValueError("produce_order_quantity must be False in this phase")
+        if self.produce_entry_price:
+            raise ValueError("produce_entry_price must be False in this phase")
+        if self.produce_exit_price:
+            raise ValueError("produce_exit_price must be False in this phase")
+        if self.produce_stop_loss:
+            raise ValueError("produce_stop_loss must be False in this phase")
+        if self.produce_take_profit:
+            raise ValueError("produce_take_profit must be False in this phase")
+        return self
+
+
+class RiskSpotConfig(BaseModel):
+    enabled: bool = True
+    allow_short: bool = False
+    allow_margin: bool = False
+    require_symbol_filters: bool = True
+    require_min_notional_check: bool = True
+    require_lot_size_check: bool = True
+    require_price_filter_check: bool = True
+    reject_if_filter_metadata_missing: bool = True
+
+
+class RiskFuturesConfig(BaseModel):
+    enabled: bool = True
+    allow_usdm_futures_context: bool = True
+    allow_live_leverage_change: bool = False
+    allow_margin_mode_change: bool = False
+    allow_position_mode_change: bool = False
+    default_leverage_for_estimate: int = Field(1, ge=1)
+    max_leverage_for_estimate: int = Field(3, ge=1)
+    hard_max_leverage_allowed: int = Field(5, ge=1, le=10)
+    reject_if_leverage_above_policy: bool = True
+    liquidation_model_deferred: bool = True
+    maintenance_margin_model_deferred: bool = True
+    require_position_risk_snapshot_for_future_execution: bool = True
+
+    @model_validator(mode="after")
+    def validate_leverage(self) -> "RiskFuturesConfig":
+        if self.max_leverage_for_estimate > self.hard_max_leverage_allowed:
+            raise ValueError("max_leverage_for_estimate cannot exceed hard_max_leverage_allowed")
+        if self.allow_live_leverage_change:
+            raise ValueError("allow_live_leverage_change must be False in this phase")
+        return self
+
+
+class RiskVolatilityConfig(BaseModel):
+    enabled: bool = True
+    max_atr_pct_for_candidate: float = Field(8.0, ge=0)
+    max_realized_vol_z: float = Field(3.0, ge=0)
+    high_volatility_penalty: float = Field(20.0, ge=0)
+    volatile_regime_penalty: float = Field(15.0, ge=0)
+    calm_regime_bonus: float = Field(5.0, ge=0)
+    reject_extreme_volatility: bool = True
+
+
+class RiskLiquidityConfig(BaseModel):
+    enabled: bool = True
+    max_spread_bps: float = Field(10.0, ge=0)
+    warning_spread_bps: float = Field(6.0, ge=0)
+    min_quote_volume_24h_usdt: float = Field(10000000.0, ge=0)
+    min_book_depth_notional_usdt: float = Field(1000.0, ge=0)
+    high_spread_penalty: float = Field(15.0, ge=0)
+    low_liquidity_penalty: float = Field(20.0, ge=0)
+    reject_missing_liquidity_metadata: bool = True
+
+
+class RiskRegimeConfig(BaseModel):
+    enabled: bool = True
+    use_regime_context: bool = True
+    reject_unknown_regime: bool = False
+    unknown_regime_penalty: float = Field(10.0, ge=0)
+    transition_regime_penalty: float = Field(10.0, ge=0)
+    volatile_regime_penalty: float = Field(15.0, ge=0)
+    range_trend_mismatch_penalty: float = Field(10.0, ge=0)
+    trend_following_requires_trend_regime: bool = False
+    mean_reversion_prefers_range_regime: bool = False
+
+
+class RiskConflictConfig(BaseModel):
+    enabled: bool = True
+    reject_high_conflict: bool = False
+    high_conflict_penalty: float = Field(20.0, ge=0)
+    max_conflict_ratio_allowed: float = Field(0.50, ge=0, le=1)
+    reject_same_plugin_opposite_direction: bool = True
+
+
+class RiskDataQualityConfig(BaseModel):
+    enabled: bool = True
+    reject_missing_score_breakdown: bool = True
+    reject_missing_regime_context: bool = False
+    reject_low_data_quality: bool = True
+    max_quality_issue_severity_allowed: str = "warning"
+    data_quality_penalty: float = Field(20.0, ge=0)
+
+
+class RiskFrequencyConfig(BaseModel):
+    enabled: bool = True
+    order_rate_model_only: bool = True
+    max_risk_reviews_per_symbol_per_hour: int = Field(10, ge=1)
+    max_risk_reviews_total_per_hour: int = Field(50, ge=1)
+    max_same_direction_candidates_per_symbol_per_hour: int = Field(5, ge=1)
+    cooldown_after_rejection_bars: int = Field(3, ge=0)
+
+
+class RiskDecisionConfig(BaseModel):
+    min_final_risk_score: float = Field(60.0, ge=0, le=100)
+    approved_for_future_backtest_min_score: float = Field(65.0, ge=0, le=100)
+    approved_for_paper_review_min_score: float = Field(75.0, ge=0, le=100)
+    needs_review_min_score: float = Field(50.0, ge=0, le=100)
+    reject_below_score: float = Field(40.0, ge=0, le=100)
+    max_risk_score: float = Field(100.0, ge=0, le=100)
+    score_clamp: bool = True
+    require_explanation: bool = True
+    require_breakdown: bool = True
+    allow_only_non_execution_intents: bool = True
+
+    @model_validator(mode="after")
+    def validate_thresholds(self) -> "RiskDecisionConfig":
+        if not (
+            self.reject_below_score
+            <= self.needs_review_min_score
+            <= self.min_final_risk_score
+            <= self.approved_for_future_backtest_min_score
+            <= self.approved_for_paper_review_min_score
+            <= self.max_risk_score
+        ):
+            raise ValueError("Decision thresholds must be ordered")
+        return self
+
+
+class RiskQualityConfig(BaseModel):
+    reject_missing_explanation: bool = True
+    reject_missing_breakdown: bool = True
+    reject_score_out_of_range: bool = True
+    reject_execution_fields: bool = True
+    reject_order_like_language: bool = True
+    warn_empty_assessment_set: bool = True
+    reject_empty_assessment_set: bool = False
+
+
+class RiskConfig(BaseModel):
+    enabled: bool = True
+    output_dataset_name: str = "risk_assessments"
+    cache_enabled: bool = True
+    cache_dir: str = "data/risk"
+    export_dir: str = "data/risk/exports"
+
+    execution_forbidden: bool = True
+    order_creation_forbidden: bool = True
+    paper_trade_forbidden: bool = True
+    backtest_forbidden: bool = True
+    live_trade_forbidden: bool = True
+    require_execution_layer_before_orders: bool = True
+    require_backtest_before_paper: bool = True
+    require_paper_before_live: bool = True
+
+    account: RiskAccountConfig = Field(default_factory=RiskAccountConfig)
+    global_limits: RiskGlobalLimitsConfig = Field(default_factory=RiskGlobalLimitsConfig)
+    position_risk: RiskPositionConfig = Field(default_factory=RiskPositionConfig)
+    spot: RiskSpotConfig = Field(default_factory=RiskSpotConfig)
+    futures: RiskFuturesConfig = Field(default_factory=RiskFuturesConfig)
+    volatility: RiskVolatilityConfig = Field(default_factory=RiskVolatilityConfig)
+    liquidity: RiskLiquidityConfig = Field(default_factory=RiskLiquidityConfig)
+    regime: RiskRegimeConfig = Field(default_factory=RiskRegimeConfig)
+    conflicts: RiskConflictConfig = Field(default_factory=RiskConflictConfig)
+    data_quality: RiskDataQualityConfig = Field(default_factory=RiskDataQualityConfig)
+    frequency: RiskFrequencyConfig = Field(default_factory=RiskFrequencyConfig)
+    decision: RiskDecisionConfig = Field(default_factory=RiskDecisionConfig)
+    quality: RiskQualityConfig = Field(default_factory=RiskQualityConfig)
+
+    @model_validator(mode="after")
+    def validate_safety(self) -> "RiskConfig":
+        if not self.execution_forbidden:
+            raise ValueError("execution_forbidden must be True")
+        if not self.order_creation_forbidden:
+            raise ValueError("order_creation_forbidden must be True")
+        if not self.live_trade_forbidden:
+            raise ValueError("live_trade_forbidden must be True")
+        if not self.paper_trade_forbidden:
+            raise ValueError("paper_trade_forbidden must be True")
+        if not self.backtest_forbidden:
+            raise ValueError("backtest_forbidden must be True")
+        return self
+
+
 class AppConfig(BaseModel):
 
+    risk: RiskConfig = Field(default_factory=RiskConfig)
     project: ProjectConfig = ProjectConfig()
     runtime: RuntimeConfig = RuntimeConfig()
     safety: SafetyConfig = SafetyConfig()

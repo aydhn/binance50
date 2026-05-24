@@ -207,3 +207,14 @@ Phase 14's signal scoring engine acts as a critical safety boundary between abst
 - **Higher timeframe closed candle ilkesi:** Multi-timeframe structures rely on completely closed states.
 - **Rejim flip/chop riskleri:** Overtrading is punished with stability grading boundaries reflecting high chop metrics safely.
 - **Rejim confidence finansal garanti değildir:** Confidence maps mathematical alignments, completely detached from execution safety guarantees.
+
+## Risk Engine Constraints
+- **Risk Engine is Not an Order Engine**: Risk assessments (`RiskAssessment`) are completely decoupled from trading actions.
+- **Position Sizing Prohibition**: Calculating quantities or sizing rules dynamically is banned. Output models enforce the absence of `quantity`, `qty`, `base_qty`, etc.
+- **Real Balance Fetch Ban**: The risk config enforces `allow_real_balance_fetch = False` and `allow_account_api = False`. Only simulated/mock config balances are allowed.
+- **Execution Field Blacklist**: The system actively scans all payload outputs to block the usage of fields like `order_id`, `stop_loss`, `take_profit`, `entry_price`, `exit_price`, and `leverage_to_set`.
+- **Stop-Loss / Take-Profit Generation Ban**: Strategies and risk policies are not allowed to output specific execution levels.
+- **Futures Leverage Strict Safety**: Leverage changes are mocked via placeholder functions and validated. Calling `/fapi/v1/leverage` is currently forbidden.
+- **Notional Estimate Limits**: Notional USDT bounds are strictly evaluated offline against cached symbol filter metadata.
+- **RiskApproved is Not an Order**: A status of `approved_for_paper_review` or `approved_for_future_backtest` indicates a passed candidate, NOT an executable order.
+- **No Execution Without Risk Policy**: The execution layer will eventually strictly require a passed `RiskAssessment` object before continuing.

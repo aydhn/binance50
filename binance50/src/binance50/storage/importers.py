@@ -76,3 +76,25 @@ def import_regime_result(result: RegimeRunResult, config: AppConfig) -> dict[str
         "transition_count": result.metadata.transition_count,
         "method": result.metadata.method,
     }
+
+
+from binance50.risk.datasets import risk_assessments_to_dataframe
+from binance50.risk.models import RiskRunResult
+
+
+def import_risk_result(result: RiskRunResult, config: "AppConfig") -> "DatasetManifest":
+    df = risk_assessments_to_dataframe(result.assessments)
+    if df.empty:
+        raise ValueError("Cannot import empty risk assessments dataset")
+    dataset_name = config.risk.output_dataset_name
+    from binance50.storage.core import DataWarehouse
+
+    warehouse = DataWarehouse(config)
+    # Placeholder functionality
+    manifest = warehouse.write_dataset(
+        name=dataset_name,
+        df=df,
+        kind=DatasetKind.RISK_ASSESSMENTS,
+        metadata={"source": "risk_engine_v1"},
+    )
+    return manifest

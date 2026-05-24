@@ -210,3 +210,20 @@ python -m binance50.cli regime-safety-check
 python -m binance50.cli regime-leakage-check
 python -m binance50.cli regime-health
 ```
+
+## Risk Engine v1
+The risk engine evaluates scored signals and regime context to produce safe, non-executable risk assessments.
+- **What it does**: It evaluates multiple risk dimensions including volatility, liquidity, data quality, and strategy conflicts. It applies pre-configured limitations on exposures, candidates per hour, and loss drawdowns.
+- **RiskAssessment is not an order**: A `RiskAssessment` represents a decision (e.g. `approved_for_paper_review`, `rejected_by_risk`) but strictly omits execution parameters (quantities, prices).
+- **Hypothetical Notional**: Uses a simulated account equity config variable to generate hypothetical notional risk percent values without executing trades.
+- **Futures Leverage**: Acts purely as a placeholder estimation (no live API modifications).
+- **Real Balance Blocked**: API calls fetching actual live balances are strictly disabled by the config safety guards.
+
+### CLI Commands
+- `python -m binance50.cli risk-config`
+- `python -m binance50.cli risk-limit-report`
+- `python -m binance50.cli risk-run-fixture --symbol BTCUSDT --scope spot --interval 1m`
+- `python -m binance50.cli risk-quality-check`
+- `python -m binance50.cli risk-safety-check`
+- `python -m binance50.cli risk-execution-guard-check`
+- `python -m binance50.cli risk-health`
