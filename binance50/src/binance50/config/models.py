@@ -1152,7 +1152,6 @@ class StrategiesConfig(BaseModel):
         return v
 
 
-
 class SignalScoringRulesConfig(BaseModel):
     min_score: float = Field(default=0.0)
     max_score: float = Field(default=100.0)
@@ -1166,7 +1165,7 @@ class SignalScoringRulesConfig(BaseModel):
             "low": (20.0, 40.0),
             "medium": (40.0, 60.0),
             "high": (60.0, 80.0),
-            "very_high": (80.0, 100.0)
+            "very_high": (80.0, 100.0),
         }
     )
     min_score_for_research_candidate: float = Field(default=50.0)
@@ -1293,7 +1292,7 @@ class SignalsConfig(BaseModel):
             "divergence_candidate": 0.75,
             "mtf_confirmation": 0.70,
             "pattern_candidate": 0.35,
-            "composite_skeleton": 0.50
+            "composite_skeleton": 0.50,
         }
     )
     component_weights: dict[str, float] = Field(
@@ -1304,7 +1303,7 @@ class SignalsConfig(BaseModel):
             "confirmation": 0.10,
             "freshness": 0.05,
             "data_quality": 0.10,
-            "conflict_penalty": -0.20
+            "conflict_penalty": -0.20,
         }
     )
     confluence: SignalConfluenceConfig = Field(default_factory=SignalConfluenceConfig)
@@ -1320,7 +1319,7 @@ class SignalsConfig(BaseModel):
         "live_trade_forbidden",
         "backtest_forbidden",
         "paper_trade_forbidden",
-        "risk_engine_required_before_execution"
+        "risk_engine_required_before_execution",
     )
     def validate_forbidden(cls, v: bool, info) -> bool:
         if not v:
@@ -1333,6 +1332,204 @@ class SignalsConfig(BaseModel):
             if weight < 0.0 or weight > 5.0:
                 raise ValueError("plugin weights must be between 0.0 and 5.0")
         return v
+
+
+class RegimeClassifierConfig(BaseModel):
+    default_method: Literal["rule_based", "gmm_optional", "hmm_optional"] = Field(
+        default="rule_based"
+    )
+    allowed_methods: list[str] = Field(
+        default_factory=lambda: ["rule_based", "gmm_optional", "hmm_optional"]
+    )
+    fail_if_optional_model_missing: bool = Field(default=False)
+    rule_based_primary: bool = Field(default=True)
+    unsupervised_models_experimental: bool = Field(default=True)
+    min_rows_required: int = Field(default=200, ge=50)
+    min_valid_feature_ratio: float = Field(default=0.80, ge=0.0, le=1.0)
+    max_regime_classes: int = Field(default=10, ge=2)
+
+    @model_validator(mode="after")
+    def validate_methods(self) -> "RegimeClassifierConfig":
+        if self.default_method not in self.allowed_methods:
+            raise ValueError(f"default_method '{self.default_method}' must be in allowed_methods")
+        if not self.rule_based_primary:
+            raise ValueError("rule_based_primary must be true")
+        return self
+
+
+class RegimeFeatureConfig(BaseModel):
+    trend_windows: list[int] = Field(default_factory=lambda: [20, 50, 100, 200])
+    volatility_windows: list[int] = Field(default_factory=lambda: [20, 50, 100])
+    range_windows: list[int] = Field(default_factory=lambda: [20, 50])
+    slope_window: int = Field(default=10)
+    return_windows: list[int] = Field(default_factory=lambda: [2, 5, 10, 20])
+    atr_period: int = Field(default=14)
+    adx_period: int = Field(default=14)
+    bb_width_period: int = Field(default=20)
+    realized_vol_period: int = Field(default=20)
+    volume_window: int = Field(default=20)
+    use_indicator_features: bool = Field(default=True)
+    use_signal_features: bool = Field(default=True)
+    use_mtf_features: bool = Field(default=True)
+
+    @model_validator(mode="after")
+    def validate_windows(self) -> "RegimeFeatureConfig":
+        all_windows = (
+            self.trend_windows
+            + self.volatility_windows
+            + self.range_windows
+            + self.return_windows
+            + [
+                self.slope_window,
+                self.atr_period,
+                self.adx_period,
+                self.bb_width_period,
+                self.realized_vol_period,
+                self.volume_window,
+            ]
+        )
+        if any(w <= 1 for w in all_windows):
+            raise ValueError("All window sizes must be > 1")
+        return self
+
+
+class RegimeThresholdConfig(BaseModel):
+    trend_adx_min: float = Field(default=20.0)
+    strong_trend_adx_min: float = Field(default=25.0)
+    trend_slope_min_abs: float = Field(default=0.0005)
+    range_adx_max: float = Field(default=18.0)
+    range_bb_width_max_pct: float = Field(default=4.0)
+    volatile_realized_vol_z_min: float = Field(default=1.0)
+    volatile_atr_z_min: float = Field(default=1.0)
+    calm_realized_vol_z_max: float = Field(default=-0.5)
+    calm_atr_z_max: float = Field(default=-0.5)
+    transition_confidence_max: float = Field(default=55.0)
+    min_regime_confidence: float = Field(default=0.0, ge=0.0)
+    max_regime_confidence: float = Field(default=100.0, le=100.0)
+
+    @model_validator(mode="after")
+    def validate_thresholds(self) -> "RegimeThresholdConfig":
+        if self.strong_trend_adx_min < self.trend_adx_min:
+            raise ValueError("strong_trend_adx_min must be >= trend_adx_min")
+        if self.range_adx_max >= self.strong_trend_adx_min:
+            raise ValueError("range_adx_max must be < strong_trend_adx_min")
+        return self
+
+
+class RegimeSmoothingConfig(BaseModel):
+    enabled: bool = Field(default=True)
+    min_regime_duration_bars: int = Field(default=3)
+    transition_buffer_bars: int = Field(default=2)
+    majority_vote_window: int = Field(default=5)
+    allow_single_bar_flip: bool = Field(default=False)
+    unknown_for_unstable_flips: bool = Field(default=True)
+
+
+class RegimeTransitionConfig(BaseModel):
+    enabled: bool = Field(default=True)
+    detect_regime_changes: bool = Field(default=True)
+    mark_transition_bars: bool = Field(default=True)
+    transition_lookback_bars: int = Field(default=5)
+    max_transition_events_per_1000_bars: int = Field(default=300)
+
+
+class RegimeStabilityConfig(BaseModel):
+    enabled: bool = Field(default=True)
+    stability_window: int = Field(default=20)
+    min_stability_score: float = Field(default=0.0)
+    max_stability_score: float = Field(default=100.0)
+    penalize_frequent_flips: bool = Field(default=True)
+    flip_penalty_per_event: float = Field(default=5.0)
+
+
+class RegimeOptionalGMMConfig(BaseModel):
+    enabled: bool = Field(default=False)
+    n_components: int = Field(default=5)
+    covariance_type: str = Field(default="diag")
+    random_state: int = Field(default=42)
+    max_iter: int = Field(default=200)
+    require_train_split: bool = Field(default=True)
+    scaler: str = Field(default="standard")
+
+    @model_validator(mode="after")
+    def validate_gmm(self) -> "RegimeOptionalGMMConfig":
+        if self.enabled and not self.require_train_split:
+            raise ValueError("require_train_split must be True when GMM is enabled")
+        return self
+
+
+class RegimeOptionalHMMConfig(BaseModel):
+    enabled: bool = Field(default=False)
+    n_components: int = Field(default=5)
+    covariance_type: str = Field(default="diag")
+    random_state: int = Field(default=42)
+    max_iter: int = Field(default=200)
+    require_train_split: bool = Field(default=True)
+    installed_optional: bool = Field(default=False)
+
+    @model_validator(mode="after")
+    def validate_hmm(self) -> "RegimeOptionalHMMConfig":
+        if self.enabled and not self.require_train_split:
+            raise ValueError("require_train_split must be True when HMM is enabled")
+        return self
+
+
+class RegimeQualityConfig(BaseModel):
+    reject_all_unknown: bool = Field(default=False)
+    warn_all_unknown: bool = Field(default=True)
+    reject_missing_explanation: bool = Field(default=True)
+    reject_confidence_out_of_range: bool = Field(default=True)
+    warn_high_transition_ratio: bool = Field(default=True)
+    max_transition_ratio: float = Field(default=0.30, ge=0.0, le=1.0)
+    reject_lookahead_risk: bool = Field(default=True)
+    reject_unclosed_candle_usage: bool = Field(default=True)
+    reject_model_fit_on_full_dataset: bool = Field(default=True)
+
+
+class RegimesConfig(BaseModel):
+    enabled: bool = Field(default=True)
+    output_dataset_name: str = Field(default="market_regimes")
+    cache_enabled: bool = Field(default=True)
+    cache_dir: str = Field(default="data/regimes")
+    export_dir: str = Field(default="data/regimes/exports")
+    execution_forbidden: bool = Field(default=True)
+    order_creation_forbidden: bool = Field(default=True)
+    paper_trade_forbidden: bool = Field(default=True)
+    backtest_forbidden: bool = Field(default=True)
+    live_trade_forbidden: bool = Field(default=True)
+    require_closed_candles: bool = Field(default=True)
+    prevent_lookahead_bias: bool = Field(default=True)
+    reject_future_columns: bool = Field(default=True)
+    reject_target_columns: bool = Field(default=True)
+    reject_label_columns: bool = Field(default=True)
+    reject_execution_columns: bool = Field(default=True)
+    warmup_rows_allowed: bool = Field(default=False)
+
+    classifier: RegimeClassifierConfig = Field(default_factory=RegimeClassifierConfig)
+    features: RegimeFeatureConfig = Field(default_factory=RegimeFeatureConfig)
+    thresholds: RegimeThresholdConfig = Field(default_factory=RegimeThresholdConfig)
+    smoothing: RegimeSmoothingConfig = Field(default_factory=RegimeSmoothingConfig)
+    transitions: RegimeTransitionConfig = Field(default_factory=RegimeTransitionConfig)
+    stability: RegimeStabilityConfig = Field(default_factory=RegimeStabilityConfig)
+    optional_models: dict = Field(
+        default_factory=lambda: {"gmm": RegimeOptionalGMMConfig(), "hmm": RegimeOptionalHMMConfig()}
+    )
+    quality: RegimeQualityConfig = Field(default_factory=RegimeQualityConfig)
+
+    @model_validator(mode="after")
+    def validate_forbidden(self) -> "RegimesConfig":
+        if not self.execution_forbidden:
+            raise ValueError("execution_forbidden must be True")
+        if not self.order_creation_forbidden:
+            raise ValueError("order_creation_forbidden must be True")
+        if not self.paper_trade_forbidden:
+            raise ValueError("paper_trade_forbidden must be True")
+        if not self.backtest_forbidden:
+            raise ValueError("backtest_forbidden must be True")
+        if not self.live_trade_forbidden:
+            raise ValueError("live_trade_forbidden must be True")
+        return self
+
 
 class AppConfig(BaseModel):
 
@@ -1357,6 +1554,7 @@ class AppConfig(BaseModel):
     indicators: IndicatorsConfig = Field(default_factory=IndicatorsConfig)
     strategies: StrategiesConfig = Field(default_factory=StrategiesConfig)
     signals: SignalsConfig = Field(default_factory=SignalsConfig)
+    regimes: RegimesConfig = Field(default_factory=RegimesConfig)
 
     @model_validator(mode="after")
     def validate_live_trading(self) -> "AppConfig":

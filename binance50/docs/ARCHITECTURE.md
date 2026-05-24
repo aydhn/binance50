@@ -264,3 +264,16 @@ The **Signal Scoring Engine** translates the output of the Strategy Engine (Phas
 
 ### Why No Execution in Phase 14?
 In adherence to the strict isolation principles of binance50, Phase 14 remains intentionally decoupled from order creation or risk sizing. A high-scoring signal (`>90`) signifies strong confluence and system confidence, but executing that signal depends on subsequent risk engines, capital availability, active position limits, and execution routers. Therefore, ScoredSignalCandidates strictly avoid actionable language (like "buy" or "sell") and execution fields (like `quantity`, `leverage`).
+
+
+## Phase 15: Market Regime Classification
+- **Market regime classification architecture:** A decoupled layer providing context (trend, range, volatility) independent of execution.
+- **Regime feature engineering:** Extracting structural cues using strictly backward-looking moving calculations and z-scores.
+- **Rule-based regime classifier:** Deterministic categorization prioritizing simplicity and transparency over opaque ML optimization.
+- **Regime smoothing:** Removing high-frequency noise using majority vote bounded to historical trailing data.
+- **Transition detection:** Tracking points of stability shifts.
+- **Stability scoring:** Grading the chronological reliability of regimes.
+- **Optional GMM/HMM adapters:** Forward-looking skeleton definitions utilizing sklearn and hmmlearn if accessible.
+- **Regime quality checks:** Integrity boundaries demanding explicit explanations and banning unlabeled segments.
+- **Rejim bilgisinin signal/risk katmanına bağlam olarak aktarımı:** Passing contextual outputs to downstream processes metadata safely.
+- **Neden Phase 15’te trading yok?:** Regime classification creates market context—it does not inherently signify an entry or exit point setup.

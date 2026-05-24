@@ -1,8 +1,7 @@
 import json
 from pathlib import Path
-from typing import Any
 
-from binance50.signals.models import ConfluenceGroup, ScoredSignalCandidate, SignalScoringResult
+from binance50.signals.models import ScoredSignalCandidate, SignalScoringResult
 
 
 def export_scored_signals_to_jsonl(scored: list[ScoredSignalCandidate], path: Path) -> None:
@@ -13,7 +12,6 @@ def export_scored_signals_to_jsonl(scored: list[ScoredSignalCandidate], path: Pa
 
 
 def export_scored_signals_to_csv(scored: list[ScoredSignalCandidate], path: Path) -> None:
-    import pandas as pd
     from binance50.signals.datasets import scored_candidates_to_dataframe
 
     df = scored_candidates_to_dataframe(scored)

@@ -189,3 +189,24 @@ The Signal Scoring engine normalizes the output of our isolated strategy plugins
 - `python -m binance50.cli signal-calibration-report`
 - `python -m binance50.cli signal-safety-check`
 - `python -m binance50.cli signal-health`
+
+
+## Regime Classification (Phase 15)
+- **Rejim sınıflandırma ne yapar?**: It evaluates structural market contexts independently from immediate trade execution metrics.
+- **Hangi rejimler var?**: `trend_up`, `trend_down`, `range_bound`, `volatile`, `calm`, `transition`, and `unknown`.
+- **Rejim neden emir değildir?**: Context identification ensures system environments correctly process risk instead of directly issuing trade signals.
+- **Rule-based classifier neden ana yol?**: Rule-based methodologies offer deterministic predictability entirely avoiding hidden biases.
+- **GMM/HMM neden opsiyonel?**: Complex models carry forward-fitting execution risks safely contained within isolated optionally-toggled interfaces.
+- **Lookahead/leakage nasıl engellenir?**: Strict dataset tracking limits feature sets dropping unclosed candles, blocking full-dataset scalers, and targeting center=False rolling features entirely.
+
+### Regime CLI Commands
+```bash
+python -m binance50.cli regime-config
+python -m binance50.cli regime-feature-build-fixture --symbol BTCUSDT --scope spot --interval 1m
+python -m binance50.cli regime-classify-fixture --symbol BTCUSDT --scope spot --interval 1m
+python -m binance50.cli regime-transitions-fixture
+python -m binance50.cli regime-optional-models
+python -m binance50.cli regime-safety-check
+python -m binance50.cli regime-leakage-check
+python -m binance50.cli regime-health
+```

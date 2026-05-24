@@ -31,17 +31,20 @@ def build_calibration_placeholder_report(config: AppConfig) -> SignalCalibration
         warnings=[
             "Calibration training is deferred to Phase 15/16.",
             "Real calibration requires realized labels from backtests or live trading.",
-            "Placeholder metrics only."
-        ]
+            "Placeholder metrics only.",
+        ],
     )
 
 
-def compute_brier_score_if_labels_available(scored_candidates: list[ScoredSignalCandidate], realized_labels: list[int] | None = None) -> float | None:
+def compute_brier_score_if_labels_available(
+    scored_candidates: list[ScoredSignalCandidate], realized_labels: list[int] | None = None
+) -> float | None:
     if not realized_labels or len(scored_candidates) != len(realized_labels):
         return None
 
     try:
         import numpy as np
+
         preds = np.array([c.score / 100.0 for c in scored_candidates])
         labels = np.array(realized_labels)
         brier_score = np.mean((preds - labels) ** 2)
@@ -50,12 +53,17 @@ def compute_brier_score_if_labels_available(scored_candidates: list[ScoredSignal
         return None
 
 
-def compute_reliability_bins_if_labels_available(scored_candidates: list[ScoredSignalCandidate], realized_labels: list[int] | None = None, bins: int = 10) -> dict[str, Any] | None:
+def compute_reliability_bins_if_labels_available(
+    scored_candidates: list[ScoredSignalCandidate],
+    realized_labels: list[int] | None = None,
+    bins: int = 10,
+) -> dict[str, Any] | None:
     if not realized_labels or len(scored_candidates) != len(realized_labels):
         return None
 
     try:
         import numpy as np
+
         preds = np.array([c.score / 100.0 for c in scored_candidates])
         labels = np.array(realized_labels)
 
@@ -78,18 +86,25 @@ def compute_reliability_bins_if_labels_available(scored_candidates: list[ScoredS
             "bins": bins,
             "counts": bin_sums.tolist(),
             "accuracies": bin_acc.tolist(),
-            "confidences": bin_conf.tolist()
+            "confidences": bin_conf.tolist(),
         }
     except ImportError:
         return None
 
 
-def compute_expected_calibration_error_if_labels_available(scored_candidates: list[ScoredSignalCandidate], realized_labels: list[int] | None = None, bins: int = 10) -> float | None:
-    bins_data = compute_reliability_bins_if_labels_available(scored_candidates, realized_labels, bins)
+def compute_expected_calibration_error_if_labels_available(
+    scored_candidates: list[ScoredSignalCandidate],
+    realized_labels: list[int] | None = None,
+    bins: int = 10,
+) -> float | None:
+    bins_data = compute_reliability_bins_if_labels_available(
+        scored_candidates, realized_labels, bins
+    )
     if not bins_data:
         return None
 
     import numpy as np
+
     counts = np.array(bins_data["counts"])
     accs = np.array(bins_data["accuracies"])
     confs = np.array(bins_data["confidences"])

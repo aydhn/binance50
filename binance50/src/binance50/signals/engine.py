@@ -4,7 +4,11 @@ import json
 
 from binance50.config.models import AppConfig
 from binance50.signals.confluence import ConfluenceEngine
-from binance50.signals.models import SignalScoringMetadata, SignalScoringRequest, SignalScoringResult
+from binance50.signals.models import (
+    SignalScoringMetadata,
+    SignalScoringRequest,
+    SignalScoringResult,
+)
 from binance50.signals.quality import build_signal_quality_report
 from binance50.signals.scoring import SignalScoringEngine
 from binance50.strategies.models import SignalCandidate, StrategyRunResult
@@ -18,18 +22,28 @@ class SignalEngine:
         self.storage = storage
 
         class MockAudit:
-            def log(self, *args, **kwargs): pass
+            def log(self, *args, **kwargs):
+                pass
+
         self.audit = MockAudit()
 
     def validate_input(self, candidates: list[SignalCandidate]) -> None:
         """Validate the input candidates."""
         from binance50.signals.validators import validate_signal_candidates
+
         validate_signal_candidates(candidates, self.config)
 
     def _generate_hash(self, data: str) -> str:
-        return hashlib.sha256(data.encode('utf-8')).hexdigest()
+        return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-    def build_metadata(self, request: SignalScoringRequest, scored: list, rejected: list, groups: list, config_hash: str) -> SignalScoringMetadata:
+    def build_metadata(
+        self,
+        request: SignalScoringRequest,
+        scored: list,
+        rejected: list,
+        groups: list,
+        config_hash: str,
+    ) -> SignalScoringMetadata:
         input_data = "".join([c.source_candidate_id for c in scored + rejected])
         output_data = "".join([c.scored_signal_id for c in scored])
 
@@ -45,10 +59,12 @@ class SignalEngine:
             input_hash=self._generate_hash(input_data),
             output_hash=self._generate_hash(output_data),
             config_hash=config_hash,
-            generated_at_utc=int(datetime.datetime.now(datetime.timezone.utc).timestamp() * 1000)
+            generated_at_utc=int(datetime.datetime.now(datetime.UTC).timestamp() * 1000),
         )
 
-    def run(self, candidates: list[SignalCandidate], request: SignalScoringRequest) -> SignalScoringResult:
+    def run(
+        self, candidates: list[SignalCandidate], request: SignalScoringRequest
+    ) -> SignalScoringResult:
         try:
             self.audit.log("signal_scoring_started", {"request_id": request.request_id})
 
@@ -59,15 +75,22 @@ class SignalEngine:
             scored = [s for s in scored_results if s.status != "rejected"]
             rejected = [s for s in scored_results if s.status == "rejected"]
 
-            confluence_groups = self.confluence_engine.build_confluence_groups(candidates, self.config)
+            confluence_groups = self.confluence_engine.build_confluence_groups(
+                candidates, self.config
+            )
 
             quality_report = build_signal_quality_report(scored, self.config)
 
             from binance50.signals.quality import assert_signal_quality_passed
+
             assert_signal_quality_passed(quality_report, self.config)
 
-            config_hash = self._generate_hash(json.dumps(self.config.signals.model_dump(), sort_keys=True))
-            metadata = self.build_metadata(request, scored, rejected, confluence_groups, config_hash)
+            config_hash = self._generate_hash(
+                json.dumps(self.config.signals.model_dump(), sort_keys=True)
+            )
+            metadata = self.build_metadata(
+                request, scored, rejected, confluence_groups, config_hash
+            )
 
             result = SignalScoringResult(
                 request=request,
@@ -76,7 +99,7 @@ class SignalEngine:
                 confluence_groups=confluence_groups,
                 quality_report=quality_report,
                 metadata=metadata,
-                success=True
+                success=True,
             )
 
             self.audit.log("signal_scoring_completed", {"scored_count": len(scored)})
@@ -92,13 +115,21 @@ class SignalEngine:
             return SignalScoringResult(
                 request=request,
                 metadata=SignalScoringMetadata(
-                    symbol=request.symbol, market_scope=request.market_scope, interval=request.interval,
-                    input_candidate_count=len(candidates), scored_candidate_count=0, rejected_candidate_count=len(candidates),
-                    confluence_group_count=0, conflict_count=0, input_hash="", output_hash="", config_hash="",
-                    generated_at_utc=int(datetime.datetime.now(datetime.timezone.utc).timestamp() * 1000)
+                    symbol=request.symbol,
+                    market_scope=request.market_scope,
+                    interval=request.interval,
+                    input_candidate_count=len(candidates),
+                    scored_candidate_count=0,
+                    rejected_candidate_count=len(candidates),
+                    confluence_group_count=0,
+                    conflict_count=0,
+                    input_hash="",
+                    output_hash="",
+                    config_hash="",
+                    generated_at_utc=int(datetime.datetime.now(datetime.UTC).timestamp() * 1000),
                 ),
                 success=False,
-                error=str(e)
+                error=str(e),
             )
 
     def run_from_strategy_result(self, strategy_result: StrategyRunResult) -> SignalScoringResult:
@@ -111,10 +142,11 @@ class SignalEngine:
             start_time_ms=strategy_result.request.start_time_ms,
             end_time_ms=strategy_result.request.end_time_ms,
             request_id=strategy_result.request.request_id,
-            correlation_id=strategy_result.request.correlation_id
+            correlation_id=strategy_result.request.correlation_id,
         )
         return self.run(strategy_result.candidates, req)
 
     def save_to_cache(self, result: SignalScoringResult) -> None:
         from binance50.signals.cache import save_signal_result
+
         save_signal_result(result, self.config)

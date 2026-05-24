@@ -10,6 +10,7 @@ from binance50.core.exceptions import StorageSchemaError
 class DatasetKind(StrEnum):
     STRATEGY_CANDIDATES = "strategy_candidates"
     SCORED_SIGNAL_CANDIDATES = "scored_signal_candidates"
+    MARKET_REGIMES = "market_regimes"
     OHLCV = "ohlcv"
     INDICATORS = "indicators"
     INDICATOR_FEATURES_V2 = "indicator_features_v2"
@@ -185,7 +186,6 @@ def get_strategy_candidates_schema() -> DatasetSchema:
     )
 
 
-
 def get_scored_signal_candidates_schema() -> DatasetSchema:
     return DatasetSchema(
         dataset_name="scored_signal_candidates",
@@ -238,7 +238,54 @@ def get_scored_signal_candidates_schema() -> DatasetSchema:
             "stop_loss",
             "take_profit",
             "order_type",
-            "position_side"
+            "position_side",
+        ],
+    )
+
+
+def get_market_regimes_schema() -> DatasetSchema:
+    return DatasetSchema(
+        dataset_name="market_regimes",
+        dataset_kind=DatasetKind.MARKET_REGIMES,
+        version=1,
+        columns=[
+            ColumnSchema("regime_id", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("symbol", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("market_scope", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("interval", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("open_time", "int64", nullable=False, is_primary_key=True),
+            ColumnSchema("close_time", "int64", nullable=True),
+            ColumnSchema("regime", "string", nullable=False),
+            ColumnSchema("family", "string", nullable=False),
+            ColumnSchema("method", "string", nullable=False),
+            ColumnSchema("confidence", "float64", nullable=False),
+            ColumnSchema("stability_score", "float64", nullable=True),
+            ColumnSchema("risk_context", "string", nullable=False),
+            ColumnSchema("is_transition", "bool", nullable=False),
+            ColumnSchema("explanation_json", "string", nullable=False),
+            ColumnSchema("feature_snapshot_json", "string", nullable=False),
+            ColumnSchema("warnings_json", "string", nullable=False),
+            ColumnSchema("metadata_json", "string", nullable=False),
+            ColumnSchema("created_at_utc", "int64", nullable=False),
+            ColumnSchema("config_hash", "string", nullable=False),
+        ],
+        primary_keys=[
+            "market_scope",
+            "symbol",
+            "interval",
+            "open_time",
+            "regime_id",
+        ],
+        partition_columns=["market_scope", "symbol", "interval"],
+        timestamp_column="open_time",
+        disallowed_column_names=[
+            "order_id",
+            "quantity",
+            "leverage",
+            "entry_price",
+            "exit_price",
+            "stop_loss",
+            "take_profit",
         ],
     )
 
@@ -251,6 +298,7 @@ def get_schema_registry() -> dict[str, DatasetSchema]:
         "quality_reports": get_quality_reports_schema(),
         "strategy_candidates": get_strategy_candidates_schema(),
         "scored_signal_candidates": get_scored_signal_candidates_schema(),
+        "market_regimes": get_market_regimes_schema(),
     }
 
 

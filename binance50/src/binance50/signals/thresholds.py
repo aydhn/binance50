@@ -45,5 +45,5 @@ def build_threshold_report(config: AppConfig) -> dict[str, Any]:
         "risk_review_min": t.risk_review_min,
         "future_backtest_candidate_min": t.future_backtest_candidate_min,
         "execution_threshold_deferred": t.execution_threshold_deferred,
-        "warning": "Execution thresholds are disabled in Phase 14. Signals are candidates only."
+        "warning": "Execution thresholds are disabled in Phase 14. Signals are candidates only.",
     }

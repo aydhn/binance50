@@ -8,6 +8,7 @@ def clamp_score(value: float, min_score: float = 0.0, max_score: float = 100.0) 
     """Clamp score between min and max."""
     if math.isnan(value) or math.isinf(value):
         from binance50.core.exceptions import SignalValidationError
+
         raise SignalValidationError("Score cannot be NaN or infinity")
     return max(min_score, min(value, max_score))
 
@@ -21,6 +22,7 @@ def normalize_confidence(confidence: float, config: AppConfig) -> float:
         return clamp_score(confidence, rules.min_score, rules.max_score)
     else:
         from binance50.core.exceptions import SignalConfigError
+
         raise SignalConfigError(f"Unsupported confidence normalization mode: {mode}")
 
 
@@ -46,7 +48,9 @@ def normalize_component(value: float, min_value: float, max_value: float) -> flo
 def score_to_tier(score: float, config: AppConfig) -> SignalScoreTier:
     """Map a score to a tier based on config definitions."""
     tiers = config.signals.scoring.score_tiers
-    clamped_score = clamp_score(score, config.signals.scoring.min_score, config.signals.scoring.max_score)
+    clamped_score = clamp_score(
+        score, config.signals.scoring.min_score, config.signals.scoring.max_score
+    )
 
     for tier_name, (lower, upper) in tiers.items():
         if lower <= clamped_score <= upper:

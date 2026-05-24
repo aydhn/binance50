@@ -10,12 +10,9 @@ def build_score_breakdown_explanation(breakdown: SignalScoreBreakdown) -> dict[s
         "final_score": breakdown.final_score,
         "score_tier": breakdown.score_tier.value,
         "components": [
-            {
-                "name": c.name,
-                "contribution": c.contribution,
-                "reason": c.reason
-            } for c in breakdown.components
-        ]
+            {"name": c.name, "contribution": c.contribution, "reason": c.reason}
+            for c in breakdown.components
+        ],
     }
 
 
@@ -37,7 +34,9 @@ def build_conflict_explanation(conflicts: list[SignalConflict]) -> str:
 def build_score_explanation(scored: ScoredSignalCandidate) -> str:
     parts = []
 
-    parts.append(f"Candidate {scored.source_candidate_id} from plugin {scored.plugin_name} ({scored.plugin_type}) scored {scored.score} ({scored.score_tier.value}).")
+    parts.append(
+        f"Candidate {scored.source_candidate_id} from plugin {scored.plugin_name} ({scored.plugin_type}) scored {scored.score} ({scored.score_tier.value})."
+    )
     parts.append(f"Direction: {scored.direction}. Intent: {scored.intent.value}.")
 
     if scored.score_breakdown:
@@ -58,18 +57,34 @@ def validate_scored_signal_explanation(scored: ScoredSignalCandidate, config: Ap
     if not scored.explanation:
         if config.signals.quality.reject_missing_explanation:
             from binance50.core.exceptions import SignalValidationError
-            raise SignalValidationError(f"Missing explanation for candidate {scored.scored_signal_id}")
+
+            raise SignalValidationError(
+                f"Missing explanation for candidate {scored.scored_signal_id}"
+            )
         return
 
     explanation_lower = scored.explanation.lower()
     forbidden_terms = [
-        "buy now", "sell now", "execute", "place order", "market order",
-        "open long", "open short", "close position", "emir gönder",
-        "al emri", "sat emri", "long aç", "short aç"
+        "buy now",
+        "sell now",
+        "execute",
+        "place order",
+        "market order",
+        "open long",
+        "open short",
+        "close position",
+        "emir gönder",
+        "al emri",
+        "sat emri",
+        "long aç",
+        "short aç",
     ]
 
     if config.signals.quality.reject_order_language:
         for term in forbidden_terms:
             if term in explanation_lower:
                 from binance50.core.exceptions import ActionableLanguageDetectedError
-                raise ActionableLanguageDetectedError(f"Actionable language '{term}' detected in explanation")
+
+                raise ActionableLanguageDetectedError(
+                    f"Actionable language '{term}' detected in explanation"
+                )

@@ -26,11 +26,12 @@ def scored_candidates_to_dataframe(scored: list[ScoredSignalCandidate]) -> pd.Da
 
     # Ensure no execution columns
     from binance50.signals.validators import validate_no_execution_fields
+
     for col in df.columns:
         # Check field names
         try:
             validate_no_execution_fields({col: None})
-        except Exception as e:
+        except Exception:
             df = df.drop(columns=[col])
 
     return df
@@ -56,7 +57,7 @@ def dataframe_to_scored_candidates(df: pd.DataFrame) -> list[ScoredSignalCandida
 
             candidates.append(ScoredSignalCandidate.model_validate(r))
         except Exception:
-            pass # Skip rows that fail to parse
+            pass  # Skip rows that fail to parse
 
     return candidates
 
@@ -70,7 +71,7 @@ def confluence_groups_to_dataframe(groups: list[ConfluenceGroup]) -> pd.DataFram
         d = g.model_dump(mode="json")
         d["plugin_names_str"] = ",".join(d.pop("plugin_names", []))
         d["plugin_types_str"] = ",".join(d.pop("plugin_types", []))
-        d.pop("candidates", None) # Remove raw candidates
+        d.pop("candidates", None)  # Remove raw candidates
         d["warnings_str"] = ",".join(d.pop("warnings", []))
         data.append(d)
 
