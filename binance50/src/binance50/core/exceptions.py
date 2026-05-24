@@ -786,6 +786,7 @@ class ActionableLanguageDetectedError(StrategyError):
 class RuntimeInvariantFailedError(Binance50Error):
     pass
 
+
 # Phase 14 Signal Exceptions
 class SignalError(Binance50Error):
     pass
@@ -861,3 +862,54 @@ class ExecutionThresholdForbiddenError(SignalError):
     def __init__(self, message: str, **kwargs: Any) -> None:
         kwargs.setdefault("error_code", error_codes.EXECUTION_THRESHOLD_FORBIDDEN)
         super().__init__(message, **kwargs)
+
+
+# Phase 15 Regime Exceptions
+
+
+class RegimeError(Binance50Error):
+    pass
+
+
+class RegimeConfigError(RegimeError):
+    pass
+
+
+class RegimeFeatureError(RegimeError):
+    pass
+
+
+class RegimeClassificationError(RegimeError):
+    pass
+
+
+class RegimeValidationError(RegimeError):
+    pass
+
+
+class RegimeQualityError(RegimeError):
+    pass
+
+
+class RegimeCacheError(RegimeError):
+    pass
+
+
+class RegimeTransitionError(RegimeError):
+    pass
+
+
+class RegimeStabilityError(RegimeError):
+    pass
+
+
+class RegimeModelAdapterError(RegimeError):
+    pass
+
+
+class RegimeLeakageError(RegimeError):
+    pass
+
+
+class RegimeSmoothingError(RegimeError):
+    pass

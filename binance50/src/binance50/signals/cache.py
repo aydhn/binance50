@@ -6,7 +6,9 @@ from binance50.config.models import AppConfig
 from binance50.signals.models import SignalScoringResult
 
 
-def build_signal_cache_path(config: AppConfig, symbol: str, market_scope: str, interval: str, config_hash: str) -> Path:
+def build_signal_cache_path(
+    config: AppConfig, symbol: str, market_scope: str, interval: str, config_hash: str
+) -> Path:
     cache_dir = Path(config.signals.cache_dir)
     return cache_dir / f"{market_scope}_{symbol}_{interval}_{config_hash}.json"
 
@@ -23,7 +25,7 @@ def save_signal_result(result: SignalScoringResult, config: AppConfig) -> Path:
         result.request.symbol,
         result.request.market_scope,
         result.request.interval,
-        result.metadata.config_hash
+        result.metadata.config_hash,
     )
 
     with open(path, "w") as f:
@@ -39,7 +41,7 @@ def load_signal_result(path: Path) -> SignalScoringResult | None:
         return None
 
     try:
-        with open(path, "r") as f:
+        with open(path) as f:
             data = json.load(f)
         return SignalScoringResult.model_validate(data)
     except Exception:
@@ -65,5 +67,5 @@ def clear_signal_cache(config: AppConfig, dry_run: bool = True) -> dict[str, Any
         "status": "success",
         "dry_run": dry_run,
         "files_found": len(files),
-        "files_deleted": deleted
+        "files_deleted": deleted,
     }

@@ -1,10 +1,15 @@
 import pytest
+
 from binance50.config.models import AppConfig
-from binance50.signals.thresholds import (
-    passes_research_candidate_threshold, passes_risk_review_threshold,
-    passes_future_backtest_candidate_threshold, classify_signal_intent, build_threshold_report
-)
 from binance50.signals.models import SignalDecisionIntent
+from binance50.signals.thresholds import (
+    build_threshold_report,
+    classify_signal_intent,
+    passes_future_backtest_candidate_threshold,
+    passes_research_candidate_threshold,
+    passes_risk_review_threshold,
+)
+
 
 @pytest.fixture
 def config():
@@ -14,6 +19,7 @@ def config():
     c.signals.thresholds.risk_review_min = 65.0
     c.signals.thresholds.future_backtest_candidate_min = 70.0
     return c
+
 
 def test_passes_thresholds(config):
     assert not passes_research_candidate_threshold(49.0, config)
@@ -25,12 +31,14 @@ def test_passes_thresholds(config):
     assert not passes_future_backtest_candidate_threshold(69.0, config)
     assert passes_future_backtest_candidate_threshold(70.0, config)
 
+
 def test_classify_signal_intent(config):
     assert classify_signal_intent(30.0, config) == SignalDecisionIntent.no_action
-    assert classify_signal_intent(45.0, config) == SignalDecisionIntent.no_order # >= 40, < 50
+    assert classify_signal_intent(45.0, config) == SignalDecisionIntent.no_order  # >= 40, < 50
     assert classify_signal_intent(55.0, config) == SignalDecisionIntent.research_candidate
     assert classify_signal_intent(68.0, config) == SignalDecisionIntent.risk_review_candidate
     assert classify_signal_intent(80.0, config) == SignalDecisionIntent.future_backtest_candidate
+
 
 def test_build_threshold_report(config):
     rep = build_threshold_report(config)

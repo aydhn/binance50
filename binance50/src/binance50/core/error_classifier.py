@@ -252,3 +252,58 @@ def classify_strategy_error(error: Exception) -> type[Binance50Error]:
         return error.__class__
 
     return StrategyPluginError
+
+
+from binance50.core.exceptions import (
+    RegimeCacheError,
+    RegimeClassificationError,
+    RegimeConfigError,
+    RegimeError,
+    RegimeFeatureError,
+    RegimeLeakageError,
+    RegimeModelAdapterError,
+    RegimeQualityError,
+    RegimeSmoothingError,
+    RegimeStabilityError,
+    RegimeTransitionError,
+    RegimeValidationError,
+)
+
+
+def classify_regime_error(error: Exception) -> type[Binance50Error]:
+    if isinstance(error, RegimeError):
+        return type(error)
+
+    error_msg = str(error).lower()
+    if (
+        "future" in error_msg
+        or "target" in error_msg
+        or "label" in error_msg
+        or "centered" in error_msg
+        or "train split missing" in error_msg
+        or "train split required" in error_msg
+        or "full dataset fit" in error_msg
+    ):
+        return RegimeLeakageError
+    elif "feature" in error_msg:
+        return RegimeFeatureError
+    elif "confidence out of range" in error_msg:
+        return RegimeValidationError
+    elif "missing explanation" in error_msg or "transition ratio" in error_msg:
+        return RegimeQualityError
+    elif "adapter" in error_msg:
+        return RegimeModelAdapterError
+    elif "config" in error_msg:
+        return RegimeConfigError
+    elif "cache" in error_msg:
+        return RegimeCacheError
+    elif "stability" in error_msg:
+        return RegimeStabilityError
+    elif "transition" in error_msg:
+        return RegimeTransitionError
+    elif "smoothing" in error_msg:
+        return RegimeSmoothingError
+    elif "validation" in error_msg:
+        return RegimeValidationError
+
+    return RegimeClassificationError
