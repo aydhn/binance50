@@ -277,3 +277,17 @@ In adherence to the strict isolation principles of binance50, Phase 14 remains i
 - **Regime quality checks:** Integrity boundaries demanding explicit explanations and banning unlabeled segments.
 - **Rejim bilgisinin signal/risk katmanına bağlam olarak aktarımı:** Passing contextual outputs to downstream processes metadata safely.
 - **Neden Phase 15’te trading yok?:** Regime classification creates market context—it does not inherently signify an entry or exit point setup.
+
+## Risk Engine v1 (Phase 16)
+The risk engine v1 is a non-execution risk evaluation layer. It acts as an intermediary between signal/regime generation and order execution.
+
+- **RiskAssessment**: The core model representing a risk evaluation. It is intentionally designed to NOT contain execution parameters like order quantities or specific order prices.
+- **RiskComponent and RiskBreakdown**: Individual risk factors (volatility, liquidity, filters) are evaluated into RiskComponents and aggregated into a RiskBreakdown to explain the risk decision.
+- **Signal + Regime Context Integration**: Regime context is used to penalize volatile/transitional regimes or grant bonuses to calm ones, allowing the risk engine to reject candidates that conflict with current market contexts.
+- **Symbol Filter & Notional Risk**: Simulates symbol filter rules (e.g. MIN_NOTIONAL) using offline metadata without making API calls.
+- **Volatility & Liquidity Risk**: Penalizes wide spreads and low quote volumes or depths based on predefined config thresholds.
+- **Futures Leverage Placeholder**: Contains placeholder logic to ensure that leverage is estimated safely without making live `/fapi/v1/leverage` calls.
+- **Exposure & Drawdown Placeholder**: Tracks mock exposure counts and limits correlations between concurrent candidates.
+- **Frequency/Rate Model**: Places ceilings on how frequently candidates can be generated or approved per symbol and globally.
+
+**No Execution Guarantee**: Phase 16 intentionally avoids generating real orders, position sizing, entry/exit prices, or interacting with live APIs. Risk assessments have intents such as `risk_review`, `future_backtest_candidate`, and `paper_review_candidate`, but never `live_trade`.

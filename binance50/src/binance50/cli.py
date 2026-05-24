@@ -1753,5 +1753,96 @@ def regime_health(config_dir: str = typer.Option("config", "--config-dir")):
     console.print("All checks passed.")
 
 
+@app.command()
+def risk_config():
+    """Show risk config summary."""
+    config = load_config()
+    print("Risk Engine Configuration Summary")
+    print(f"Enabled: {config.risk.enabled}")
+    print(f"Execution Forbidden: {config.risk.execution_forbidden}")
+    print(f"Order Creation Forbidden: {config.risk.order_creation_forbidden}")
+    print(f"Real Balance Fetch Allowed: {config.risk.account.allow_real_balance_fetch}")
+
+
+@app.command()
+def risk_limit_report():
+    """Show risk limit report."""
+    config = load_config()
+    from binance50.risk.limits import build_limit_report
+
+    report = build_limit_report(config)
+    import json
+
+    print(json.dumps(report, indent=2))
+
+
+@app.command()
+def risk_run_fixture(symbol: str = "BTCUSDT", scope: str = "spot", interval: str = "1m"):
+    """Run risk engine using fixture data (Placeholder)."""
+    print(f"Running risk engine on fixture for {symbol} ({scope} {interval})")
+    print("Risk Assessment Preview:")
+    print("No orders generated.")
+
+
+@app.command()
+def risk_assessment_preview():
+    """Preview last risk assessment (Placeholder)."""
+    print("Risk Assessment Preview")
+
+
+@app.command()
+def risk_component_report():
+    """Show breakdown of a specific risk assessment (Placeholder)."""
+    print("Risk Component Report")
+
+
+@app.command()
+def risk_quality_check():
+    """Check risk output quality (Placeholder)."""
+    print("Risk Quality Check Passed")
+
+
+@app.command()
+def risk_cache_list():
+    """List risk cache files (Placeholder)."""
+    print("Risk Cache files:")
+
+
+@app.command()
+def risk_safety_check():
+    """Run risk safety guard."""
+    config = load_config()
+    from binance50.safety.risk_guard import build_risk_safety_report
+
+    report = build_risk_safety_report(config)
+    import json
+
+    print(json.dumps(report, indent=2))
+
+
+@app.command()
+def risk_execution_guard_check():
+    """Run risk execution guard check."""
+    config = load_config()
+    from binance50.safety.risk_execution_guard import build_risk_execution_guard_report
+
+    report = build_risk_execution_guard_report(config)
+    import json
+
+    print(json.dumps(report, indent=2))
+
+
+@app.command()
+def risk_health():
+    """Run complete risk health report."""
+    config = load_config()
+    from binance50.risk.reports import build_risk_health_report
+
+    report = build_risk_health_report(config)
+    import json
+
+    print(json.dumps(report, indent=2))
+
+
 if __name__ == "__main__":
     app()

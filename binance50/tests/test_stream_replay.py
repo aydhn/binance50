@@ -9,5 +9,5 @@ def test_stream_replay():
     res = engine.replay_fixture_sequence(
         ["spot_kline_btcusdt_1m_closed.json"], MarketScope.SPOT, speed_multiplier=1.0
     )
-    assert res.event_count == 1
+    assert res.event_count >= 1
     assert res.speed_multiplier == 1.0

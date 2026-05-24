@@ -8,6 +8,7 @@ from binance50.core.exceptions import StorageSchemaError
 
 
 class DatasetKind(StrEnum):
+    RISK_ASSESSMENTS = "risk_assessments"
     STRATEGY_CANDIDATES = "strategy_candidates"
     SCORED_SIGNAL_CANDIDATES = "scored_signal_candidates"
     MARKET_REGIMES = "market_regimes"
@@ -290,6 +291,61 @@ def get_market_regimes_schema() -> DatasetSchema:
     )
 
 
+def get_risk_assessments_schema() -> DatasetSchema:
+    return DatasetSchema(
+        dataset_name="risk_assessments",
+        dataset_kind=DatasetKind.RISK_ASSESSMENTS,
+        version=1,
+        columns=[
+            ColumnSchema("assessment_id", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("source_scored_signal_id", "string", nullable=False),
+            ColumnSchema("symbol", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("market_scope", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("interval", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("open_time", "int64", nullable=False, is_primary_key=True),
+            ColumnSchema("close_time", "int64", nullable=True),
+            ColumnSchema("direction", "string", nullable=False),
+            ColumnSchema("status", "string", nullable=False),
+            ColumnSchema("intent", "string", nullable=False),
+            ColumnSchema("final_risk_score", "float64", nullable=False),
+            ColumnSchema("risk_tier", "string", nullable=False),
+            ColumnSchema("approved", "bool", nullable=False),
+            ColumnSchema("blocked", "bool", nullable=False),
+            ColumnSchema("needs_review", "bool", nullable=False),
+            ColumnSchema("explanation_json", "string", nullable=False),
+            ColumnSchema("breakdown_json", "string", nullable=False),
+            ColumnSchema("regime_context_json", "string", nullable=False),
+            ColumnSchema("signal_snapshot_json", "string", nullable=False),
+            ColumnSchema("hypothetical_notional_usdt", "float64", nullable=True),
+            ColumnSchema("hypothetical_risk_pct", "float64", nullable=True),
+            ColumnSchema("metadata_json", "string", nullable=False),
+            ColumnSchema("created_at_utc", "int64", nullable=False),
+            ColumnSchema("config_hash", "string", nullable=False),
+        ],
+        primary_keys=[
+            "market_scope",
+            "symbol",
+            "interval",
+            "open_time",
+            "assessment_id",
+        ],
+        partition_columns=["market_scope", "symbol", "interval"],
+        timestamp_column="open_time",
+        disallowed_column_names=[
+            "order_id",
+            "quantity",
+            "qty",
+            "leverage_to_set",
+            "entry_price",
+            "exit_price",
+            "stop_loss",
+            "take_profit",
+            "order_type",
+            "side",
+        ],
+    )
+
+
 def get_schema_registry() -> dict[str, DatasetSchema]:
     return {
         "ohlcv": get_ohlcv_schema(),
@@ -299,6 +355,7 @@ def get_schema_registry() -> dict[str, DatasetSchema]:
         "strategy_candidates": get_strategy_candidates_schema(),
         "scored_signal_candidates": get_scored_signal_candidates_schema(),
         "market_regimes": get_market_regimes_schema(),
+        "risk_assessments": get_risk_assessments_schema(),
     }
 
 

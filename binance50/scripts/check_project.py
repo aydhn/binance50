@@ -52,6 +52,15 @@ def main() -> None:
     checks = [
         (["python", "-m", "pytest", "tests/"], "Pytest Unit Tests"),
         # (["python", "-m", "mypy", "src/"], "MyPy Type Checker"),
+        (["python", "-m", "binance50.cli", "risk-config"], "Risk Config Check"),
+        (["python", "-m", "binance50.cli", "risk-limit-report"], "Risk Limit Report Check"),
+        (["python", "-m", "binance50.cli", "risk-run-fixture"], "Risk Fixture Check"),
+        (["python", "-m", "binance50.cli", "risk-safety-check"], "Risk Safety Check"),
+        (
+            ["python", "-m", "binance50.cli", "risk-execution-guard-check"],
+            "Risk Execution Guard Check",
+        ),
+        (["python", "-m", "binance50.cli", "risk-health"], "Risk Health Check"),
     ]
 
     cli_checks = [
@@ -125,6 +134,20 @@ def main() -> None:
             "Signal Calibration Report",
         ),
     ]
+
+    cli_checks.extend(
+        [
+            (["python", "-m", "binance50.cli", "risk-config"], "Risk Config Check"),
+            (["python", "-m", "binance50.cli", "risk-limit-report"], "Risk Limit Report Check"),
+            (["python", "-m", "binance50.cli", "risk-run-fixture"], "Risk Fixture Check"),
+            (["python", "-m", "binance50.cli", "risk-safety-check"], "Risk Safety Check"),
+            (
+                ["python", "-m", "binance50.cli", "risk-execution-guard-check"],
+                "Risk Execution Guard Check",
+            ),
+            (["python", "-m", "binance50.cli", "risk-health"], "Risk Health Check"),
+        ]
+    )
 
     all_passed = True
 
