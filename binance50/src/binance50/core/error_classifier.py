@@ -307,3 +307,30 @@ def classify_regime_error(error: Exception) -> type[Binance50Error]:
         return RegimeValidationError
 
     return RegimeClassificationError
+
+def classify_backtest_error(message: str) -> type[Exception]:
+    from binance50.core.exceptions import (
+        BacktestError,
+        BacktestExecutionForbiddenError,
+        BacktestLeakageError,
+        BacktestMetricError,
+        BacktestOrderIdentifierDetectedError,
+        BacktestPortfolioError,
+        BacktestQualityError,
+        SameBarFillError,
+    )
+    if "same bar fill" in message.lower():
+        return SameBarFillError
+    elif "future column" in message.lower() or "centered rolling" in message.lower():
+        return BacktestLeakageError
+    elif "exchange order id" in message.lower():
+        return BacktestOrderIdentifierDetectedError
+    elif "signed request payload" in message.lower():
+        return BacktestExecutionForbiddenError
+    elif "invalid metric" in message.lower():
+        return BacktestMetricError
+    elif "invalid equity" in message.lower():
+        return BacktestPortfolioError
+    elif "quality fail" in message.lower():
+        return BacktestQualityError
+    return BacktestError

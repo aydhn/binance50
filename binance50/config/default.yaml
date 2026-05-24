@@ -577,13 +577,11 @@ strategies:
   cache_enabled: true
   cache_dir: data/strategies
   export_dir: data/strategies/exports
-
   execution_forbidden: true
   order_creation_forbidden: true
   paper_trade_forbidden: true
   backtest_forbidden: true
   live_trade_forbidden: true
-
   require_explanations: true
   require_feature_metadata: true
   require_closed_candles: true
@@ -596,105 +594,94 @@ strategies:
   max_conditions_per_plugin: 50
   min_rows_required: 100
   warmup_rows_allowed: false
-
   candidate:
     allowed_directions:
-      - bullish
-      - bearish
-      - neutral
-      - no_action
+    - bullish
+    - bearish
+    - neutral
+    - no_action
     allowed_strengths:
-      - weak
-      - medium
-      - strong
+    - weak
+    - medium
+    - strong
     min_confidence: 0.0
     max_confidence: 100.0
     default_expiry_bars: 3
     max_expiry_bars: 50
     allow_actionable_order_language: false
     require_non_order_intent: true
-
   plugins:
     trend_following:
       enabled: true
       required_features:
-        - trend_ema_20
-        - trend_ema_50
-        - trend_ema_200
-        - trend_adx_14
+      - trend_ema_20
+      - trend_ema_50
+      - trend_ema_200
+      - trend_adx_14
       min_adx: 18.0
       strong_adx: 25.0
       ema_fast: trend_ema_20
       ema_mid: trend_ema_50
       ema_slow: trend_ema_200
-
     mean_reversion:
       enabled: true
       required_features:
-        - mom_rsi_14
-        - vol_bb_lower_20_2
-        - vol_bb_upper_20_2
-        - vol_bb_mid_20_2
+      - mom_rsi_14
+      - vol_bb_lower_20_2
+      - vol_bb_upper_20_2
+      - vol_bb_mid_20_2
       rsi_oversold: 30.0
       rsi_overbought: 70.0
       require_bollinger_touch: true
-
     momentum_continuation:
       enabled: true
       required_features:
-        - mom_rsi_14
-        - trend_macd_hist_12_26_9
-        - mom_roc_10
+      - mom_rsi_14
+      - trend_macd_hist_12_26_9
+      - mom_roc_10
       rsi_min: 50.0
       roc_min: 0.0
       require_macd_hist_positive_for_bullish: true
       require_macd_hist_negative_for_bearish: true
-
     volatility_breakout:
       enabled: true
       required_features:
-        - vol_atr_14
-        - vol_donchian_high_20
-        - vol_donchian_low_20
-      breakout_buffer_atr: 0.10
+      - vol_atr_14
+      - vol_donchian_high_20
+      - vol_donchian_low_20
+      breakout_buffer_atr: 0.1
       require_atr_positive: true
-
     volume_confirmation:
       enabled: true
       required_features:
-        - volu_obv
-        - volu_volume_sma_20
-        - volume
+      - volu_obv
+      - volu_volume_sma_20
+      - volume
       volume_multiplier: 1.25
       require_volume_above_average: true
-
     divergence_candidate:
       enabled: true
       required_prefixes:
-        - div_
+      - div_
       min_divergence_score: 40.0
       accept_regular: true
       accept_hidden: true
-
     mtf_confirmation:
       enabled: true
       required_prefixes:
-        - mtf_
+      - mtf_
       require_mtf_trend_agreement: false
       min_confirming_timeframes: 1
-
     pattern_candidate:
       enabled: true
       required_prefixes:
-        - pat_
+      - pat_
       min_pattern_confidence: 40.0
-
     composite_skeleton:
       enabled: true
       aggregate_only: true
       final_signal_scoring_deferred: true
       min_plugins_agreeing: 2
-
   quality:
     reject_empty_candidate_set: false
     warn_empty_candidate_set: true
@@ -704,3 +691,134 @@ strategies:
     reject_confidence_out_of_range: true
     warn_conflicting_candidates: true
     max_conflicting_candidates_per_bar: 5
+backtest:
+  enabled: true
+  output_dataset_name: backtest_runs
+  cache_enabled: true
+  cache_dir: data/backtest
+  export_dir: data/backtest/exports
+  reports_dir: data/backtest/reports
+  real_exchange_forbidden: true
+  binance_client_forbidden: true
+  order_gateway_forbidden: true
+  testnet_order_forbidden: true
+  live_order_forbidden: true
+  signed_request_forbidden: true
+  api_key_forbidden: true
+  mode:
+    engine: event_driven
+    deterministic: true
+    random_seed: 42
+    allow_randomness: false
+    single_symbol_default: true
+    multi_symbol_enabled: true
+    portfolio_backtest_enabled: false
+  data:
+    source_priority:
+    - warehouse
+    - market_data_cache
+    - fixture
+    require_ohlcv_quality_passed: true
+    reject_duplicate_open_time: true
+    reject_gaps: false
+    warn_gaps: true
+    reject_out_of_order: true
+    reject_incomplete_last_candle: true
+    min_rows_required: 300
+    warmup_rows_for_indicators: 250
+    trade_after_warmup_only: true
+    require_closed_candles: true
+  timing:
+    decision_price_source: close
+    fill_model: next_bar_open
+    allow_same_bar_fill: false
+    require_next_candle_for_fill: true
+    decision_on_closed_candle_only: true
+    fill_on_future_candle_only: true
+    max_signal_age_bars: 3
+    expire_signal_if_not_filled: true
+  capital:
+    starting_cash_usdt: 1000.0
+    quote_currency: USDT
+    allow_negative_cash: false
+    allow_margin: false
+    allow_short_spot: false
+    max_cash_usage_pct: 30.0
+    max_open_positions: 3
+    max_positions_per_symbol: 1
+  sizing:
+    mode: fixed_notional
+    fixed_notional_usdt: 50.0
+    max_notional_usdt: 100.0
+    use_risk_notional_cap: true
+    risk_cap_required: true
+    quantity_is_simulated_only: true
+    produce_real_order_quantity: false
+  fees:
+    enabled: true
+    maker_fee_bps: 10.0
+    taker_fee_bps: 10.0
+    default_fee_side: taker
+    include_fees_in_pnl: true
+  slippage:
+    enabled: true
+    model: bps
+    default_slippage_bps: 2.0
+    max_slippage_bps: 20.0
+    volatility_slippage_multiplier: 1.5
+    spread_slippage_multiplier: 1.0
+    include_slippage_in_pnl: true
+  exits:
+    enabled: true
+    close_on_opposite_signal: true
+    close_on_signal_expiry: false
+    close_on_end_of_backtest: true
+    max_holding_bars_enabled: true
+    max_holding_bars: 100
+    stop_loss_deferred: true
+    take_profit_deferred: true
+    trailing_stop_deferred: true
+  metrics:
+    enabled: true
+    compute_equity_curve: true
+    compute_drawdown: true
+    compute_win_rate: true
+    compute_profit_factor: true
+    compute_expectancy: true
+    compute_avg_trade: true
+    compute_exposure_time: true
+    compute_turnover: true
+    compute_fee_impact: true
+    compute_slippage_impact: true
+    compute_benchmark_placeholder: true
+    risk_free_rate_annual: 0.0
+  benchmark:
+    enabled: true
+    method: buy_and_hold_placeholder
+    same_period: true
+    include_fees: false
+    include_slippage: false
+    benchmark_symbol_same_as_test: true
+  leakage:
+    prevent_lookahead_bias: true
+    reject_future_columns: true
+    reject_target_columns: true
+    reject_label_columns: true
+    reject_forward_alignment: true
+    reject_nearest_alignment: true
+    require_backward_asof_alignment: true
+    reject_centered_rolling: true
+    reject_same_bar_fill: true
+    reject_unclosed_candle_decision: true
+  quality:
+    reject_empty_backtest: false
+    warn_empty_backtest: true
+    reject_missing_trade_explanation: true
+    reject_invalid_equity_curve: true
+    reject_negative_cash: true
+    reject_unmatched_position_close: true
+    reject_position_without_fill: true
+    reject_fill_without_event: true
+    reject_metric_nan_inf: true
+    warn_low_trade_count: true
+    min_trade_count_warning: 5

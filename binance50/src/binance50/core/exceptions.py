@@ -988,3 +988,52 @@ class RiskExecutionForbiddenError(RiskError):
 class RiskOrderObjectDetectedError(RiskError):
     def __init__(self, message: str, details: dict | None = None) -> None:
         super().__init__(message, details=details)  # RISK_ORDER_OBJECT_DETECTED
+
+
+class BacktestError(Binance50Error):
+    pass
+
+class BacktestConfigError(BacktestError):
+    pass
+
+class BacktestDataError(BacktestError):
+    pass
+
+class BacktestValidationError(BacktestError):
+    pass
+
+class BacktestRunnerError(BacktestError):
+    pass
+
+class BacktestBrokerError(BacktestError):
+    pass
+
+class BacktestFillError(BacktestError):
+    pass
+
+class BacktestPositionError(BacktestError):
+    pass
+
+class BacktestPortfolioError(BacktestError):
+    pass
+
+class BacktestMetricError(BacktestError):
+    pass
+
+class BacktestQualityError(BacktestError):
+    pass
+
+class BacktestCacheError(BacktestError):
+    pass
+
+class BacktestLeakageError(BacktestError):
+    pass
+
+class BacktestExecutionForbiddenError(BacktestError):
+    pass
+
+class BacktestOrderIdentifierDetectedError(BacktestError):
+    pass
+
+class SameBarFillError(BacktestError):
+    pass

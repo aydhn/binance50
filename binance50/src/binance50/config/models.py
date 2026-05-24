@@ -1948,6 +1948,204 @@ class PaperConfig(BaseModel):
             raise ValueError("api_key_forbidden must be True in paper mode")
         return self
 
+
+class BacktestModeConfig(BaseModel):
+    engine: str = Field("event_driven", description="Engine mode")
+    deterministic: bool = Field(True, description="Deterministic run")
+    random_seed: int = Field(42, description="Random seed")
+    allow_randomness: bool = Field(False, description="Allow randomness")
+    single_symbol_default: bool = Field(True, description="Single symbol default")
+    multi_symbol_enabled: bool = Field(True, description="Multi symbol enabled")
+    portfolio_backtest_enabled: bool = Field(False, description="Portfolio backtest enabled")
+
+class BacktestDataConfig(BaseModel):
+    source_priority: list[str] = Field(["warehouse", "market_data_cache", "fixture"], description="Source priority")
+    require_ohlcv_quality_passed: bool = Field(True, description="Require quality passed")
+    reject_duplicate_open_time: bool = Field(True, description="Reject duplicate open time")
+    reject_gaps: bool = Field(False, description="Reject gaps")
+    warn_gaps: bool = Field(True, description="Warn gaps")
+    reject_out_of_order: bool = Field(True, description="Reject out of order")
+    reject_incomplete_last_candle: bool = Field(True, description="Reject incomplete last candle")
+    min_rows_required: int = Field(300, description="Min rows required")
+    warmup_rows_for_indicators: int = Field(250, description="Warmup rows for indicators")
+    trade_after_warmup_only: bool = Field(True, description="Trade after warmup only")
+    require_closed_candles: bool = Field(True, description="Require closed candles")
+
+class BacktestTimingConfig(BaseModel):
+    decision_price_source: str = Field("close", description="Decision price source")
+    fill_model: str = Field("next_bar_open", description="Fill model")
+    allow_same_bar_fill: bool = Field(False, description="Allow same bar fill")
+    require_next_candle_for_fill: bool = Field(True, description="Require next candle for fill")
+    decision_on_closed_candle_only: bool = Field(True, description="Decision on closed candle only")
+    fill_on_future_candle_only: bool = Field(True, description="Fill on future candle only")
+    max_signal_age_bars: int = Field(3, description="Max signal age bars")
+    expire_signal_if_not_filled: bool = Field(True, description="Expire signal if not filled")
+
+class BacktestCapitalConfig(BaseModel):
+    starting_cash_usdt: float = Field(1000.0, description="Starting cash USDT", gt=0)
+    quote_currency: str = Field("USDT", description="Quote currency")
+    allow_negative_cash: bool = Field(False, description="Allow negative cash")
+    allow_margin: bool = Field(False, description="Allow margin")
+    allow_short_spot: bool = Field(False, description="Allow short spot")
+    max_cash_usage_pct: float = Field(30.0, description="Max cash usage pct", ge=0, le=100)
+    max_open_positions: int = Field(3, description="Max open positions", ge=1)
+    max_positions_per_symbol: int = Field(1, description="Max positions per symbol")
+
+class BacktestSizingConfig(BaseModel):
+    mode: str = Field("fixed_notional", description="Sizing mode")
+    fixed_notional_usdt: float = Field(50.0, description="Fixed notional USDT", gt=0)
+    max_notional_usdt: float = Field(100.0, description="Max notional USDT")
+    use_risk_notional_cap: bool = Field(True, description="Use risk notional cap")
+    risk_cap_required: bool = Field(True, description="Risk cap required")
+    quantity_is_simulated_only: bool = Field(True, description="Quantity is simulated only")
+    produce_real_order_quantity: bool = Field(False, description="Produce real order quantity")
+
+class BacktestFeeConfig(BaseModel):
+    enabled: bool = Field(True, description="Enabled")
+    maker_fee_bps: float = Field(10.0, description="Maker fee bps")
+    taker_fee_bps: float = Field(10.0, description="Taker fee bps")
+    default_fee_side: str = Field("taker", description="Default fee side")
+    include_fees_in_pnl: bool = Field(True, description="Include fees in pnl")
+
+class BacktestSlippageConfig(BaseModel):
+    enabled: bool = Field(True, description="Enabled")
+    model: str = Field("bps", description="Model")
+    default_slippage_bps: float = Field(2.0, description="Default slippage bps")
+    max_slippage_bps: float = Field(20.0, description="Max slippage bps")
+    volatility_slippage_multiplier: float = Field(1.5, description="Volatility slippage multiplier")
+    spread_slippage_multiplier: float = Field(1.0, description="Spread slippage multiplier")
+    include_slippage_in_pnl: bool = Field(True, description="Include slippage in pnl")
+
+class BacktestExitConfig(BaseModel):
+    enabled: bool = Field(True, description="Enabled")
+    close_on_opposite_signal: bool = Field(True, description="Close on opposite signal")
+    close_on_signal_expiry: bool = Field(False, description="Close on signal expiry")
+    close_on_end_of_backtest: bool = Field(True, description="Close on end of backtest")
+    max_holding_bars_enabled: bool = Field(True, description="Max holding bars enabled")
+    max_holding_bars: int = Field(100, description="Max holding bars", gt=0)
+    stop_loss_deferred: bool = Field(True, description="Stop loss deferred")
+    take_profit_deferred: bool = Field(True, description="Take profit deferred")
+    trailing_stop_deferred: bool = Field(True, description="Trailing stop deferred")
+
+class BacktestMetricsConfig(BaseModel):
+    enabled: bool = Field(True, description="Enabled")
+    compute_equity_curve: bool = Field(True, description="Compute equity curve")
+    compute_drawdown: bool = Field(True, description="Compute drawdown")
+    compute_win_rate: bool = Field(True, description="Compute win rate")
+    compute_profit_factor: bool = Field(True, description="Compute profit factor")
+    compute_expectancy: bool = Field(True, description="Compute expectancy")
+    compute_avg_trade: bool = Field(True, description="Compute avg trade")
+    compute_exposure_time: bool = Field(True, description="Compute exposure time")
+    compute_turnover: bool = Field(True, description="Compute turnover")
+    compute_fee_impact: bool = Field(True, description="Compute fee impact")
+    compute_slippage_impact: bool = Field(True, description="Compute slippage impact")
+    compute_benchmark_placeholder: bool = Field(True, description="Compute benchmark placeholder")
+    risk_free_rate_annual: float = Field(0.0, description="Risk free rate annual")
+
+class BacktestBenchmarkConfig(BaseModel):
+    enabled: bool = Field(True, description="Enabled")
+    method: str = Field("buy_and_hold_placeholder", description="Method")
+    same_period: bool = Field(True, description="Same period")
+    include_fees: bool = Field(False, description="Include fees")
+    include_slippage: bool = Field(False, description="Include slippage")
+    benchmark_symbol_same_as_test: bool = Field(True, description="Benchmark symbol same as test")
+
+class BacktestLeakageConfig(BaseModel):
+    prevent_lookahead_bias: bool = Field(True, description="Prevent lookahead bias")
+    reject_future_columns: bool = Field(True, description="Reject future columns")
+    reject_target_columns: bool = Field(True, description="Reject target columns")
+    reject_label_columns: bool = Field(True, description="Reject label columns")
+    reject_forward_alignment: bool = Field(True, description="Reject forward alignment")
+    reject_nearest_alignment: bool = Field(True, description="Reject nearest alignment")
+    require_backward_asof_alignment: bool = Field(True, description="Require backward asof alignment")
+    reject_centered_rolling: bool = Field(True, description="Reject centered rolling")
+    reject_same_bar_fill: bool = Field(True, description="Reject same bar fill")
+    reject_unclosed_candle_decision: bool = Field(True, description="Reject unclosed candle decision")
+
+class BacktestQualityConfig(BaseModel):
+    reject_empty_backtest: bool = Field(False, description="Reject empty backtest")
+    warn_empty_backtest: bool = Field(True, description="Warn empty backtest")
+    reject_missing_trade_explanation: bool = Field(True, description="Reject missing trade explanation")
+    reject_invalid_equity_curve: bool = Field(True, description="Reject invalid equity curve")
+    reject_negative_cash: bool = Field(True, description="Reject negative cash")
+    reject_unmatched_position_close: bool = Field(True, description="Reject unmatched position close")
+    reject_position_without_fill: bool = Field(True, description="Reject position without fill")
+    reject_fill_without_event: bool = Field(True, description="Reject fill without event")
+    reject_metric_nan_inf: bool = Field(True, description="Reject metric nan inf")
+    warn_low_trade_count: bool = Field(True, description="Warn low trade count")
+    min_trade_count_warning: int = Field(5, description="Min trade count warning")
+
+class BacktestConfig(BaseModel):
+    enabled: bool = Field(True, description="Enabled")
+    output_dataset_name: str = Field("backtest_runs", description="Output dataset name")
+    cache_enabled: bool = Field(True, description="Cache enabled")
+    cache_dir: str = Field("data/backtest", description="Cache dir")
+    export_dir: str = Field("data/backtest/exports", description="Export dir")
+    reports_dir: str = Field("data/backtest/reports", description="Reports dir")
+
+    real_exchange_forbidden: bool = Field(True, description="Real exchange forbidden")
+    binance_client_forbidden: bool = Field(True, description="Binance client forbidden")
+    order_gateway_forbidden: bool = Field(True, description="Order gateway forbidden")
+    testnet_order_forbidden: bool = Field(True, description="Testnet order forbidden")
+    live_order_forbidden: bool = Field(True, description="Live order forbidden")
+    signed_request_forbidden: bool = Field(True, description="Signed request forbidden")
+    api_key_forbidden: bool = Field(True, description="API key forbidden")
+
+    mode: BacktestModeConfig = Field(default_factory=BacktestModeConfig)
+    data: BacktestDataConfig = Field(default_factory=BacktestDataConfig)
+    timing: BacktestTimingConfig = Field(default_factory=BacktestTimingConfig)
+    capital: BacktestCapitalConfig = Field(default_factory=BacktestCapitalConfig)
+    sizing: BacktestSizingConfig = Field(default_factory=BacktestSizingConfig)
+    fees: BacktestFeeConfig = Field(default_factory=BacktestFeeConfig)
+    slippage: BacktestSlippageConfig = Field(default_factory=BacktestSlippageConfig)
+    exits: BacktestExitConfig = Field(default_factory=BacktestExitConfig)
+    metrics: BacktestMetricsConfig = Field(default_factory=BacktestMetricsConfig)
+    benchmark: BacktestBenchmarkConfig = Field(default_factory=BacktestBenchmarkConfig)
+    leakage: BacktestLeakageConfig = Field(default_factory=BacktestLeakageConfig)
+    quality: BacktestQualityConfig = Field(default_factory=BacktestQualityConfig)
+
+    @model_validator(mode="after")
+    def validate_backtest_config(self) -> "BacktestConfig":
+        if not self.real_exchange_forbidden:
+            raise ValueError("real_exchange_forbidden must be True in Phase 18")
+        if not self.binance_client_forbidden:
+            raise ValueError("binance_client_forbidden must be True in Phase 18")
+        if not self.order_gateway_forbidden:
+            raise ValueError("order_gateway_forbidden must be True in Phase 18")
+        if not self.testnet_order_forbidden:
+            raise ValueError("testnet_order_forbidden must be True in Phase 18")
+        if not self.live_order_forbidden:
+            raise ValueError("live_order_forbidden must be True in Phase 18")
+        if not self.signed_request_forbidden:
+            raise ValueError("signed_request_forbidden must be True in Phase 18")
+        if not self.api_key_forbidden:
+            raise ValueError("api_key_forbidden must be True in Phase 18")
+        if not self.mode.deterministic:
+            raise ValueError("deterministic must be True")
+        if self.mode.allow_randomness:
+            raise ValueError("allow_randomness must be False")
+        if self.timing.allow_same_bar_fill:
+            raise ValueError("allow_same_bar_fill must be False")
+        if not self.timing.fill_on_future_candle_only:
+            raise ValueError("fill_on_future_candle_only must be True")
+        if not self.timing.decision_on_closed_candle_only:
+            raise ValueError("decision_on_closed_candle_only must be True")
+        if not self.leakage.reject_same_bar_fill:
+            raise ValueError("reject_same_bar_fill must be True")
+        if not self.leakage.reject_centered_rolling:
+            raise ValueError("reject_centered_rolling must be True")
+        if self.sizing.max_notional_usdt < self.sizing.fixed_notional_usdt:
+            raise ValueError("max_notional_usdt must be >= fixed_notional_usdt")
+        if not self.exits.stop_loss_deferred:
+            raise ValueError("stop_loss_deferred must be True")
+        if not self.exits.take_profit_deferred:
+            raise ValueError("take_profit_deferred must be True")
+        if not self.exits.trailing_stop_deferred:
+            raise ValueError("trailing_stop_deferred must be True")
+        if self.sizing.produce_real_order_quantity:
+            raise ValueError("produce_real_order_quantity must be False")
+        return self
+
 class AppConfig(BaseModel):
 
     risk: RiskConfig = Field(default_factory=RiskConfig)

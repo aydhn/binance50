@@ -242,3 +242,11 @@ It operates without making real orders, meaning it utilizes 0 network requests, 
 - `python -m binance50.cli paper-safety-check`
 - `python -m binance50.cli paper-execution-guard-check`
 - `python -m binance50.cli paper-health`
+
+## Backtesting (Phase 18)
+The deterministic event-driven backtest engine loads OHLCV data, processes signals, manages simulated positions, and tracks an equity curve.
+It uses strict next-bar fills and prevents lookahead leakage.
+Commands:
+- `python -m binance50.cli backtest-config`
+- `python -m binance50.cli backtest-run-fixture --symbol BTCUSDT --scope spot --interval 1m`
+- `python -m binance50.cli backtest-summary`

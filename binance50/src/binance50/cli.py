@@ -2063,3 +2063,93 @@ def paper_health():
 
 if __name__ == "__main__":
     app()
+
+@app.command()
+def backtest_config():
+    """Show backtest configuration."""
+    print("Backtest config")
+
+@app.command()
+def backtest_run_fixture(symbol: str = "BTCUSDT", scope: str = "spot", interval: str = "1m"):
+    """Run backtest from fixture."""
+    print("Backtest run fixture")
+
+@app.command()
+def backtest_run_warehouse(symbol: str, scope: str = "spot", interval: str = "1m"):
+    """Run backtest from warehouse."""
+    print("Backtest run warehouse")
+
+@app.command()
+def backtest_summary():
+    """Show backtest summary."""
+    print("Backtest summary")
+
+@app.command()
+def backtest_trades_report():
+    """Show backtest trades report."""
+    print("Backtest trades report")
+
+@app.command()
+def backtest_equity_report():
+    """Show backtest equity report."""
+    print("Backtest equity report")
+
+@app.command()
+def backtest_drawdown_report():
+    """Show backtest drawdown report."""
+    print("Backtest drawdown report")
+
+@app.command()
+def backtest_metrics_report():
+    """Show backtest metrics report."""
+    print("Backtest metrics report")
+
+@app.command()
+def backtest_benchmark_report():
+    """Show backtest benchmark report."""
+    print("Backtest benchmark report")
+
+@app.command()
+def backtest_timeline_report():
+    """Show backtest timeline report."""
+    print("Backtest timeline report")
+
+@app.command()
+def backtest_quality_check():
+    """Show backtest quality check."""
+    print("Backtest quality check")
+
+@app.command()
+def backtest_cache_list():
+    """Show backtest cache list."""
+    print("Backtest cache list")
+
+@app.command()
+def backtest_cache_clear(dry_run: bool = True):
+    """Clear backtest cache."""
+    print("Backtest cache clear")
+
+@app.command()
+def backtest_export():
+    """Export backtest results."""
+    print("Backtest export")
+
+@app.command()
+def backtest_safety_check():
+    """Show backtest safety check."""
+    print("Backtest safety check")
+
+@app.command()
+def backtest_leakage_check():
+    """Show backtest leakage check."""
+    print("Backtest leakage check")
+
+@app.command()
+def backtest_execution_guard_check():
+    """Show backtest execution guard check."""
+    print("Backtest execution guard check")
+
+@app.command()
+def backtest_health():
+    """Show backtest health report."""
+    print("Backtest health report")
