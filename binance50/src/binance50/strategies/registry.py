@@ -43,7 +43,7 @@ class StrategyRegistry:
         return [p for p in self._plugins.values() if p.is_enabled(cfg)]
 
     def validate_plugins(self, config: AppConfig) -> None:
-        for name, plugin in self._plugins.items():
+        for _name, plugin in self._plugins.items():
             if plugin.is_enabled(config):
                 plugin.validate_config(config)
 

@@ -227,3 +227,18 @@ The risk engine evaluates scored signals and regime context to produce safe, non
 - `python -m binance50.cli risk-safety-check`
 - `python -m binance50.cli risk-execution-guard-check`
 - `python -m binance50.cli risk-health`
+
+### Paper Trading
+The Paper engine safely evaluates risk-approved candidates, maintaining a locally simulated account to estimate PnL and trade journaling.
+It operates without making real orders, meaning it utilizes 0 network requests, no signatures, and zero actual capital.
+
+**Usage:**
+- `python -m binance50.cli paper-config`
+- `python -m binance50.cli paper-account-init`
+- `python -m binance50.cli paper-run-fixture --symbol BTCUSDT --scope spot --interval 1m`
+- `python -m binance50.cli paper-ledger-report`
+- `python -m binance50.cli paper-pnl-report`
+- `python -m binance50.cli paper-quality-check`
+- `python -m binance50.cli paper-safety-check`
+- `python -m binance50.cli paper-execution-guard-check`
+- `python -m binance50.cli paper-health`

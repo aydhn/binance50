@@ -46,7 +46,7 @@ class TrendFollowingPlugin(StrategyPluginProtocol):
         candidates = []
         pcfg = context.config.strategies.plugins.trend_following
 
-        for idx, row in df.iterrows():
+        for _idx, row in df.iterrows():
             close = row.get("close", 0)
             ema20 = row.get(pcfg.ema_fast, 0)
             ema50 = row.get(pcfg.ema_mid, 0)

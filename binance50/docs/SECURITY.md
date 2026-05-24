@@ -218,3 +218,13 @@ Phase 14's signal scoring engine acts as a critical safety boundary between abst
 - **Notional Estimate Limits**: Notional USDT bounds are strictly evaluated offline against cached symbol filter metadata.
 - **RiskApproved is Not an Order**: A status of `approved_for_paper_review` or `approved_for_future_backtest` indicates a passed candidate, NOT an executable order.
 - **No Execution Without Risk Policy**: The execution layer will eventually strictly require a passed `RiskAssessment` object before continuing.
+
+## Phase 17: Paper Trading Security
+- **Paper trading is not a real order**: Any events produced are exclusively simulated constructs.
+- **Binance client/order gateway forbidden**: Interactions with the real network are explicitly blocked in configuration.
+- **Signed request & API key forbidden**: Creating signatures or storing live keys is blocked to prevent accidental leak.
+- **Exchange order ID forbidden**: Simulated models do not hold any external exchange identifier.
+- **Same-bar fill risk**: Configurations by default prohibit same-bar filling to deter lookahead biases.
+- **Slippage/Fee Boundaries**: Caps and models are applied to limit overly optimistic backtest-like projections.
+- **Paper PnL is not a financial guarantee**: Past or simulated performance cannot secure future earnings.
+- **Transition to Live**: Advancing from paper to live needs an entirely separate gateway layer which requires subsequent safety audits.

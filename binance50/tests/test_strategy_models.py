@@ -13,7 +13,7 @@ from binance50.strategies.models import (
 def test_signal_candidate_bounds():
     exp = StrategyExplanation(summary="test")
     # Valid
-    c = SignalCandidate(
+    SignalCandidate(
         candidate_id="1",
         symbol="BTC",
         market_scope="spot",

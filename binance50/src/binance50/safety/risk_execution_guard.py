@@ -9,7 +9,7 @@ def assert_no_order_object_created(payload: Any) -> None:
     if isinstance(payload, dict):
         if "order_id" in payload or "order_type" in payload:
             raise RiskOrderObjectDetectedError("Order object detected in payload")
-        for k, v in payload.items():
+        for _k, v in payload.items():
             assert_no_order_object_created(v)
     elif isinstance(payload, list):
         for item in payload:
@@ -27,7 +27,7 @@ def assert_no_position_sizing_output(payload: Any) -> None:
             or "quote_qty" in payload
         ):
             raise RiskExecutionForbiddenError("Position sizing output detected in payload")
-        for k, v in payload.items():
+        for _k, v in payload.items():
             assert_no_position_sizing_output(v)
     elif isinstance(payload, list):
         for item in payload:
@@ -40,7 +40,7 @@ def assert_no_stop_take_profit_output(payload: Any) -> None:
     if isinstance(payload, dict):
         if "stop_loss" in payload or "take_profit" in payload or "exit_price" in payload:
             raise RiskExecutionForbiddenError("Stop-loss or take-profit output detected in payload")
-        for k, v in payload.items():
+        for _k, v in payload.items():
             assert_no_stop_take_profit_output(v)
     elif isinstance(payload, list):
         for item in payload:
@@ -54,7 +54,7 @@ def assert_no_live_or_paper_intent(payload: Any) -> None:
         intent = payload.get("intent")
         if intent in ["live_trade", "paper_trade"]:  # Catch execution intents directly
             raise RiskExecutionForbiddenError(f"Execution intent detected: {intent}")
-        for k, v in payload.items():
+        for _k, v in payload.items():
             assert_no_live_or_paper_intent(v)
     elif isinstance(payload, list):
         for item in payload:

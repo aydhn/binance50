@@ -46,7 +46,7 @@ class MeanReversionPlugin(StrategyPluginProtocol):
         candidates = []
         pcfg = context.config.strategies.plugins.mean_reversion
 
-        for idx, row in df.iterrows():
+        for _idx, row in df.iterrows():
             close = row.get("close", 0)
             rsi = row.get("mom_rsi_14", 50)
             bb_low = row.get("vol_bb_lower_20_2", 0)

@@ -119,7 +119,7 @@ def combine_rule_results(
     if not passed_results:
         return StrategyDirection.no_action, StrategyCandidateStrength.weak, 0.0
 
-    directions = set([r.direction for r in passed_results])
+    directions = {r.direction for r in passed_results}
     if len(directions) > 1:
         # Conflict
         return StrategyDirection.no_action, StrategyCandidateStrength.weak, 0.0

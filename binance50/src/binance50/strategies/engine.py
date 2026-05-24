@@ -30,7 +30,7 @@ class StrategyEngine:
         self.storage = storage
 
     def run(self, df: pd.DataFrame, request: StrategyRunRequest) -> StrategyRunResult:
-        start_time = time.time()
+        time.time()
 
         try:
             validate_strategy_input_dataframe(df, self.config)

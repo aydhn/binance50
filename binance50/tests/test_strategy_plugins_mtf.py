@@ -15,4 +15,4 @@ def test_mtf_confirmation_plugin():
     cands = plugin.evaluate(df, context)
     assert len(cands) == 1
     assert cands[0].direction == "bullish"
-    assert cands[0].metadata["future_leakage_guard_passed"] == True
+    assert cands[0].metadata["future_leakage_guard_passed"]

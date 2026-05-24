@@ -30,7 +30,7 @@ def assert_regime_input_safe(df: pd.DataFrame, config: AppConfig) -> None:
 
 def assert_regime_output_safe(result: RegimeRunResult, config: AppConfig) -> None:
     for c in result.classifications:
-        for k in c.metadata.keys():
+        for k in c.metadata:
             if "order" in k or "execution" in k:
                 raise RegimeValidationError(
                     "Execution details found in regime classification output"

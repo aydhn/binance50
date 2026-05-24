@@ -852,18 +852,21 @@ class PivotConfig(BaseModel):
     max_pivots_per_series: int = 5000
 
     @field_validator("use_centered_window")
+    @classmethod
     def validate_use_centered_window(cls, v: bool) -> bool:
         if v:
             raise ValueError("use_centered_window must be False in Phase 12")
         return v
 
     @field_validator("allow_repainting")
+    @classmethod
     def validate_allow_repainting(cls, v: bool) -> bool:
         if v:
             raise ValueError("allow_repainting must be False in Phase 12")
         return v
 
     @field_validator("confirm_after_bars")
+    @classmethod
     def validate_confirm_after_bars(cls, v: int) -> int:
         if v > 0:
             raise ValueError("confirm_after_bars must be 0 in Phase 12 (no repainting allowed)")
@@ -912,13 +915,15 @@ class MTFConfig(BaseModel):
     mark_unmatched_rows: bool = True
 
     @field_validator("disallow_forward_alignment")
+    @classmethod
     def validate_disallow_forward(cls, v: bool) -> bool:
         if not v:
             raise ValueError("disallow_forward_alignment must be True")
         return v
 
     @field_validator("disallow_nearest_alignment")
-    def validate_disallow_nearest(cls, v: bool) -> bool:
+    @classmethod
+    def validate_disallow_nearest_alignment(cls, v: bool) -> bool:
         if not v:
             raise ValueError("disallow_nearest_alignment must be True")
         return v
@@ -987,12 +992,14 @@ class StrategyCandidateConfig(BaseModel):
     require_non_order_intent: bool = True
 
     @field_validator("allow_actionable_order_language")
+    @classmethod
     def validate_actionable_language(cls, v: bool) -> bool:
         if v:
             raise ValueError("allow_actionable_order_language must be False in Phase 13")
         return v
 
     @field_validator("require_non_order_intent")
+    @classmethod
     def validate_non_order_intent(cls, v: bool) -> bool:
         if not v:
             raise ValueError("require_non_order_intent must be True in Phase 13")
@@ -1065,6 +1072,7 @@ class CompositeSkeletonPluginConfig(StrategyPluginConfig):
     min_plugins_agreeing: int = Field(default=2, ge=1)
 
     @field_validator("final_signal_scoring_deferred")
+    @classmethod
     def validate_deferred(cls, v: bool) -> bool:
         if not v:
             raise ValueError("final_signal_scoring_deferred must be True in Phase 13")
@@ -1146,6 +1154,7 @@ class StrategiesConfig(BaseModel):
         "backtest_forbidden",
         "paper_trade_forbidden",
     )
+    @classmethod
     def validate_forbidden(cls, v: bool, info) -> bool:
         if not v:
             raise ValueError(f"{info.field_name} must be True in Phase 13")
@@ -1224,6 +1233,7 @@ class SignalCalibrationConfig(BaseModel):
     calibration_training_deferred: bool = Field(default=True)
 
     @field_validator("calibration_training_deferred")
+    @classmethod
     def validate_deferred(cls, v: bool) -> bool:
         if not v:
             raise ValueError("calibration_training_deferred must be True in Phase 14")
@@ -1239,6 +1249,7 @@ class SignalThresholdConfig(BaseModel):
     execution_threshold_deferred: bool = Field(default=True)
 
     @field_validator("execution_threshold_deferred")
+    @classmethod
     def validate_deferred(cls, v: bool) -> bool:
         if not v:
             raise ValueError("execution_threshold_deferred must be True in Phase 14")
@@ -1321,12 +1332,14 @@ class SignalsConfig(BaseModel):
         "paper_trade_forbidden",
         "risk_engine_required_before_execution",
     )
+    @classmethod
     def validate_forbidden(cls, v: bool, info) -> bool:
         if not v:
             raise ValueError(f"{info.field_name} must be True in Phase 14")
         return v
 
     @field_validator("plugin_weights")
+    @classmethod
     def validate_plugin_weights(cls, v: dict[str, float]) -> dict[str, float]:
         for weight in v.values():
             if weight < 0.0 or weight > 5.0:
@@ -1767,9 +1780,178 @@ class RiskConfig(BaseModel):
         return self
 
 
+
+class PaperAccountConfig(BaseModel):
+    mode: str = "local_simulated"
+    starting_cash_usdt: float = Field(1000.0, gt=0)
+    quote_currency: str = "USDT"
+    allow_negative_cash: bool = False
+    allow_margin: bool = False
+    allow_short_spot: bool = False
+    allow_futures_simulation: bool = True
+    futures_leverage_simulation_only: bool = True
+    default_futures_leverage_estimate: int = Field(1, ge=1)
+    max_futures_leverage_estimate: int = Field(3, ge=1, le=5)
+
+    @model_validator(mode="after")
+    def validate_account(self) -> "PaperAccountConfig":
+        if self.allow_negative_cash:
+            raise ValueError("allow_negative_cash must be False in paper mode")
+        if self.allow_margin:
+            raise ValueError("allow_margin must be False in paper mode")
+        if self.allow_short_spot:
+            raise ValueError("allow_short_spot must be False in paper mode")
+        if self.default_futures_leverage_estimate > self.max_futures_leverage_estimate:
+            raise ValueError("default_futures_leverage_estimate cannot exceed max_futures_leverage_estimate")
+        return self
+
+
+class PaperCandidateAcceptanceConfig(BaseModel):
+    require_risk_assessment: bool = True
+    allowed_risk_statuses: list[str] = ["approved_for_future_backtest", "approved_for_paper_review"]
+    min_final_risk_score: float = Field(65.0, ge=0, le=100)
+    min_signal_score: float = Field(65.0, ge=0, le=100)
+    reject_needs_review_by_default: bool = True
+    reject_blocked_or_rejected: bool = True
+    require_no_order_intent: bool = True
+    require_no_execution_fields: bool = True
+
+
+class PaperSimulationConfig(BaseModel):
+    mode: str = "sequential_bar"
+    fill_model: str = "next_bar_open"
+    allow_same_bar_fill: bool = False
+    require_next_candle: bool = True
+    max_open_positions: int = Field(3, ge=1)
+    max_positions_per_symbol: int = Field(1, ge=1)
+    max_new_positions_per_bar: int = Field(2, ge=1)
+    max_new_positions_per_day: int = Field(20, ge=1)
+    close_on_opposite_candidate: bool = True
+    close_on_expired_candidate: bool = False
+    allow_partial_fill: bool = False
+    mark_to_market: bool = True
+
+
+class PaperSizingConfig(BaseModel):
+    mode: str = "fixed_fractional_notional"
+    fixed_notional_usdt: float = Field(50.0, gt=0)
+    max_notional_usdt: float = Field(100.0, gt=0)
+    max_cash_usage_pct: float = Field(30.0, ge=0, le=100)
+    risk_assessment_notional_cap_required: bool = True
+    use_risk_hypothetical_notional_cap: bool = True
+    produce_real_order_quantity: bool = False
+    quantity_is_simulated_only: bool = True
+
+    @model_validator(mode="after")
+    def validate_sizing(self) -> "PaperSizingConfig":
+        if self.produce_real_order_quantity:
+            raise ValueError("produce_real_order_quantity must be False in paper mode")
+        if not self.quantity_is_simulated_only:
+            raise ValueError("quantity_is_simulated_only must be True in paper mode")
+        if self.max_notional_usdt < self.fixed_notional_usdt:
+            raise ValueError("max_notional_usdt must be >= fixed_notional_usdt")
+        return self
+
+
+class PaperFeeConfig(BaseModel):
+    enabled: bool = True
+    maker_fee_bps: float = Field(10.0, ge=0)
+    taker_fee_bps: float = Field(10.0, ge=0)
+    default_fee_side: str = "taker"
+    fee_currency: str = "USDT"
+    futures_fee_model_deferred: bool = True
+
+
+class PaperSlippageConfig(BaseModel):
+    enabled: bool = True
+    model: str = "bps"
+    default_slippage_bps: float = Field(2.0, ge=0)
+    max_slippage_bps: float = Field(20.0, ge=0)
+    volatility_slippage_multiplier: float = Field(1.5, ge=0)
+    spread_slippage_multiplier: float = Field(1.0, ge=0)
+
+
+class PaperPnLConfig(BaseModel):
+    enabled: bool = True
+    realized_pnl_enabled: bool = True
+    unrealized_pnl_enabled: bool = True
+    mark_price_source: str = "close"
+    use_last_close_for_mark: bool = True
+    include_fees: bool = True
+    include_slippage: bool = True
+
+
+class PaperSafetyConfig(BaseModel):
+    reject_if_real_exchange_enabled: bool = True
+    reject_if_order_gateway_enabled: bool = True
+    reject_if_api_credentials_present_for_paper: bool = False
+    reject_execution_fields: bool = True
+    reject_order_like_language: bool = True
+    reject_unknown_fill_model: bool = True
+    reject_negative_cash: bool = True
+    reject_position_without_ledger_event: bool = True
+    reject_unmatched_close: bool = True
+
+
+class PaperQualityConfig(BaseModel):
+    reject_missing_ledger_event: bool = True
+    reject_invalid_cash_balance: bool = True
+    reject_invalid_position_state: bool = True
+    reject_missing_fill_price: bool = True
+    reject_missing_fee: bool = True
+    warn_empty_paper_run: bool = True
+    reject_empty_paper_run: bool = False
+
+
+class PaperConfig(BaseModel):
+    enabled: bool = True
+    output_dataset_name: str = "paper_trades"
+    cache_enabled: bool = True
+    cache_dir: str = "data/paper"
+    export_dir: str = "data/paper/exports"
+    ledger_dir: str = "data/paper/ledger"
+    journal_dir: str = "data/paper/journal"
+
+    real_exchange_forbidden: bool = True
+    binance_client_forbidden: bool = True
+    order_gateway_forbidden: bool = True
+    testnet_order_forbidden: bool = True
+    live_order_forbidden: bool = True
+    signed_request_forbidden: bool = True
+    api_key_forbidden: bool = True
+
+    account: PaperAccountConfig = Field(default_factory=PaperAccountConfig)
+    candidate_acceptance: PaperCandidateAcceptanceConfig = Field(default_factory=PaperCandidateAcceptanceConfig)
+    simulation: PaperSimulationConfig = Field(default_factory=PaperSimulationConfig)
+    sizing: PaperSizingConfig = Field(default_factory=PaperSizingConfig)
+    fees: PaperFeeConfig = Field(default_factory=PaperFeeConfig)
+    slippage: PaperSlippageConfig = Field(default_factory=PaperSlippageConfig)
+    pnl: PaperPnLConfig = Field(default_factory=PaperPnLConfig)
+    safety: PaperSafetyConfig = Field(default_factory=PaperSafetyConfig)
+    quality: PaperQualityConfig = Field(default_factory=PaperQualityConfig)
+
+    @model_validator(mode="after")
+    def validate_paper_safety(self) -> "PaperConfig":
+        if not self.real_exchange_forbidden:
+            raise ValueError("real_exchange_forbidden must be True in paper mode")
+        if not self.binance_client_forbidden:
+            raise ValueError("binance_client_forbidden must be True in paper mode")
+        if not self.order_gateway_forbidden:
+            raise ValueError("order_gateway_forbidden must be True in paper mode")
+        if not self.testnet_order_forbidden:
+            raise ValueError("testnet_order_forbidden must be True in paper mode")
+        if not self.live_order_forbidden:
+            raise ValueError("live_order_forbidden must be True in paper mode")
+        if not self.signed_request_forbidden:
+            raise ValueError("signed_request_forbidden must be True in paper mode")
+        if not self.api_key_forbidden:
+            raise ValueError("api_key_forbidden must be True in paper mode")
+        return self
+
 class AppConfig(BaseModel):
 
     risk: RiskConfig = Field(default_factory=RiskConfig)
+    paper: PaperConfig = Field(default_factory=PaperConfig)
     project: ProjectConfig = ProjectConfig()
     runtime: RuntimeConfig = RuntimeConfig()
     safety: SafetyConfig = SafetyConfig()

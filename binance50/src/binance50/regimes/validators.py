@@ -29,10 +29,9 @@ def validate_no_execution_columns(df: pd.DataFrame) -> None:
 
 
 def validate_closed_candles_only(df: pd.DataFrame, config: AppConfig) -> None:
-    if config.regimes.require_closed_candles:
-        if "is_closed" in df.columns:
-            if not df["is_closed"].all():
-                raise RegimeLeakageError("Unclosed candles found in input data")
+    if config.regimes.require_closed_candles and "is_closed" in df.columns:
+        if not df["is_closed"].all():
+            raise RegimeLeakageError("Unclosed candles found in input data")
 
 
 def validate_regime_input_dataframe(df: pd.DataFrame, config: AppConfig) -> None:

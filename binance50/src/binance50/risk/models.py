@@ -1,11 +1,11 @@
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field, model_validator
 
 
-class RiskAssessmentStatus(str, Enum):
+class RiskAssessmentStatus(StrEnum):
     approved_for_future_backtest = "approved_for_future_backtest"
     approved_for_paper_review = "approved_for_paper_review"
     needs_review = "needs_review"
@@ -14,7 +14,7 @@ class RiskAssessmentStatus(str, Enum):
     no_action = "no_action"
 
 
-class RiskIntent(str, Enum):
+class RiskIntent(StrEnum):
     no_order = "no_order"
     risk_review = "risk_review"
     simulation_only = "simulation_only"
@@ -22,7 +22,7 @@ class RiskIntent(str, Enum):
     paper_review_candidate = "paper_review_candidate"
 
 
-class RiskDimension(str, Enum):
+class RiskDimension(StrEnum):
     signal_score = "signal_score"
     regime = "regime"
     volatility = "volatility"
@@ -38,7 +38,7 @@ class RiskDimension(str, Enum):
     operational = "operational"
 
 
-class RiskSeverity(str, Enum):
+class RiskSeverity(StrEnum):
     info = "info"
     warning = "warning"
     high = "high"

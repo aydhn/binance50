@@ -48,19 +48,18 @@ def validate_no_duplicate_open_time(df: pd.DataFrame) -> None:
 
 
 def validate_closed_candles(df: pd.DataFrame, config: AppConfig) -> None:
-    if "is_closed" in df.columns:
-        if not df["is_closed"].all():
-            if config.indicators.drop_incomplete_last_candle:
-                # Engine should handle dropping it. The validator just warns or fails.
-                # If we get here and it's not all True, and we don't drop, it's an error.
-                if df["is_closed"].iloc[:-1].all() and not df["is_closed"].iloc[-1]:
-                    pass  # engine will drop it
-                else:
-                    raise IndicatorInputError("Found incomplete candles that are not the last row")
+    if "is_closed" in df.columns and not df["is_closed"].all():
+        if config.indicators.drop_incomplete_last_candle:
+            # Engine should handle dropping it. The validator just warns or fails.
+            # If we get here and it's not all True, and we don't drop, it's an error.
+            if df["is_closed"].iloc[:-1].all() and not df["is_closed"].iloc[-1]:
+                pass  # engine will drop it
             else:
-                raise IndicatorInputError(
-                    "Dataframe contains unclosed candles but drop_incomplete_last_candle is false"
-                )
+                raise IndicatorInputError("Found incomplete candles that are not the last row")
+        else:
+            raise IndicatorInputError(
+                "Dataframe contains unclosed candles but drop_incomplete_last_candle is false"
+            )
 
 
 def validate_indicator_output(df: pd.DataFrame, config: AppConfig) -> None:

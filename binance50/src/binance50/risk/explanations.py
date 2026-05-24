@@ -47,6 +47,5 @@ def validate_risk_explanation(text: str, config: AppConfig) -> None:
     order_words = ["buy", "sell", "order", "execute", "long", "short", "position"]
     text_lower = text.lower()
     for w in order_words:
-        if w in text_lower:
-            if config.risk.quality.reject_order_like_language:
-                raise ValueError(f"Risk explanation contains order-like language: {w}")
+        if w in text_lower and config.risk.quality.reject_order_like_language:
+            raise ValueError(f"Risk explanation contains order-like language: {w}")
