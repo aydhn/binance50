@@ -228,3 +228,9 @@ Phase 14's signal scoring engine acts as a critical safety boundary between abst
 - **Slippage/Fee Boundaries**: Caps and models are applied to limit overly optimistic backtest-like projections.
 - **Paper PnL is not a financial guarantee**: Past or simulated performance cannot secure future earnings.
 - **Transition to Live**: Advancing from paper to live needs an entirely separate gateway layer which requires subsequent safety audits.
+## Phase 18: Backtest Security
+- Backtest strictly forbids live trading or testnet execution.
+- Prevents same-bar fill logic which assumes instantaneous fills.
+- Implements lookahead bias guards blocking future/nearest alignment.
+- Scans payloads to ensure no API keys, exchange order ids, or signed requests.
+- Low trade count alerts and disclaimer that past performance is not a guarantee.

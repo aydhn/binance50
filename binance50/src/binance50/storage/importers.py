@@ -99,3 +99,15 @@ def import_risk_result(result: RiskRunResult, config: "AppConfig") -> "DatasetMa
         metadata={"source": "risk_engine_v1"},
     )
     return manifest
+
+
+def import_backtest_result(result, config) -> list:
+    from binance50.backtest.quality import assert_backtest_quality_passed
+    from binance50.safety.backtest_execution_guard import assert_no_exchange_order_identifiers
+
+    assert_backtest_quality_passed(result.quality_report, config)
+    assert_no_exchange_order_identifiers(result.model_dump())
+
+    # We would write to disk here and return manifests.
+    # For now, returning empty list.
+    return []

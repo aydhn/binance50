@@ -303,3 +303,12 @@ The Paper trading engine simulates risk-approved candidates without executing re
 - **Paper Journal**: Logs every closed paper trade along with an explanation linking the source signal and risk regime context.
 - **Risk Assessment Integration**: The engine solely accepts RiskAssessment payloads that have the status `approved_for_paper_review` or similar, ignoring rejected signals.
 - **Why no real exchange?**: Phase 17 focuses entirely on a sandboxed validation of sequential execution without financial risk or network variability.
+## Phase 18: Backtest engine v1
+- **Event-driven historical loop**: Deterministic bar-by-bar processing.
+- **Decision time vs fill time**: Signals at close, fills at next open.
+- **Simulated broker & Fill/fee/slippage model**: Estimates execution costs realistically without actual trading.
+- **Position lifecycle**: Maintains open/closed states strictly mapped to simulated fills.
+- **Equity curve & Trade journal**: Standardizes reporting logic.
+- **Drawdown metrics & Benchmark placeholder**: Comparative performance.
+- **Reproducibility model**: Input/output hashes for verified simulation.
+- **No real exchange**: Protects from live execution during backtest phases.
