@@ -258,3 +258,14 @@ Phase 14's signal scoring engine acts as a critical safety boundary between abst
 - **Low trade count risk**: Parameters that yield high returns from very few trades are heavily penalized to avoid statistical anomalies.
 - **Fragile optimum warning**: Parameter sets that drop significantly in performance with minor tweaks (neighbor sensitivity) trigger robustness warnings.
 - **Optuna dashboard/persistent storage**: Defaulted to off to reduce attack surface and prevent accidental data exposure on local networks.
+
+## Walk-forward Security Rules
+- **Walk-forward sonucu emir değildir**: It must only report and evaluate parameters without routing.
+- **OOS test setinin selection için kullanılamaması**: Out-of-sample cannot be utilized to identify hyperparameter optimas.
+- **Window overlap riski**: Strictly forbid overlap in evaluation boundaries.
+- **Forward/nearest alignment riski**: Expose explicit forward leaks.
+- **Same-bar fill riski**: Protect against same-bar entries mapping immediate profits.
+- **Parameter drift riski**: Highlight parameters that swing violently across time windows.
+- **Regime concentration riski**: Flag strategy models built around only trending regimes.
+- **Düşük OOS trade count riski**: Limit statistical reporting on minimal trading occurrences.
+- **Walk-forward'ın gelecek performans garantisi olmadığı**: Reiterate this strictly.

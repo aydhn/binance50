@@ -172,6 +172,88 @@ def main() -> None:
         ]
     )
 
+    cli_checks.extend(
+        [
+            (["python", "-m", "binance50.cli", "walkforward-config"], "Walkforward Config Check"),
+            (
+                ["python", "-m", "binance50.cli", "walkforward-window-plan"],
+                "Walkforward Window Plan Check",
+            ),
+            (
+                ["python", "-m", "binance50.cli", "walkforward-split-report"],
+                "Walkforward Split Report Check",
+            ),
+            (
+                [
+                    "python",
+                    "-m",
+                    "binance50.cli",
+                    "walkforward-run-fixture",
+                    "--symbol",
+                    "BTCUSDT",
+                    "--scope",
+                    "spot",
+                    "--interval",
+                    "1m",
+                ],
+                "Walkforward Run Fixture Check",
+            ),
+            (
+                ["python", "-m", "binance50.cli", "walkforward-window-results"],
+                "Walkforward Window Results Check",
+            ),
+            (
+                ["python", "-m", "binance50.cli", "walkforward-oos-report"],
+                "Walkforward OOS Report Check",
+            ),
+            (
+                ["python", "-m", "binance50.cli", "walkforward-oos-equity"],
+                "Walkforward OOS Equity Check",
+            ),
+            (
+                ["python", "-m", "binance50.cli", "walkforward-parameter-drift"],
+                "Walkforward Parameter Drift Check",
+            ),
+            (
+                ["python", "-m", "binance50.cli", "walkforward-degradation-report"],
+                "Walkforward Degradation Report Check",
+            ),
+            (
+                ["python", "-m", "binance50.cli", "walkforward-stability-report"],
+                "Walkforward Stability Report Check",
+            ),
+            (
+                ["python", "-m", "binance50.cli", "walkforward-regime-report"],
+                "Walkforward Regime Report Check",
+            ),
+            (
+                ["python", "-m", "binance50.cli", "walkforward-robustness-report"],
+                "Walkforward Robustness Report Check",
+            ),
+            (
+                ["python", "-m", "binance50.cli", "walkforward-quality-check"],
+                "Walkforward Quality Check",
+            ),
+            (
+                ["python", "-m", "binance50.cli", "walkforward-cache-list"],
+                "Walkforward Cache List Check",
+            ),
+            (
+                ["python", "-m", "binance50.cli", "walkforward-safety-check"],
+                "Walkforward Safety Check",
+            ),
+            (
+                ["python", "-m", "binance50.cli", "walkforward-leakage-check"],
+                "Walkforward Leakage Check",
+            ),
+            (
+                ["python", "-m", "binance50.cli", "walkforward-overfit-guard-check"],
+                "Walkforward Overfit Guard Check",
+            ),
+            (["python", "-m", "binance50.cli", "walkforward-health"], "Walkforward Health Check"),
+        ]
+    )
+
     all_passed = True
 
     for cmd, desc in checks + cli_checks:

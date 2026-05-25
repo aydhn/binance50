@@ -2559,8 +2559,245 @@ class OptimizerConfig(BaseModel):
         return self
 
 
+class WalkForwardModeConfig(BaseModel):
+    default_mode: Literal["rolling_window", "expanding_window", "anchored_expanding"] = (
+        "rolling_window"
+    )
+    allowed_modes: list[str] = ["rolling_window", "expanding_window", "anchored_expanding"]
+    deterministic: bool = True
+    random_seed: int = 42
+    max_windows: int = 20
+    min_windows_required: int = 3
+    run_optimizer_per_window: bool = True
+    allow_fixed_params_mode: bool = True
+    max_optimizer_trials_per_window: int = 50
+    parallel_windows_enabled: bool = False
+    max_parallel_windows: int = 1
+    continue_on_window_failure: bool = True
+
+
+class WalkForwardWindowConfig(BaseModel):
+    train_bars: int = 2000
+    validation_bars: int = 500
+    test_bars: int = 500
+    step_bars: int = 500
+    min_train_bars: int = 1000
+    min_validation_bars: int = 200
+    min_test_bars: int = 200
+    embargo_bars: int = 0
+    gap_bars_between_train_validation: int = 0
+    gap_bars_between_validation_test: int = 0
+    allow_overlapping_oos_windows: bool = False
+    require_equal_oos_duration: bool = True
+
+
+class WalkForwardExpandingConfig(BaseModel):
+    initial_train_bars: int = 2000
+    train_expansion_step_bars: int = 500
+    max_train_bars: int | None = None
+    anchored_start: bool = True
+
+
+class WalkForwardOptimizerConfig(BaseModel):
+    method: Literal["grid", "random", "optuna_optional"] = "grid"
+    inherit_optimizer_config: bool = True
+    override_max_trials: int = 50
+    select_best_by: str = "validation_robust_score"
+    use_test_for_selection: bool = False
+    require_overfit_guard: bool = True
+    require_robustness_guard: bool = True
+    reject_overfit_trials: bool = True
+
+
+class WalkForwardOOSConfig(BaseModel):
+    enabled: bool = True
+    stitch_oos_equity: bool = True
+    compound_oos_equity: bool = False
+    reset_capital_each_window: bool = True
+    starting_cash_usdt: float = 1000.0
+    require_oos_backtest_report: bool = True
+    min_oos_trade_count_warning: int = 3
+    aggregate_oos_metrics: bool = True
+
+
+class WalkForwardStabilityConfig(BaseModel):
+    enabled: bool = True
+    compute_window_score_stability: bool = True
+    compute_oos_return_stability: bool = True
+    compute_oos_drawdown_stability: bool = True
+    compute_trade_count_stability: bool = True
+    compute_parameter_stability: bool = True
+    min_stability_score: float = 0.0
+    max_stability_score: float = 100.0
+    warn_unstable_windows: bool = True
+
+
+class WalkForwardDegradationConfig(BaseModel):
+    enabled: bool = True
+    compare_train_validation_oos: bool = True
+    max_validation_to_oos_score_drop: float = 40.0
+    max_validation_to_oos_return_drop_pct: float = 50.0
+    max_validation_to_oos_sharpe_drop: float = 1.5
+    warn_severe_degradation: bool = True
+
+
+class WalkForwardParameterDriftConfig(BaseModel):
+    enabled: bool = True
+    compute_numeric_drift: bool = True
+    compute_categorical_drift: bool = True
+    warn_high_drift: bool = True
+    high_drift_threshold: float = 0.60
+    stable_parameter_bonus: bool = True
+
+
+class WalkForwardRegimeAnalysisConfig(BaseModel):
+    enabled: bool = True
+    analyze_oos_by_regime: bool = True
+    analyze_window_regime_distribution: bool = True
+    warn_regime_concentration: bool = True
+    max_single_regime_oos_ratio: float = 0.80
+    warn_regime_shift_between_train_oos: bool = True
+
+
+class WalkForwardRobustnessConfig(BaseModel):
+    enabled: bool = True
+    compute_window_rank_consistency: bool = True
+    compute_best_trial_recurrence: bool = True
+    compute_oos_metric_dispersion: bool = True
+    compute_oos_hit_rate_consistency: bool = True
+    compute_walkforward_robust_score: bool = True
+    min_walkforward_robust_score_warning: float = 40.0
+
+
+class WalkForwardLeakageConfig(BaseModel):
+    prevent_lookahead_bias: bool = True
+    reject_future_columns: bool = True
+    reject_target_columns: bool = True
+    reject_label_columns: bool = True
+    reject_split_overlap: bool = True
+    reject_test_selection: bool = True
+    reject_forward_alignment: bool = True
+    reject_nearest_alignment: bool = True
+    require_backward_asof_alignment: bool = True
+    reject_same_bar_fill: bool = True
+    reject_oos_overlap_when_disabled: bool = True
+
+
+class WalkForwardQualityConfig(BaseModel):
+    reject_no_windows: bool = True
+    reject_all_windows_failed: bool = True
+    reject_missing_oos_results: bool = True
+    reject_missing_window_metadata: bool = True
+    reject_missing_best_trial: bool = True
+    reject_missing_hashes: bool = True
+    reject_nan_inf_metrics: bool = True
+    warn_low_window_count: bool = True
+    warn_low_oos_trade_count: bool = True
+    warn_high_parameter_drift: bool = True
+    warn_high_degradation: bool = True
+    reject_live_or_paper_intent: bool = True
+
+
+class WalkForwardConfig(BaseModel):
+    enabled: bool = True
+    output_dataset_name: str = "walkforward_runs"
+    cache_enabled: bool = True
+    cache_dir: str = "data/walkforward/cache"
+    export_dir: str = "data/walkforward/exports"
+    reports_dir: str = "data/walkforward/reports"
+
+    real_exchange_forbidden: bool = True
+    paper_trade_forbidden: bool = True
+    live_trade_forbidden: bool = True
+    order_creation_forbidden: bool = True
+    api_key_forbidden: bool = True
+    signed_request_forbidden: bool = True
+    dashboard_forbidden: bool = True
+
+    mode: WalkForwardModeConfig = Field(default_factory=WalkForwardModeConfig)
+    windows: WalkForwardWindowConfig = Field(default_factory=WalkForwardWindowConfig)
+    expanding: WalkForwardExpandingConfig = Field(default_factory=WalkForwardExpandingConfig)
+    optimizer: WalkForwardOptimizerConfig = Field(default_factory=WalkForwardOptimizerConfig)
+    oos: WalkForwardOOSConfig = Field(default_factory=WalkForwardOOSConfig)
+    stability: WalkForwardStabilityConfig = Field(default_factory=WalkForwardStabilityConfig)
+    degradation: WalkForwardDegradationConfig = Field(default_factory=WalkForwardDegradationConfig)
+    parameter_drift: WalkForwardParameterDriftConfig = Field(
+        default_factory=WalkForwardParameterDriftConfig
+    )
+    regime_analysis: WalkForwardRegimeAnalysisConfig = Field(
+        default_factory=WalkForwardRegimeAnalysisConfig
+    )
+    robustness: WalkForwardRobustnessConfig = Field(default_factory=WalkForwardRobustnessConfig)
+    leakage: WalkForwardLeakageConfig = Field(default_factory=WalkForwardLeakageConfig)
+    quality: WalkForwardQualityConfig = Field(default_factory=WalkForwardQualityConfig)
+
+    @model_validator(mode="after")
+    def validate_safety_rules(self) -> "WalkForwardConfig":
+        if not self.real_exchange_forbidden:
+            raise ValueError("real_exchange_forbidden must be True in walkforward")
+        if not self.paper_trade_forbidden:
+            raise ValueError("paper_trade_forbidden must be True in walkforward")
+        if not self.live_trade_forbidden:
+            raise ValueError("live_trade_forbidden must be True in walkforward")
+        if not self.order_creation_forbidden:
+            raise ValueError("order_creation_forbidden must be True in walkforward")
+        if not self.api_key_forbidden:
+            raise ValueError("api_key_forbidden must be True in walkforward")
+        if not self.signed_request_forbidden:
+            raise ValueError("signed_request_forbidden must be True in walkforward")
+        if not self.dashboard_forbidden:
+            raise ValueError("dashboard_forbidden must be True in walkforward")
+        if not self.mode.deterministic:
+            raise ValueError("deterministic must be True in walkforward")
+
+        if self.mode.parallel_windows_enabled and self.mode.max_parallel_windows < 1:
+            raise ValueError("max_parallel_windows must be >= 1")
+
+        if self.windows.train_bars < self.windows.min_train_bars:
+            raise ValueError("train_bars cannot be less than min_train_bars")
+        if self.windows.validation_bars < self.windows.min_validation_bars:
+            raise ValueError("validation_bars cannot be less than min_validation_bars")
+        if self.windows.validation_bars <= 0:
+            raise ValueError("validation_bars must be > 0")
+        if self.windows.test_bars <= 0:
+            raise ValueError("test_bars must be > 0")
+        if self.windows.step_bars <= 0:
+            raise ValueError("step_bars must be > 0")
+
+        if self.mode.min_windows_required < 2:
+            raise ValueError("min_windows_required must be >= 2")
+        if self.mode.max_windows < self.mode.min_windows_required:
+            raise ValueError("max_windows must be >= min_windows_required")
+
+        if self.optimizer.use_test_for_selection:
+            raise ValueError("use_test_for_selection must be False in walkforward")
+        if not self.optimizer.require_overfit_guard:
+            raise ValueError("require_overfit_guard must be True in walkforward")
+        if not self.optimizer.require_robustness_guard:
+            raise ValueError("require_robustness_guard must be True in walkforward")
+
+        if not self.leakage.reject_split_overlap:
+            raise ValueError("reject_split_overlap must be True in walkforward")
+        if not self.leakage.reject_test_selection:
+            raise ValueError("reject_test_selection must be True in walkforward")
+        if not self.leakage.reject_forward_alignment:
+            raise ValueError("reject_forward_alignment must be True in walkforward")
+        if not self.leakage.reject_nearest_alignment:
+            raise ValueError("reject_nearest_alignment must be True in walkforward")
+        if not self.leakage.require_backward_asof_alignment:
+            raise ValueError("require_backward_asof_alignment must be True in walkforward")
+        if not self.leakage.reject_same_bar_fill:
+            raise ValueError("reject_same_bar_fill must be True in walkforward")
+
+        if not self.output_dataset_name.replace("_", "").isalnum():
+            raise ValueError("output_dataset_name contains unsafe characters")
+
+        return self
+
+
 class AppConfig(BaseModel):
     optimizer: OptimizerConfig = OptimizerConfig()
+    walkforward: WalkForwardConfig = Field(default_factory=WalkForwardConfig)
     backtest_reporting: BacktestReportingConfig = BacktestReportingConfig()
 
     risk: RiskConfig = Field(default_factory=RiskConfig)

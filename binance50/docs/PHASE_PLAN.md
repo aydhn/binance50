@@ -24,3 +24,6 @@
 Phase 14: Signal scoring ve confluence engine; strategy candidate'ları ağırlıklı, açıklanabilir, conflict-aware ve execution'dan ayrılmış skorlu sinyal taslaklarına dönüştürür. (Completed)
 ### Phase 15 hazırlığı:
 Phase 15'te rejim sınıflandırma v1 kurulacak; trend/range/volatile/calm piyasa rejimleri sinyal skorlarının bağlamsal filtresi olarak hazırlanacak.
+
+- Phase 21: Walk-forward validation v1; rolling/expanding/anchored windows, optimizer bridge, OOS evaluation, OOS equity stitching, degradation/drift/stability/robustness/regime analysis ve leakage/safety guard altyapısını kurar.
+- Phase 22: Phase 22'de ML dataset builder v1 kurulacak; indicator/signal/regime/risk/backtest çıktıları leakage-safe feature-label dataset hazırlığına bağlanacak, fakat ML training henüz kontrollü/skeleton kalacak.

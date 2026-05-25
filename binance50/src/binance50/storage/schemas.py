@@ -663,3 +663,13 @@ INDICATOR_V2_SCHEMA = DatasetSchema(
     dynamic_column_prefixes=["div_", "mtf_", "pat_", "trend_", "mom_", "vol_", "volu_", "tr_"],
     disallowed_column_names=["target", "label", "future_return", "next_close"],
 )
+
+# Walkforward
+DATASET_WALKFORWARD_RUNS = "walkforward_runs"
+DATASET_WALKFORWARD_WINDOWS = "walkforward_windows"
+DATASET_WALKFORWARD_WINDOW_RESULTS = "walkforward_window_results"
+DATASET_WALKFORWARD_OOS_EQUITY = "walkforward_oos_equity"
+DATASET_WALKFORWARD_PARAMETER_DRIFT = "walkforward_parameter_drift"
+DATASET_WALKFORWARD_DEGRADATION = "walkforward_degradation"
+DATASET_WALKFORWARD_STABILITY = "walkforward_stability"
+DATASET_WALKFORWARD_ROBUSTNESS = "walkforward_robustness"

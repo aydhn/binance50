@@ -314,3 +314,25 @@ python -m binance50.cli optimizer-safety-check
 python -m binance50.cli optimizer-leakage-check
 python -m binance50.cli optimizer-health
 ```
+
+## Walk-forward Validation
+- **Walk-forward validation nedir?**: Model optimization spanning simulated progressive timelines.
+- **Rolling ve expanding window farkı nedir?**: Rolling uses a constant train window; Expanding stretches back to an anchor.
+- **OOS neden selection için kullanılamaz?**: Modifies test bounds ensuring models aren't tested over optimized goals.
+- **Parameter drift nasıl okunur?**: Changes spanning multiple periods.
+- **Validation-to-OOS degradation ne gösterir?**: Drops in metric value.
+- **Stitched OOS equity nedir?**: Accumulated returns merged across windows.
+- **Rejim kırılganlığı neden önemlidir?**: Overfitting onto bull markets exposes risks in bears.
+- **Komutlar**:
+  - `python -m binance50.cli walkforward-config`
+  - `python -m binance50.cli walkforward-window-plan`
+  - `python -m binance50.cli walkforward-split-report`
+  - `python -m binance50.cli walkforward-run-fixture --symbol BTCUSDT --scope spot --interval 1m`
+  - `python -m binance50.cli walkforward-oos-report`
+  - `python -m binance50.cli walkforward-parameter-drift`
+  - `python -m binance50.cli walkforward-degradation-report`
+  - `python -m binance50.cli walkforward-stability-report`
+  - `python -m binance50.cli walkforward-robustness-report`
+  - `python -m binance50.cli walkforward-safety-check`
+  - `python -m binance50.cli walkforward-leakage-check`
+  - `python -m binance50.cli walkforward-health`

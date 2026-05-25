@@ -376,3 +376,17 @@ The optimizer is designed to find robust strategy parameters using exhaustive (g
 - **Walk-Forward Skeleton**: Prepares the definitions for walk-forward windows without running the full heavy compute cycle (deferred to Phase 21).
 - **Optional Optuna Adapter**: Allows extending search methods using Optuna when available, without creating a hard dependency on it.
 - **Why no live/paper in Phase 20?**: The optimizer is strictly an offline research tool. Allowing it to interact with execution models creates severe risks of unapproved, auto-generated orders.
+
+## Walk-forward Validation Architecture
+- **Rolling window model**: Evaluates fixed size windows progressively.
+- **Expanding window model**: Trains on a steadily growing dataset while testing out-of-sample.
+- **Anchored expanding model**: Always starts from an anchored first bar.
+- **Optimizer bridge**: Bridges validation configurations via parameter optimization routines.
+- **OOS evaluation**: Separate out-of-sample testing isolated from model training.
+- **OOS equity stitching**: Joins output capital over different windows.
+- **Parameter drift analysis**: Analyzes whether parameter ranges drift significantly.
+- **Validation-to-OOS degradation**: Tracks score drop-offs from validation to OOS.
+- **Walk-forward stability**: Computes aggregated run metrics across multiple tested windows.
+- **Regime robustness analysis**: Protects against over-exposure in single trends.
+- **Walk-forward leakage guards**: Ensures no nearest fill, forward-fill or future hints are fed to models.
+- **Neden Phase 21'de execution yok?**: Phase 21 focuses solely on robust statistical generation instead of active order triggering.
