@@ -35,3 +35,7 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 *.pyc
+
+patch*.py
+fix_*.py
+project_check_output.txt

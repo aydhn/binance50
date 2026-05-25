@@ -822,3 +822,163 @@ backtest:
     reject_metric_nan_inf: true
     warn_low_trade_count: true
     min_trade_count_warning: 5
+
+backtest_reporting:
+  enabled: true
+  output_dataset_name: backtest_report_packs
+  cache_enabled: true
+  cache_dir: data/backtest/reports_v2/cache
+  export_dir: data/backtest/reports_v2/exports
+  report_dir: data/backtest/reports_v2/reports
+
+  real_exchange_forbidden: true
+  no_live_claims: true
+  require_disclaimer: true
+  require_input_hash: true
+  require_config_hash: true
+  require_report_hash: true
+
+  metrics:
+    enabled: true
+    annualization_periods_per_year:
+      crypto_daily: 365
+      crypto_hourly: 8760
+      crypto_4h: 2190
+      crypto_1h: 8760
+      crypto_15m: 35040
+      crypto_5m: 105120
+      crypto_1m: 525600
+    default_periods_per_year: 365
+    compute_cagr: true
+    compute_annualized_volatility: true
+    compute_sharpe: true
+    compute_sortino: true
+    compute_calmar: true
+    compute_omega: true
+    compute_tail_ratio: true
+    compute_var_cvar: true
+    var_confidence: 0.95
+    compute_skew_kurtosis: true
+    compute_payoff_ratio: true
+    compute_recovery_factor: true
+    compute_ulcer_index: true
+    compute_expectancy: true
+    compute_r_multiple_placeholder: true
+    min_observations_for_ratio_metrics: 30
+    min_trades_for_trade_metrics: 5
+    risk_free_rate_annual: 0.0
+
+  rolling:
+    enabled: true
+    windows:
+      - 20
+      - 50
+      - 100
+    compute_rolling_return: true
+    compute_rolling_volatility: true
+    compute_rolling_sharpe: true
+    compute_rolling_drawdown: true
+    compute_rolling_win_rate: true
+    center_windows: false
+    min_periods_ratio: 0.70
+
+  periodic_returns:
+    enabled: true
+    daily: true
+    weekly: true
+    monthly: true
+    quarterly: true
+    yearly: true
+    calendar_heatmap_table: true
+    use_resample: true
+    require_datetime_index: true
+
+  benchmark:
+    enabled: true
+    compare_buy_and_hold: true
+    compare_cash: true
+    compare_equal_weight_placeholder: false
+    compute_excess_return: true
+    compute_tracking_error: true
+    compute_information_ratio: true
+    compute_alpha_beta_placeholder: true
+    require_same_date_range: true
+    benchmark_label: buy_and_hold
+
+  drawdown:
+    enabled: true
+    top_n_drawdowns: 10
+    compute_drawdown_duration: true
+    compute_recovery_time: true
+    compute_underwater_curve: true
+    compute_avg_drawdown: true
+    compute_max_drawdown: true
+    require_recovery_metadata: true
+
+  trade_distribution:
+    enabled: true
+    compute_win_loss_distribution: true
+    compute_trade_return_histogram: true
+    histogram_bins: 20
+    compute_best_worst_trades: true
+    top_n_trades: 10
+    compute_consecutive_wins_losses: true
+    compute_holding_time_distribution: true
+
+  breakdowns:
+    enabled: true
+    by_regime: true
+    by_strategy_plugin: true
+    by_signal_score_tier: true
+    by_risk_status: true
+    by_direction: true
+    by_symbol: true
+    by_interval: true
+    min_trades_per_bucket_warning: 3
+
+  costs:
+    enabled: true
+    analyze_fees: true
+    analyze_slippage: true
+    compute_gross_vs_net: true
+    compute_cost_drag_pct: true
+    warn_high_cost_drag: true
+    high_cost_drag_pct: 25.0
+
+  report_pack:
+    enabled: true
+    include_summary: true
+    include_metrics: true
+    include_rolling_metrics: true
+    include_periodic_returns: true
+    include_benchmark: true
+    include_drawdowns: true
+    include_trade_distribution: true
+    include_breakdowns: true
+    include_cost_analysis: true
+    include_quality: true
+    include_disclaimer: true
+    export_json: true
+    export_markdown: true
+    export_csv_tables: true
+    export_html_static_skeleton: false
+
+  adapters:
+    empyrical_optional:
+      enabled: true
+      fail_if_missing: false
+      compare_native_metrics: true
+    quantstats_optional:
+      enabled: true
+      fail_if_missing: false
+      generate_external_report: false
+
+  quality:
+    reject_nan_inf_metrics: true
+    warn_low_observation_count: true
+    warn_low_trade_count: true
+    reject_missing_disclaimer: true
+    reject_missing_hashes: true
+    reject_mismatched_date_range: true
+    warn_metric_instability: true
+    reject_live_performance_claims: true

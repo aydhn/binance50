@@ -1,4 +1,3 @@
-
 from pydantic import BaseModel
 
 from .models import BacktestEquityPoint, BacktestPosition, BacktestTrade
@@ -33,7 +32,13 @@ class BacktestMetrics(BaseModel):
     sortino_placeholder: float = 0.0
     warnings: list[str] = []
 
-def compute_backtest_metrics(trades: list[BacktestTrade], equity_curve: list[BacktestEquityPoint], positions: list[BacktestPosition], config) -> BacktestMetrics:
+
+def compute_backtest_metrics(
+    trades: list[BacktestTrade],
+    equity_curve: list[BacktestEquityPoint],
+    positions: list[BacktestPosition],
+    config,
+) -> BacktestMetrics:
     # Stub implementation
     return BacktestMetrics(
         run_id="run_id",
@@ -58,29 +63,41 @@ def compute_backtest_metrics(trades: list[BacktestTrade], equity_curve: list[Bac
         total_fees_usdt=0.0,
         total_slippage_usdt=0.0,
         fee_impact_pct=0.0,
-        slippage_impact_pct=0.0
+        slippage_impact_pct=0.0,
     )
+
 
 def compute_win_rate(trades: list[BacktestTrade]) -> float:
     return 0.0
 
+
 def compute_profit_factor(trades: list[BacktestTrade]) -> float:
     return 0.0
+
 
 def compute_expectancy(trades: list[BacktestTrade]) -> float:
     return 0.0
 
+
 def compute_exposure_time(equity_curve: list[BacktestEquityPoint]) -> float:
     return 0.0
+
 
 def compute_turnover(trades: list[BacktestTrade]) -> float:
     return 0.0
 
-def compute_fee_impact(trades: list[BacktestTrade], equity_curve: list[BacktestEquityPoint]) -> float:
+
+def compute_fee_impact(
+    trades: list[BacktestTrade], equity_curve: list[BacktestEquityPoint]
+) -> float:
     return 0.0
 
-def compute_slippage_impact(trades: list[BacktestTrade], equity_curve: list[BacktestEquityPoint]) -> float:
+
+def compute_slippage_impact(
+    trades: list[BacktestTrade], equity_curve: list[BacktestEquityPoint]
+) -> float:
     return 0.0
+
 
 def validate_metrics(metrics: BacktestMetrics, config) -> None:
     pass

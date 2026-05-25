@@ -16,7 +16,9 @@ class BacktestSimulatedBroker:
     def can_open_position(self, symbol: str, notional_usdt: float) -> bool:
         if symbol in self._open_positions:
             return False
-        if notional_usdt > self.cash_usdt * (self.config.backtest.capital.max_cash_usage_pct / 100.0):
+        if notional_usdt > self.cash_usdt * (
+            self.config.backtest.capital.max_cash_usage_pct / 100.0
+        ):
             return False
         if len(self._open_positions) >= self.config.backtest.capital.max_open_positions:
             return False
@@ -34,15 +36,18 @@ class BacktestSimulatedBroker:
             simulated_quantity=fill.simulated_quantity,
             simulated_notional_usdt=fill.simulated_notional_usdt,
             fees_paid_usdt=fill.simulated_fee_usdt,
-            slippage_paid_usdt=fill.simulated_notional_usdt * (fill.simulated_slippage_bps / 10000.0),
-            source_risk_assessment_id=fill.source_risk_assessment_id
+            slippage_paid_usdt=fill.simulated_notional_usdt
+            * (fill.simulated_slippage_bps / 10000.0),
+            source_risk_assessment_id=fill.source_risk_assessment_id,
         )
         self._open_positions[fill.symbol] = position
         self.update_cash_for_open(fill)
         return position
 
     def close_position(self, position_id: str, fill: BacktestFill, reason: str) -> BacktestPosition:
-        position = next((p for p in self._open_positions.values() if p.position_id == position_id), None)
+        position = next(
+            (p for p in self._open_positions.values() if p.position_id == position_id), None
+        )
         if not position:
             raise ValueError(f"Position {position_id} not found")
         position.status = BacktestPositionStatus.closed
@@ -50,13 +55,19 @@ class BacktestSimulatedBroker:
         position.close_price = fill.simulated_price
         position.close_reason = reason
         position.fees_paid_usdt += fill.simulated_fee_usdt
-        position.slippage_paid_usdt += fill.simulated_notional_usdt * (fill.simulated_slippage_bps / 10000.0)
+        position.slippage_paid_usdt += fill.simulated_notional_usdt * (
+            fill.simulated_slippage_bps / 10000.0
+        )
 
         # Calculate PnL
         if position.side == "buy":
-            position.realized_pnl_usdt = (fill.simulated_price - position.open_price) * position.simulated_quantity
+            position.realized_pnl_usdt = (
+                fill.simulated_price - position.open_price
+            ) * position.simulated_quantity
         else:
-            position.realized_pnl_usdt = (position.open_price - fill.simulated_price) * position.simulated_quantity
+            position.realized_pnl_usdt = (
+                position.open_price - fill.simulated_price
+            ) * position.simulated_quantity
 
         if self.config.backtest.fees.include_fees_in_pnl:
             position.realized_pnl_usdt -= position.fees_paid_usdt

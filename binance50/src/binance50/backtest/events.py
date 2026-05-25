@@ -12,7 +12,14 @@ class BacktestEventBus:
         self.run_id = run_id
         self._events: list[BacktestEvent] = []
 
-    def emit(self, event_type: BacktestEventType, symbol: str | None, open_time: int | None, message: str, metadata: dict[str, Any] | None = None) -> BacktestEvent:
+    def emit(
+        self,
+        event_type: BacktestEventType,
+        symbol: str | None,
+        open_time: int | None,
+        message: str,
+        metadata: dict[str, Any] | None = None,
+    ) -> BacktestEvent:
         event = BacktestEvent(
             event_id=str(uuid.uuid4()),
             run_id=self.run_id,
@@ -22,7 +29,7 @@ class BacktestEventBus:
             event_time=open_time if open_time else 0,
             message=message,
             metadata=metadata,
-            created_at_utc=datetime.now(UTC).isoformat()
+            created_at_utc=datetime.now(UTC).isoformat(),
         )
         self._events.append(event)
         return event
@@ -30,7 +37,9 @@ class BacktestEventBus:
     def list_events(self) -> list[BacktestEvent]:
         return list(self._events)
 
-    def filter_events(self, event_type: BacktestEventType | None = None, symbol: str | None = None) -> list[BacktestEvent]:
+    def filter_events(
+        self, event_type: BacktestEventType | None = None, symbol: str | None = None
+    ) -> list[BacktestEvent]:
         events = self._events
         if event_type:
             events = [e for e in events if e.event_type == event_type]

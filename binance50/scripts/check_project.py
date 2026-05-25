@@ -133,6 +133,29 @@ def main() -> None:
             ],
             "Signal Calibration Report",
         ),
+        (
+            ["python", "-m", "binance50.cli", "backtest-reporting-config"],
+            "Backtest Reporting Config Check",
+        ),
+        (["python", "-m", "binance50.cli", "backtest-report-pack"], "Backtest Report Pack Check"),
+        (
+            ["python", "-m", "binance50.cli", "backtest-advanced-metrics"],
+            "Backtest Advanced Metrics Check",
+        ),
+        (
+            ["python", "-m", "binance50.cli", "backtest-monthly-returns"],
+            "Backtest Monthly Returns Check",
+        ),
+        (["python", "-m", "binance50.cli", "backtest-benchmark-v2"], "Backtest Benchmark V2 Check"),
+        (["python", "-m", "binance50.cli", "backtest-drawdown-v2"], "Backtest Drawdown V2 Check"),
+        (
+            ["python", "-m", "binance50.cli", "backtest-report-quality-check"],
+            "Backtest Report Quality Check",
+        ),
+        (
+            ["python", "-m", "binance50.cli", "backtest-reporting-safety-check"],
+            "Backtest Reporting Safety Check",
+        ),
     ]
 
     cli_checks.extend(

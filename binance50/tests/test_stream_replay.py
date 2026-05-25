@@ -1,1 +1,2 @@
-def test_stream_replay(): pass
+def test_stream_replay():
+    pass

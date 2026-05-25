@@ -36,8 +36,8 @@ class BacktestPortfolio:
             equity_usdt=self.equity_usdt,
             unrealized_pnl_usdt=self.unrealized_pnl_usdt,
             realized_pnl_usdt=self.realized_pnl_usdt,
-            drawdown_pct=0.0, # Computed later
-            open_position_count=self.open_position_count
+            drawdown_pct=0.0,  # Computed later
+            open_position_count=self.open_position_count,
         )
 
     def validate_portfolio(self):

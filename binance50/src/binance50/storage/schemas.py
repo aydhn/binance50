@@ -21,6 +21,14 @@ class DatasetKind(StrEnum):
     FEATURE_STORE_FUTURE = "feature_store_future"
     BACKTEST_RESULTS_FUTURE = "backtest_results_future"
 
+    BACKTEST_REPORT_PACKS = "backtest_report_packs"
+    BACKTEST_ADVANCED_METRICS = "backtest_advanced_metrics"
+    BACKTEST_ROLLING_METRICS = "backtest_rolling_metrics"
+    BACKTEST_PERIODIC_RETURNS = "backtest_periodic_returns"
+    BACKTEST_BENCHMARK_COMPARISONS = "backtest_benchmark_comparisons"
+    BACKTEST_DRAWDOWN_REPORTS = "backtest_drawdown_reports"
+    BACKTEST_TRADE_DISTRIBUTION_REPORTS = "backtest_trade_distribution_reports"
+
 
 @dataclass
 class ColumnSchema:

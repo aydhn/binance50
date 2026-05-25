@@ -1,4 +1,3 @@
-
 from datetime import UTC
 from typing import Any
 
@@ -37,8 +36,6 @@ def import_signal_scoring_result(result: SignalScoringResult, config: AppConfig)
         "confluence_groups_summary": f"Imported {result.metadata.confluence_group_count} groups",
         "imported_at": int(datetime.now(UTC).timestamp() * 1000),
     }
-
-
 
 
 def import_regime_result(result: RegimeRunResult, config: AppConfig) -> dict[str, Any]:
@@ -81,8 +78,6 @@ def import_regime_result(result: RegimeRunResult, config: AppConfig) -> dict[str
     }
 
 
-
-
 def import_risk_result(result: RiskRunResult, config: "AppConfig") -> "DatasetManifest":
     df = risk_assessments_to_dataframe(result.assessments)
     if df.empty:
@@ -111,3 +106,40 @@ def import_backtest_result(result, config) -> list:
     # We would write to disk here and return manifests.
     # For now, returning empty list.
     return []
+
+
+def import_backtest_report_pack(pack: Any, config: AppConfig) -> dict[str, Any]:
+    """Import a backtest report pack into the storage system."""
+
+    # 1. Quality check enforcement
+    if pack.quality.status != "passed":
+        from binance50.core.exceptions import BacktestReportQualityError
+
+        raise BacktestReportQualityError("Cannot import report pack: Quality checks failed.")
+
+    # 2. Disclaimer/hash check
+    if not pack.disclaimer or not pack.input_hash or not pack.report_hash:
+        from binance50.core.exceptions import BacktestReportingSafetyError
+
+        raise BacktestReportingSafetyError(
+            "Cannot import report pack: Missing disclaimer or hashes."
+        )
+
+    # 3. Live claim check
+    if pack.quality.live_claim_count > 0:
+        from binance50.core.exceptions import LivePerformanceClaimError
+
+        raise LivePerformanceClaimError(
+            "Cannot import report pack: Live performance claims detected."
+        )
+
+    from datetime import datetime
+
+    return {
+        "dataset": config.backtest_reporting.output_dataset_name,
+        "report_id": pack.report_id,
+        "run_id": pack.run_id,
+        "timestamp": datetime.now(UTC).isoformat(),
+        "status": "imported",
+        "hash": pack.report_hash,
+    }

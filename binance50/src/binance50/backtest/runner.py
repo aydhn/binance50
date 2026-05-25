@@ -1,9 +1,22 @@
-
 from .models import BacktestRunRequest, BacktestRunResult, BacktestRunStatus
 
 
 class BacktestRunner:
-    def __init__(self, config, data_loader=None, indicator_engine_v1=None, indicator_engine_v2=None, strategy_engine=None, signal_engine=None, regime_classifier=None, risk_engine=None, simulated_broker=None, portfolio=None, event_bus=None, storage=None):
+    def __init__(
+        self,
+        config,
+        data_loader=None,
+        indicator_engine_v1=None,
+        indicator_engine_v2=None,
+        strategy_engine=None,
+        signal_engine=None,
+        regime_classifier=None,
+        risk_engine=None,
+        simulated_broker=None,
+        portfolio=None,
+        event_bus=None,
+        storage=None,
+    ):
         self.config = config
         self.data_loader = data_loader
         self.indicator_engine_v1 = indicator_engine_v1
@@ -28,10 +41,12 @@ class BacktestRunner:
             positions=[],
             trades=[],
             equity_curve=[],
-            success=True
+            success=True,
         )
 
-    def run_from_fixture(self, fixture_name: str, symbol: str, market_scope: str, interval: str) -> BacktestRunResult:
+    def run_from_fixture(
+        self, fixture_name: str, symbol: str, market_scope: str, interval: str
+    ) -> BacktestRunResult:
         request = BacktestRunRequest(
             symbol=symbol,
             market_scope=market_scope,
@@ -39,11 +54,18 @@ class BacktestRunner:
             input_ohlcv_dataset_name="fixture",
             strategy_profile="default",
             request_id="stub_request",
-            correlation_id="stub_correlation"
+            correlation_id="stub_correlation",
         )
         return self.run(request)
 
-    def run_from_warehouse(self, symbol: str, market_scope: str, interval: str, start_time_ms: int | None = None, end_time_ms: int | None = None) -> BacktestRunResult:
+    def run_from_warehouse(
+        self,
+        symbol: str,
+        market_scope: str,
+        interval: str,
+        start_time_ms: int | None = None,
+        end_time_ms: int | None = None,
+    ) -> BacktestRunResult:
         request = BacktestRunRequest(
             symbol=symbol,
             market_scope=market_scope,
@@ -53,7 +75,7 @@ class BacktestRunner:
             end_time_ms=end_time_ms,
             strategy_profile="default",
             request_id="stub_request",
-            correlation_id="stub_correlation"
+            correlation_id="stub_correlation",
         )
         return self.run(request)
 

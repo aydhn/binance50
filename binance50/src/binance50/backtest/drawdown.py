@@ -1,4 +1,3 @@
-
 import pandas as pd
 from pydantic import BaseModel
 
@@ -15,15 +14,19 @@ class DrawdownEvent(BaseModel):
     recovered: bool
     metadata: dict | None = None
 
+
 def compute_drawdown_series(equity_curve: list[BacktestEquityPoint]) -> pd.DataFrame:
     # Stub
     return pd.DataFrame()
 
+
 def detect_drawdown_events(equity_curve: list[BacktestEquityPoint]) -> list[DrawdownEvent]:
     return []
 
+
 def compute_max_drawdown(equity_curve: list[BacktestEquityPoint]) -> float:
     return 0.0
+
 
 def build_drawdown_report(equity_curve: list[BacktestEquityPoint]) -> dict:
     return {}
