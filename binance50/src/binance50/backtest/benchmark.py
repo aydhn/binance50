@@ -1,4 +1,3 @@
-
 import pandas as pd
 from pydantic import BaseModel
 
@@ -14,7 +13,10 @@ class BacktestBenchmarkResult(BaseModel):
     benchmark_equity_curve: list
     warnings: list[str] = []
 
-def compute_buy_and_hold_placeholder(ohlcv_df: pd.DataFrame, starting_cash_usdt: float, config) -> BacktestBenchmarkResult:
+
+def compute_buy_and_hold_placeholder(
+    ohlcv_df: pd.DataFrame, starting_cash_usdt: float, config
+) -> BacktestBenchmarkResult:
     # Stub
     return BacktestBenchmarkResult(
         method="buy_and_hold_placeholder",
@@ -24,11 +26,13 @@ def compute_buy_and_hold_placeholder(ohlcv_df: pd.DataFrame, starting_cash_usdt:
         start_price=0.0,
         end_price=0.0,
         total_return_pct=0.0,
-        benchmark_equity_curve=[]
+        benchmark_equity_curve=[],
     )
+
 
 def compare_backtest_to_benchmark(metrics, benchmark) -> dict:
     return {}
+
 
 def validate_benchmark_result(result: BacktestBenchmarkResult) -> None:
     pass

@@ -312,3 +312,51 @@ The Paper trading engine simulates risk-approved candidates without executing re
 - **Drawdown metrics & Benchmark placeholder**: Comparative performance.
 - **Reproducibility model**: Input/output hashes for verified simulation.
 - **No real exchange**: Protects from live execution during backtest phases.
+
+## Backtest Reporting v2 architecture
+
+The `Backtest Reporting v2` layer is an advanced analytical layer that ingests the raw, deterministic execution results (from Phase 18) and outputs highly detailed, reproducible, and explainable reporting packs. It operates strictly as an offline observer; it cannot execute trades or influence the simulation state. Its purpose is to answer the question: "How well did this strategy perform contextually?"
+
+### Advanced metrics engine
+
+Provides a robust calculation suite for key risk-adjusted metrics such as CAGR, Annualized Volatility, Sharpe Ratio, Sortino Ratio, Calmar Ratio, Omega Ratio, Tail Ratio, Value at Risk (VaR), and Conditional Value at Risk (CVaR). All metrics natively handle `NaN/inf` edge cases and enforce minimum observation counts.
+
+### Rolling metrics
+
+Evaluates the stability of the strategy over time by computing metrics (like rolling Sharpe, volatility, and return) on shifting windows (e.g., 20, 50, 100 periods). The implementation actively blocks centered windows (`center=True`) to prevent lookahead bias.
+
+### Periodic returns
+
+Resamples the equity curve to generate calendar-based performance summaries, including daily, weekly, monthly, quarterly, and yearly returns. Includes helpers to generate classic monthly return matrices and calendar heatmaps.
+
+### Benchmark v2
+
+A dedicated comparison engine that overlays strategy performance against a benchmark (typically buy-and-hold). It aligns the datetime indices to ensure fair comparisons and computes tracking error and information ratio.
+
+### Drawdown analytics v2
+
+Maps the historical underwater curve to pinpoint the exact depth, duration, and recovery period of all negative equity excursions.
+
+### Trade distribution
+
+Analyzes the characteristics of simulated trades. Generates win/loss distributions, PnL percentiles, consecutive streak counts, and groups returns into histograms for distributional analysis.
+
+### Regime/signal breakdowns
+
+Provides deep contextual analysis by grouping trade outcomes based on metadata. Includes breakdowns by pre-trade market regime (bull, bear, range, etc.), by Signal Score and Risk Score tiers, and by the specific generating Strategy Plugin.
+
+### Cost/exposure analysis
+
+Isolates the impact of simulated trading friction by calculating gross vs. net PnL, total slippage, total fees, and percentage cost drag. Additionally estimates capital turnover and time in the market.
+
+### Report pack generator
+
+The `BacktestReportPackBuilder` acts as a facade, coordinating the individual analytic engines and assembling their outputs into a single, cohesive `BacktestReportPack` model. This pack includes immutable hashes of the inputs and config to guarantee deterministic reporting.
+
+### Optional analytics adapters
+
+Provides skeleton adapters to interface with powerful third-party quantitative libraries (`empyrical` and `quantstats`). These are strictly optional and fallback gracefully to native Python metrics if the libraries are not installed or configured.
+
+### Neden Phase 19'da optimizer yok?
+
+In Phase 19, the focus is entirely on correctly interpreting and reporting the results of a single deterministic backtest run. Introducing an optimizer here would distract from the core goal of establishing stable, mathematically sound evaluation primitives (Sharpe, Drawdown, Hash verification). Once the reporting primitives are rock-solid, Phase 20 will introduce the optimizer, utilizing these exact reports as the fitness scoring mechanism for parameter grids and walk-forward evaluations.

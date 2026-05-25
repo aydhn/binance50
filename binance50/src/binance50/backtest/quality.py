@@ -13,6 +13,7 @@ class BacktestQualityIssue(BaseModel):
     message: str
     metadata: dict[str, Any] | None = None
 
+
 class BacktestQualityReport(BaseModel):
     status: str
     event_count: int
@@ -29,6 +30,7 @@ class BacktestQualityReport(BaseModel):
     execution_field_count: int
     issues: list[BacktestQualityIssue]
     generated_at_utc: str
+
 
 def build_backtest_quality_report(result: BacktestRunResult, config) -> BacktestQualityReport:
     # Stub
@@ -47,32 +49,41 @@ def build_backtest_quality_report(result: BacktestRunResult, config) -> Backtest
         metric_nan_inf_count=0,
         execution_field_count=0,
         issues=[],
-        generated_at_utc="2024-01-01T00:00:00Z"
+        generated_at_utc="2024-01-01T00:00:00Z",
     )
+
 
 def detect_same_bar_fills(result: BacktestRunResult, config):
     pass
 
+
 def detect_invalid_equity_curve(result: BacktestRunResult):
     pass
+
 
 def detect_negative_cash(result: BacktestRunResult):
     pass
 
+
 def detect_unmatched_positions(result: BacktestRunResult):
     pass
+
 
 def detect_fill_without_event(result: BacktestRunResult):
     pass
 
+
 def detect_missing_explanations(result: BacktestRunResult):
     pass
+
 
 def detect_metric_nan_inf(result: BacktestRunResult):
     pass
 
+
 def detect_execution_fields(result: BacktestRunResult):
     pass
+
 
 def assert_backtest_quality_passed(report: BacktestQualityReport, config):
     pass

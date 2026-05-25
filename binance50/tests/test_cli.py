@@ -1,8 +1,8 @@
-
 def test_backtest_cli_commands():
     from typer.testing import CliRunner
 
     from binance50.cli import app
+
     runner = CliRunner()
     commands = [
         "backtest-config",
@@ -19,7 +19,7 @@ def test_backtest_cli_commands():
         "backtest-safety-check",
         "backtest-leakage-check",
         "backtest-execution-guard-check",
-        "backtest-health"
+        "backtest-health",
     ]
     for cmd in commands:
         result = runner.invoke(app, [cmd])

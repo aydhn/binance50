@@ -20,6 +20,7 @@ class BacktestEventType(str, Enum):
     run_completed = "run_completed"
     run_failed = "run_failed"
 
+
 class BacktestRunStatus(str, Enum):
     pending = "pending"
     running = "running"
@@ -27,20 +28,24 @@ class BacktestRunStatus(str, Enum):
     failed = "failed"
     invalid = "invalid"
 
+
 class BacktestPositionStatus(str, Enum):
     open = "open"
     closed = "closed"
     rejected = "rejected"
+
 
 class BacktestFillModel(str, Enum):
     next_bar_open = "next_bar_open"
     next_bar_close = "next_bar_close"
     current_bar_close_for_debug_only = "current_bar_close_for_debug_only"
 
+
 class BacktestIntent(str, Enum):
     simulation_only = "simulation_only"
     research_backtest = "research_backtest"
     no_order = "no_order"
+
 
 class BacktestEvent(BaseModel):
     event_id: str
@@ -54,6 +59,7 @@ class BacktestEvent(BaseModel):
     message: str
     metadata: dict[str, Any] | None = None
     created_at_utc: str
+
 
 class BacktestFill(BaseModel):
     fill_id: str
@@ -69,6 +75,7 @@ class BacktestFill(BaseModel):
     source_event_id: str | None = None
     source_risk_assessment_id: str | None = None
     metadata: dict[str, Any] | None = None
+
 
 class BacktestPosition(BaseModel):
     position_id: str
@@ -91,6 +98,7 @@ class BacktestPosition(BaseModel):
     source_signal_id: str | None = None
     source_risk_assessment_id: str | None = None
     metadata: dict[str, Any] | None = None
+
 
 class BacktestTrade(BaseModel):
     trade_id: str
@@ -117,6 +125,7 @@ class BacktestTrade(BaseModel):
     explanation: str
     metadata: dict[str, Any] | None = None
 
+
 class BacktestEquityPoint(BaseModel):
     run_id: str
     open_time: int
@@ -127,6 +136,7 @@ class BacktestEquityPoint(BaseModel):
     drawdown_pct: float
     open_position_count: int
     metadata: dict[str, Any] | None = None
+
 
 class BacktestRunRequest(BaseModel):
     symbol: str
@@ -139,6 +149,7 @@ class BacktestRunRequest(BaseModel):
     request_id: str
     correlation_id: str | None = None
 
+
 class BacktestRunResult(BaseModel):
     request: BacktestRunRequest
     run_id: str
@@ -148,9 +159,9 @@ class BacktestRunResult(BaseModel):
     positions: list[BacktestPosition]
     trades: list[BacktestTrade]
     equity_curve: list[BacktestEquityPoint]
-    metrics: Any | None = None # type BacktestMetrics defined later
-    benchmark: Any | None = None # type BacktestBenchmarkResult
-    quality_report: Any | None = None # type BacktestQualityReport
+    metrics: Any | None = None  # type BacktestMetrics defined later
+    benchmark: Any | None = None  # type BacktestBenchmarkResult
+    quality_report: Any | None = None  # type BacktestQualityReport
     metadata: dict[str, Any] | None = None
     success: bool
     error: str | None = None

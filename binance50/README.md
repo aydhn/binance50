@@ -250,3 +250,39 @@ Commands:
 - `python -m binance50.cli backtest-config`
 - `python -m binance50.cli backtest-run-fixture --symbol BTCUSDT --scope spot --interval 1m`
 - `python -m binance50.cli backtest-summary`
+
+## Backtest Reporting v2
+
+The `binance50` backtesting suite utilizes a deterministic reporting layer (v2) designed to produce institutional-grade analytics while strictly preventing lookahead bias and enforcing reality-check quality guards.
+
+### Backtest report pack nedir?
+A Report Pack is a consolidated, immutable structure containing the summary, advanced metrics, benchmark comparisons, drawdown details, and contextual breakdowns for a single backtest run. It binds the output to the exact configuration and input data hashes that generated it.
+
+### Advanced metrics nasıl okunur?
+Metrics like CAGR, Volatility, Sharpe, and Sortino provide a snapshot of risk-adjusted returns. The system sanitizes outputs (e.g. dividing by zero volatility returns `None`) to prevent misinterpretation of broken data.
+
+### Sharpe/Sortino/Calmar neden tek başına yeterli değildir?
+While these ratios quantify risk-adjusted returns, they assume normal distributions and fail to capture path dependency. A strategy with a high Sharpe ratio but only 3 total trades is likely overfit or lucky, which is why the reporting engine issues "low trade count" warnings. Furthermore, metrics alone do not explain *where* the performance came from (hence the need for Regime and Signal Breakdowns).
+
+### Monthly returns nasıl üretilir?
+The equity curve is resampled at month-end boundaries to calculate period-over-period percentage returns. This is often formatted into a classic Calendar Heatmap table to quickly spot seasonality or prolonged slumps.
+
+### Benchmark karşılaştırması nasıl yorumlanır?
+The benchmark engine aligns the strategy's returns directly against a passive buy-and-hold strategy covering the exact same date range. It highlights whether active trading actually generated "Alpha" (excess return) or simply tracked the market while racking up fees.
+
+### Drawdown v2 ne gösterir?
+It calculates the magnitude, duration, and recovery time of every peak-to-trough drop in equity. The `underwater curve` provides a continuous view of how far the strategy was from its all-time high at any given moment.
+
+### Düşük trade count neden risklidir?
+Statistical significance requires a sufficient sample size. If a backtest yields a 100% win rate across only 4 trades, the result is practically meaningless. The reporting guards actively flag backtests that fall below the minimum observation thresholds.
+
+### Komutlar:
+- `python -m binance50.cli backtest-reporting-config`
+- `python -m binance50.cli backtest-report-pack`
+- `python -m binance50.cli backtest-advanced-metrics`
+- `python -m binance50.cli backtest-monthly-returns`
+- `python -m binance50.cli backtest-benchmark-v2`
+- `python -m binance50.cli backtest-drawdown-v2`
+- `python -m binance50.cli backtest-report-quality-check`
+- `python -m binance50.cli backtest-reporting-safety-check`
+- `python -m binance50.cli backtest-reporting-health`

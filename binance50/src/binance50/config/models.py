@@ -1780,7 +1780,6 @@ class RiskConfig(BaseModel):
         return self
 
 
-
 class PaperAccountConfig(BaseModel):
     mode: str = "local_simulated"
     starting_cash_usdt: float = Field(1000.0, gt=0)
@@ -1802,7 +1801,9 @@ class PaperAccountConfig(BaseModel):
         if self.allow_short_spot:
             raise ValueError("allow_short_spot must be False in paper mode")
         if self.default_futures_leverage_estimate > self.max_futures_leverage_estimate:
-            raise ValueError("default_futures_leverage_estimate cannot exceed max_futures_leverage_estimate")
+            raise ValueError(
+                "default_futures_leverage_estimate cannot exceed max_futures_leverage_estimate"
+            )
         return self
 
 
@@ -1921,7 +1922,9 @@ class PaperConfig(BaseModel):
     api_key_forbidden: bool = True
 
     account: PaperAccountConfig = Field(default_factory=PaperAccountConfig)
-    candidate_acceptance: PaperCandidateAcceptanceConfig = Field(default_factory=PaperCandidateAcceptanceConfig)
+    candidate_acceptance: PaperCandidateAcceptanceConfig = Field(
+        default_factory=PaperCandidateAcceptanceConfig
+    )
     simulation: PaperSimulationConfig = Field(default_factory=PaperSimulationConfig)
     sizing: PaperSizingConfig = Field(default_factory=PaperSizingConfig)
     fees: PaperFeeConfig = Field(default_factory=PaperFeeConfig)
@@ -1958,8 +1961,11 @@ class BacktestModeConfig(BaseModel):
     multi_symbol_enabled: bool = Field(True, description="Multi symbol enabled")
     portfolio_backtest_enabled: bool = Field(False, description="Portfolio backtest enabled")
 
+
 class BacktestDataConfig(BaseModel):
-    source_priority: list[str] = Field(["warehouse", "market_data_cache", "fixture"], description="Source priority")
+    source_priority: list[str] = Field(
+        ["warehouse", "market_data_cache", "fixture"], description="Source priority"
+    )
     require_ohlcv_quality_passed: bool = Field(True, description="Require quality passed")
     reject_duplicate_open_time: bool = Field(True, description="Reject duplicate open time")
     reject_gaps: bool = Field(False, description="Reject gaps")
@@ -1971,6 +1977,7 @@ class BacktestDataConfig(BaseModel):
     trade_after_warmup_only: bool = Field(True, description="Trade after warmup only")
     require_closed_candles: bool = Field(True, description="Require closed candles")
 
+
 class BacktestTimingConfig(BaseModel):
     decision_price_source: str = Field("close", description="Decision price source")
     fill_model: str = Field("next_bar_open", description="Fill model")
@@ -1980,6 +1987,7 @@ class BacktestTimingConfig(BaseModel):
     fill_on_future_candle_only: bool = Field(True, description="Fill on future candle only")
     max_signal_age_bars: int = Field(3, description="Max signal age bars")
     expire_signal_if_not_filled: bool = Field(True, description="Expire signal if not filled")
+
 
 class BacktestCapitalConfig(BaseModel):
     starting_cash_usdt: float = Field(1000.0, description="Starting cash USDT", gt=0)
@@ -1991,6 +1999,7 @@ class BacktestCapitalConfig(BaseModel):
     max_open_positions: int = Field(3, description="Max open positions", ge=1)
     max_positions_per_symbol: int = Field(1, description="Max positions per symbol")
 
+
 class BacktestSizingConfig(BaseModel):
     mode: str = Field("fixed_notional", description="Sizing mode")
     fixed_notional_usdt: float = Field(50.0, description="Fixed notional USDT", gt=0)
@@ -2000,12 +2009,14 @@ class BacktestSizingConfig(BaseModel):
     quantity_is_simulated_only: bool = Field(True, description="Quantity is simulated only")
     produce_real_order_quantity: bool = Field(False, description="Produce real order quantity")
 
+
 class BacktestFeeConfig(BaseModel):
     enabled: bool = Field(True, description="Enabled")
     maker_fee_bps: float = Field(10.0, description="Maker fee bps")
     taker_fee_bps: float = Field(10.0, description="Taker fee bps")
     default_fee_side: str = Field("taker", description="Default fee side")
     include_fees_in_pnl: bool = Field(True, description="Include fees in pnl")
+
 
 class BacktestSlippageConfig(BaseModel):
     enabled: bool = Field(True, description="Enabled")
@@ -2015,6 +2026,7 @@ class BacktestSlippageConfig(BaseModel):
     volatility_slippage_multiplier: float = Field(1.5, description="Volatility slippage multiplier")
     spread_slippage_multiplier: float = Field(1.0, description="Spread slippage multiplier")
     include_slippage_in_pnl: bool = Field(True, description="Include slippage in pnl")
+
 
 class BacktestExitConfig(BaseModel):
     enabled: bool = Field(True, description="Enabled")
@@ -2026,6 +2038,7 @@ class BacktestExitConfig(BaseModel):
     stop_loss_deferred: bool = Field(True, description="Stop loss deferred")
     take_profit_deferred: bool = Field(True, description="Take profit deferred")
     trailing_stop_deferred: bool = Field(True, description="Trailing stop deferred")
+
 
 class BacktestMetricsConfig(BaseModel):
     enabled: bool = Field(True, description="Enabled")
@@ -2042,6 +2055,7 @@ class BacktestMetricsConfig(BaseModel):
     compute_benchmark_placeholder: bool = Field(True, description="Compute benchmark placeholder")
     risk_free_rate_annual: float = Field(0.0, description="Risk free rate annual")
 
+
 class BacktestBenchmarkConfig(BaseModel):
     enabled: bool = Field(True, description="Enabled")
     method: str = Field("buy_and_hold_placeholder", description="Method")
@@ -2050,6 +2064,7 @@ class BacktestBenchmarkConfig(BaseModel):
     include_slippage: bool = Field(False, description="Include slippage")
     benchmark_symbol_same_as_test: bool = Field(True, description="Benchmark symbol same as test")
 
+
 class BacktestLeakageConfig(BaseModel):
     prevent_lookahead_bias: bool = Field(True, description="Prevent lookahead bias")
     reject_future_columns: bool = Field(True, description="Reject future columns")
@@ -2057,23 +2072,33 @@ class BacktestLeakageConfig(BaseModel):
     reject_label_columns: bool = Field(True, description="Reject label columns")
     reject_forward_alignment: bool = Field(True, description="Reject forward alignment")
     reject_nearest_alignment: bool = Field(True, description="Reject nearest alignment")
-    require_backward_asof_alignment: bool = Field(True, description="Require backward asof alignment")
+    require_backward_asof_alignment: bool = Field(
+        True, description="Require backward asof alignment"
+    )
     reject_centered_rolling: bool = Field(True, description="Reject centered rolling")
     reject_same_bar_fill: bool = Field(True, description="Reject same bar fill")
-    reject_unclosed_candle_decision: bool = Field(True, description="Reject unclosed candle decision")
+    reject_unclosed_candle_decision: bool = Field(
+        True, description="Reject unclosed candle decision"
+    )
+
 
 class BacktestQualityConfig(BaseModel):
     reject_empty_backtest: bool = Field(False, description="Reject empty backtest")
     warn_empty_backtest: bool = Field(True, description="Warn empty backtest")
-    reject_missing_trade_explanation: bool = Field(True, description="Reject missing trade explanation")
+    reject_missing_trade_explanation: bool = Field(
+        True, description="Reject missing trade explanation"
+    )
     reject_invalid_equity_curve: bool = Field(True, description="Reject invalid equity curve")
     reject_negative_cash: bool = Field(True, description="Reject negative cash")
-    reject_unmatched_position_close: bool = Field(True, description="Reject unmatched position close")
+    reject_unmatched_position_close: bool = Field(
+        True, description="Reject unmatched position close"
+    )
     reject_position_without_fill: bool = Field(True, description="Reject position without fill")
     reject_fill_without_event: bool = Field(True, description="Reject fill without event")
     reject_metric_nan_inf: bool = Field(True, description="Reject metric nan inf")
     warn_low_trade_count: bool = Field(True, description="Warn low trade count")
     min_trade_count_warning: int = Field(5, description="Min trade count warning")
+
 
 class BacktestConfig(BaseModel):
     enabled: bool = Field(True, description="Enabled")
@@ -2146,7 +2171,198 @@ class BacktestConfig(BaseModel):
             raise ValueError("produce_real_order_quantity must be False")
         return self
 
+
+class BacktestReportingMetricsConfig(BaseModel):
+    enabled: bool = True
+    annualization_periods_per_year: dict[str, int] = Field(
+        default_factory=lambda: {
+            "crypto_daily": 365,
+            "crypto_hourly": 8760,
+            "crypto_4h": 2190,
+            "crypto_1h": 8760,
+            "crypto_15m": 35040,
+            "crypto_5m": 105120,
+            "crypto_1m": 525600,
+        }
+    )
+    default_periods_per_year: int = 365
+    compute_cagr: bool = True
+    compute_annualized_volatility: bool = True
+    compute_sharpe: bool = True
+    compute_sortino: bool = True
+    compute_calmar: bool = True
+    compute_omega: bool = True
+    compute_tail_ratio: bool = True
+    compute_var_cvar: bool = True
+    var_confidence: float = Field(default=0.95, ge=0.0, le=1.0)
+    compute_skew_kurtosis: bool = True
+    compute_payoff_ratio: bool = True
+    compute_recovery_factor: bool = True
+    compute_ulcer_index: bool = True
+    compute_expectancy: bool = True
+    compute_r_multiple_placeholder: bool = True
+    min_observations_for_ratio_metrics: int = Field(default=30, ge=2)
+    min_trades_for_trade_metrics: int = Field(default=5, ge=2)
+    risk_free_rate_annual: float = 0.0
+
+
+class BacktestReportingRollingConfig(BaseModel):
+    enabled: bool = True
+    windows: list[int] = Field(default_factory=lambda: [20, 50, 100])
+    compute_rolling_return: bool = True
+    compute_rolling_volatility: bool = True
+    compute_rolling_sharpe: bool = True
+    compute_rolling_drawdown: bool = True
+    compute_rolling_win_rate: bool = True
+    center_windows: Literal[False] = False  # strict constraint
+    min_periods_ratio: float = 0.70
+
+
+class BacktestPeriodicReturnsConfig(BaseModel):
+    enabled: bool = True
+    daily: bool = True
+    weekly: bool = True
+    monthly: bool = True
+    quarterly: bool = True
+    yearly: bool = True
+    calendar_heatmap_table: bool = True
+    use_resample: bool = True
+    require_datetime_index: bool = True
+
+
+class BacktestReportingBenchmarkConfig(BaseModel):
+    enabled: bool = True
+    compare_buy_and_hold: bool = True
+    compare_cash: bool = True
+    compare_equal_weight_placeholder: bool = False
+    compute_excess_return: bool = True
+    compute_tracking_error: bool = True
+    compute_information_ratio: bool = True
+    compute_alpha_beta_placeholder: bool = True
+    require_same_date_range: bool = True
+    benchmark_label: str = "buy_and_hold"
+
+
+class BacktestReportingDrawdownConfig(BaseModel):
+    enabled: bool = True
+    top_n_drawdowns: int = Field(default=10, ge=1)
+    compute_drawdown_duration: bool = True
+    compute_recovery_time: bool = True
+    compute_underwater_curve: bool = True
+    compute_avg_drawdown: bool = True
+    compute_max_drawdown: bool = True
+    require_recovery_metadata: bool = True
+
+
+class BacktestTradeDistributionConfig(BaseModel):
+    enabled: bool = True
+    compute_win_loss_distribution: bool = True
+    compute_trade_return_histogram: bool = True
+    histogram_bins: int = Field(default=20, ge=1, le=200)
+    compute_best_worst_trades: bool = True
+    top_n_trades: int = Field(default=10, ge=1)
+    compute_consecutive_wins_losses: bool = True
+    compute_holding_time_distribution: bool = True
+
+
+class BacktestBreakdownConfig(BaseModel):
+    enabled: bool = True
+    by_regime: bool = True
+    by_strategy_plugin: bool = True
+    by_signal_score_tier: bool = True
+    by_risk_status: bool = True
+    by_direction: bool = True
+    by_symbol: bool = True
+    by_interval: bool = True
+    min_trades_per_bucket_warning: int = 3
+
+
+class BacktestCostAnalysisConfig(BaseModel):
+    enabled: bool = True
+    analyze_fees: bool = True
+    analyze_slippage: bool = True
+    compute_gross_vs_net: bool = True
+    compute_cost_drag_pct: bool = True
+    warn_high_cost_drag: bool = True
+    high_cost_drag_pct: float = Field(default=25.0, ge=0.0, le=100.0)
+
+
+class BacktestReportPackConfig(BaseModel):
+    enabled: bool = True
+    include_summary: bool = True
+    include_metrics: bool = True
+    include_rolling_metrics: bool = True
+    include_periodic_returns: bool = True
+    include_benchmark: bool = True
+    include_drawdowns: bool = True
+    include_trade_distribution: bool = True
+    include_breakdowns: bool = True
+    include_cost_analysis: bool = True
+    include_quality: bool = True
+    include_disclaimer: bool = True
+    export_json: bool = True
+    export_markdown: bool = True
+    export_csv_tables: bool = True
+    export_html_static_skeleton: Literal[False] = False  # MUST BE FALSE BY DEFAULT
+
+
+class BacktestReportingAdapterOptionalConfig(BaseModel):
+    enabled: bool = True
+    fail_if_missing: bool = False
+    compare_native_metrics: bool = True
+    generate_external_report: bool = False
+
+
+class BacktestReportingAdapterConfig(BaseModel):
+    empyrical_optional: BacktestReportingAdapterOptionalConfig = (
+        BacktestReportingAdapterOptionalConfig()
+    )
+    quantstats_optional: BacktestReportingAdapterOptionalConfig = (
+        BacktestReportingAdapterOptionalConfig(generate_external_report=False)
+    )
+
+
+class BacktestReportingQualityConfig(BaseModel):
+    reject_nan_inf_metrics: bool = True
+    warn_low_observation_count: bool = True
+    warn_low_trade_count: bool = True
+    reject_missing_disclaimer: bool = True
+    reject_missing_hashes: bool = True
+    reject_mismatched_date_range: bool = True
+    warn_metric_instability: bool = True
+    reject_live_performance_claims: bool = True
+
+
+class BacktestReportingConfig(BaseModel):
+    enabled: bool = True
+    output_dataset_name: str = "backtest_report_packs"
+    cache_enabled: bool = True
+    cache_dir: str = "data/backtest/reports_v2/cache"
+    export_dir: str = "data/backtest/reports_v2/exports"
+    report_dir: str = "data/backtest/reports_v2/reports"
+
+    real_exchange_forbidden: Literal[True] = True
+    no_live_claims: Literal[True] = True
+    require_disclaimer: bool = True
+    require_input_hash: bool = True
+    require_config_hash: bool = True
+    require_report_hash: bool = True
+
+    metrics: BacktestReportingMetricsConfig = BacktestReportingMetricsConfig()
+    rolling: BacktestReportingRollingConfig = BacktestReportingRollingConfig()
+    periodic_returns: BacktestPeriodicReturnsConfig = BacktestPeriodicReturnsConfig()
+    benchmark: BacktestReportingBenchmarkConfig = BacktestReportingBenchmarkConfig()
+    drawdown: BacktestReportingDrawdownConfig = BacktestReportingDrawdownConfig()
+    trade_distribution: BacktestTradeDistributionConfig = BacktestTradeDistributionConfig()
+    breakdowns: BacktestBreakdownConfig = BacktestBreakdownConfig()
+    costs: BacktestCostAnalysisConfig = BacktestCostAnalysisConfig()
+    report_pack: BacktestReportPackConfig = BacktestReportPackConfig()
+    adapters: BacktestReportingAdapterConfig = BacktestReportingAdapterConfig()
+    quality: BacktestReportingQualityConfig = BacktestReportingQualityConfig()
+
+
 class AppConfig(BaseModel):
+    backtest_reporting: BacktestReportingConfig = BacktestReportingConfig()
 
     risk: RiskConfig = Field(default_factory=RiskConfig)
     paper: PaperConfig = Field(default_factory=PaperConfig)

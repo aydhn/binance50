@@ -993,47 +993,114 @@ class RiskOrderObjectDetectedError(RiskError):
 class BacktestError(Binance50Error):
     pass
 
+
 class BacktestConfigError(BacktestError):
     pass
+
 
 class BacktestDataError(BacktestError):
     pass
 
+
 class BacktestValidationError(BacktestError):
     pass
+
 
 class BacktestRunnerError(BacktestError):
     pass
 
+
 class BacktestBrokerError(BacktestError):
     pass
+
 
 class BacktestFillError(BacktestError):
     pass
 
+
 class BacktestPositionError(BacktestError):
     pass
+
 
 class BacktestPortfolioError(BacktestError):
     pass
 
+
 class BacktestMetricError(BacktestError):
     pass
+
 
 class BacktestQualityError(BacktestError):
     pass
 
+
 class BacktestCacheError(BacktestError):
     pass
+
 
 class BacktestLeakageError(BacktestError):
     pass
 
+
 class BacktestExecutionForbiddenError(BacktestError):
     pass
+
 
 class BacktestOrderIdentifierDetectedError(BacktestError):
     pass
 
+
 class SameBarFillError(BacktestError):
+    pass
+
+
+class BacktestReportingError(Binance50Error):
+    pass
+
+
+class BacktestMetricsError(BacktestReportingError):
+    pass
+
+
+class BacktestRollingMetricError(BacktestReportingError):
+    pass
+
+
+class BacktestPeriodicReturnError(BacktestReportingError):
+    pass
+
+
+class BacktestBenchmarkV2Error(BacktestReportingError):
+    pass
+
+
+class BacktestDrawdownV2Error(BacktestReportingError):
+    pass
+
+
+class BacktestReportPackError(BacktestReportingError):
+    pass
+
+
+class BacktestReportQualityError(BacktestReportingError):
+    pass
+
+
+class BacktestReportExportError(BacktestReportingError):
+    pass
+
+
+class BacktestReportingSafetyError(BacktestReportingError):
+    pass
+
+
+class LivePerformanceClaimError(BacktestReportingSafetyError):
+    pass
+
+
+class MetricNaNInfError(BacktestMetricsError):
+    pass
+
+
+class InsufficientMetricObservationsError(BacktestMetricsError):
     pass

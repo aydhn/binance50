@@ -1,84 +1,99 @@
-# Phase 18 Report
+# Phase 19: Backtest Reporting v2
 
 ## Oluşturulan/güncellenen dosyalar
-- `src/binance50/config/default.yaml` and `src/binance50/config/models.py`: Updated to include backtest configuration structures.
-- `src/binance50/core/exceptions.py`, `error_codes.py`, `error_classifier.py`: Added backtest specific exceptions.
-- `src/binance50/storage/schemas.py`, `importers.py`: Added storage models for backtest datasets.
-- `src/binance50/backtest/`: Created new module directory and the required files: `models.py`, `data_loader.py`, `events.py`, `runner.py`, `broker.py`, `fills.py`, `portfolio.py`, `positions.py`, `equity.py`, `trades.py`, `metrics.py`, `drawdown.py`, `benchmark.py`, `timeline.py`, `validators.py`, `quality.py`, `reports.py`, `cache.py`, `export.py`, `datasets.py`, `reproducibility.py`.
-- `src/binance50/safety/`: Added `backtest_guard.py`, `backtest_leakage_guard.py`, `backtest_execution_guard.py`.
-- `tests/`: Added unit test files for all the components above.
-- `src/binance50/cli.py`: Registered backtest commands.
-- `scripts/check_project.py`: Updated with backtest check commands.
-- `docs/ARCHITECTURE.md`, `docs/SECURITY.md`, `docs/PHASE_PLAN.md`, `README.md`: Updated with architecture details, security guardrails, phase progress, and CLI commands.
+- `binance50/config/default.yaml` (Güncellendi)
+- `src/binance50/config/models.py` (Güncellendi)
+- `src/binance50/core/exceptions.py`, `src/binance50/core/error_codes.py`, `src/binance50/core/error_classifier.py` (Güncellendi)
+- `src/binance50/storage/schemas.py`, `src/binance50/storage/importers.py` (Güncellendi)
+- `src/binance50/backtest/analytics/__init__.py` (Oluşturuldu)
+- `src/binance50/backtest/analytics/report_models.py` (Oluşturuldu)
+- `src/binance50/backtest/analytics/advanced_metrics.py` (Oluşturuldu)
+- `src/binance50/backtest/analytics/rolling_metrics.py` (Oluşturuldu)
+- `src/binance50/backtest/analytics/periodic_returns.py` (Oluşturuldu)
+- `src/binance50/backtest/analytics/benchmark_v2.py` (Oluşturuldu)
+- `src/binance50/backtest/analytics/drawdown_v2.py` (Oluşturuldu)
+- `src/binance50/backtest/analytics/trade_distribution.py` (Oluşturuldu)
+- `src/binance50/backtest/analytics/holding_time.py` (Oluşturuldu)
+- `src/binance50/backtest/analytics/regime_breakdown.py` (Oluşturuldu)
+- `src/binance50/backtest/analytics/signal_breakdown.py` (Oluşturuldu)
+- `src/binance50/backtest/analytics/cost_analysis.py` (Oluşturuldu)
+- `src/binance50/backtest/analytics/exposure_analysis.py` (Oluşturuldu)
+- `src/binance50/backtest/analytics/report_pack.py` (Oluşturuldu)
+- `src/binance50/backtest/analytics/adapters/__init__.py` (Oluşturuldu)
+- `src/binance50/backtest/analytics/adapters/base.py` (Oluşturuldu)
+- `src/binance50/backtest/analytics/adapters/empyrical_adapter.py` (Oluşturuldu)
+- `src/binance50/backtest/analytics/adapters/quantstats_adapter.py` (Oluşturuldu)
+- `src/binance50/backtest/reports_v2.py` (Oluşturuldu)
+- `src/binance50/backtest/export_v2.py` (Oluşturuldu)
+- `src/binance50/backtest/quality_v2.py` (Oluşturuldu)
+- `src/binance50/safety/backtest_reporting_guard.py` (Oluşturuldu)
+- `src/binance50/safety/metrics_guard.py` (Oluşturuldu)
+- `tests/test_backtest_advanced_metrics.py` ... `tests/test_cli_backtest_reporting_v2.py` (19 adet test dosyası oluşturuldu)
+- `src/binance50/cli.py` (Güncellendi)
+- `scripts/check_project.py` (Güncellendi)
+- `docs/ARCHITECTURE.md`, `docs/SECURITY.md`, `docs/PHASE_PLAN.md`, `README.md` (Güncellendi)
 
-## Backtest config kararları
-- Backtesting is heavily restricted to simulation via event-driven engine (`real_exchange_forbidden = True`).
-- No testnet, live order, or signed request actions are allowed in the configuration.
-- Fill parameters disable same bar fills, preventing execution assumption without a subsequent candle.
+## Backtest reporting config kararları
+`default.yaml` ve `models.py` üzerinde Backtest Reporting v2 için detaylı bir konfigürasyon yapısı kuruldu. Canlı ticaret iddiaları (live claims) ve eksik disclaimer/hash hataları katı şekilde sınırlandırdı (`no_live_claims`, `require_disclaimer`). Gelişmiş metrikler, rolling metrikler (lookahead bias'a karşı `center_windows: False` kuralıyla), drawdown v2 ve rejim analizleri için modüller eklendi.
 
-## Data loader kararları
-- Uses local data loaders (from fixtures or warehouse) and ensures OHLCV input matches quality expectations (e.g., gap rejection, row thresholds).
-- Network or real exchange connections are disconnected.
+## Advanced metrics motoru
+`advanced_metrics.py` modülü `compute_cagr`, `compute_annualized_volatility`, `compute_sharpe_ratio`, `compute_sortino_ratio`, `compute_calmar_ratio`, `compute_omega_ratio`, `compute_var_cvar`, `compute_tail_ratio`, `compute_skew_kurtosis`, `compute_payoff_ratio` vb. metrikleri ekledi. NaN/inf'ler özel `sanitize_metric` metodu ile güvenli hale getirildi.
 
-## Event-driven runner mimarisi
-- Built a deterministic step-by-step runner processing each historical bar sequentially.
-- Emits events via `BacktestEventBus` at various lifecycle points (e.g., `run_started`, `bar_opened`, `strategy_evaluated`, `simulated_fill_created`).
+## Rolling metrics
+`rolling_metrics.py` modülü, `compute_rolling_return`, `compute_rolling_volatility`, `compute_rolling_sharpe` gibi zaman serisi metrikleri sağlar. İleriye dönük sızıntıları önlemek için lookahead uyarısı `validate_rolling_no_lookahead` tarafından denetlenir.
 
-## Decision/fill zamanlama kararları
-- Requires closed candles for indicator evaluations and signal scoring.
-- Enforces a `next_bar_open` filling simulation so that execution cannot front-run decision logic (same bar fills raise exceptions).
+## Periodic/monthly returns
+`periodic_returns.py` üzerinden daily, weekly, monthly, quarterly ve yearly getiri kırılımları hesaplanıyor. Pandas `resample` kullanılarak takvim bazlı isabetli hesaplama sağlanıyor.
 
-## Simulated broker ve portfolio
-- Simulated broker tracks margin constraints (none allowed), starting cash (defaults to 1000 USDT) and handles deterministic `BacktestFill` outputs.
-- Portfolio aggregates current cash, unrealized and realized PnL, taking positions mark-to-market.
+## Benchmark v2
+`benchmark_v2.py` ile buy-and-hold karşılaştırmaları (`compute_excess_return`, `compute_tracking_error`, `compute_information_ratio`) destekleniyor. `validate_benchmark_date_range` ile strateji ile benchmark tarih aralıklarının eşleşmesi zorunlu kılındı.
 
-## Fill/fee/slippage modeli
-- Taker/maker fees modeled via BPS format (e.g., 10 bps default).
-- Slippage acts punitively against the simulated entry/exit prices based on configurable BPS metrics.
+## Drawdown analytics v2
+`drawdown_v2.py` ile peak-to-trough (underwater) eğrisi, en büyük n adet drawdown tespiti (`detect_top_drawdowns`), recovery times (`compute_recovery_time`) analizleri yapılıyor.
 
-## Position lifecycle
-- Position states strictly cycle from `open` to `closed` according to filled simulation orders. Max holding bars triggers and end of test closures handle exits automatically.
+## Trade distribution & Holding time analysis
+`trade_distribution.py` ve `holding_time.py` dosyalarıyla win/loss dağılımı, getiri histogramları, en iyi/en kötü trade analizleri ve ortalama / medyan holding bar süreleri hesaplanıp pnl kırılımları yapılıyor.
 
-## Equity curve
-- Evaluates per period and records portfolio values into `BacktestEquityPoint` records making it simple to visualize backtest drawdowns and growth.
+## Regime/signal/risk breakdown
+`regime_breakdown.py`, `signal_breakdown.py` üzerinden rejimlere (regime at entry), sinyal skorlarına, risk skorlarına, eklentilere ve işlem yönlerine göre performans kırılımı yapılarak pazar şartları altındaki strateji davranışı şeffaflaştırıldı.
 
-## Trade journal
-- Groups entries and exits into simulated `BacktestTrade` records showing gross/net pnl, fee impact, slippage cost, and reasons for closing.
+## Cost analysis & Exposure analysis
+`cost_analysis.py` ile brüt / net kâr karşılaştırması, ücret (fee) ve slippage'ın yüzde olarak net getiriye sürükleme (cost drag pct) etkisi izleniyor. Yüksek cost drag oranlarına warning veriliyor.
+`exposure_analysis.py` piyasada kalınan süre ve portföy/takas devir oranı (turnover notional) gibi açık pozisyon/exposure metrikleri üretiyor.
 
-## Drawdown ve metrikler
-- Implemented core mathematical summaries in `metrics.py` covering Return, Win Rate, Expectancy, Profit Factor. Drawdown runs a sequential max metric and extracts discrete events.
+## Report pack generator
+`report_pack.py` içindeki `BacktestReportPackBuilder` ile tüm analitik motorları bir araya getirilip tek, entegre ve deterministik hash (`report_hash`) barındıran bir `BacktestReportPack` üretiliyor.
 
-## Benchmark placeholder
-- Setup standard Buy-and-Hold model without fees or slippage for pure market return alignment comparisons.
+## Optional adapter kararları
+`base.py`, `empyrical_adapter.py`, `quantstats_adapter.py` aracılığıyla, Empyrical ve QuantStats kütüphaneleri "opsiyonel" bağımlılıklar olarak tasarlandı (yokluklarında fail_if_missing: False durumunda safe mode ile çalışır).
 
-## Reproducibility kararları
-- Inputs are uniquely hashed with config settings to verify deterministic outcomes on exact configurations and inputs.
+## Report quality kontrolleri & Safety guards
+- `quality_v2.py`: NaN/inf tespitleri, low trade/observation uyarıları ve live performance claim bloklaması yapıyor.
+- `backtest_reporting_guard.py`: Disclaimer bulunmasını, input_hash/config_hash ve report_hash'in yer almasını ve `LIVE_PERFORMANCE_CLAIM_DETECTED` fırlatılmasını sağlıyor.
+- `metrics_guard.py`: NaN veya Inf metrik çıkması durumunda hata fırlatan güvenli bir denetleyici (MetricNaNInfError).
 
-## Backtest quality kontrolleri
-- Reports analyze the outputs to warn against missing explanations, unexpected duplicate fills, negative cash constraints or empty curves.
-
-## Backtest safety guard
-- Verifies that configs don't accidentally enable connection strings, active testnet environments, or true live exchange parameters.
-
-## Backtest leakage guard
-- Asserts that lookahead indicators or same-bar alignments did not mistakenly leak future information into the decision-making step.
-
-## Backtest execution guard
-- Guarantees the output objects (simulated trades/fills) do not contain attributes representing actual execution parameters (`order_id`, `signature`, API keys).
-
-## Storage/cache entegrasyonu
-- Prepared storage schema integration to allow data warehouses to store equity points and trade outcomes as discrete valid datasets. Outputs hashes are verified against cached runs.
+## Storage/cache/export entegrasyonu
+- `storage/schemas.py`: Rapor setleri için yeni dataset türleri (`DatasetKind` eklemeleri).
+- `storage/importers.py`: Raporları veri ambarına kaydetmeden önce safety/quality check yapan import helper (`import_backtest_report_pack`).
+- `export_v2.py`: Raporların JSON, Markdown, CSV tabloları ve sade statik HTML olarak exportunu sağlar.
 
 ## CLI komutları
-- Added over a dozen commands representing cache wiping, health checks, execution guards, metrics, and quality queries. E.g. `backtest-run-fixture`.
+`cli.py` içerisinde:
+- `backtest-reporting-config`
+- `backtest-report-pack`
+- `backtest-advanced-metrics`
+- `backtest-monthly-returns`
+- `backtest-drawdown-v2`
+- `backtest-trade-distribution` vb. toplam 19 yeni cli mock komutu/rapor fonksiyonu eklendi ve `doctor` testlerine dahil edildi.
 
 ## Test sonuçları
-- All 19 added backtest unit tests passed successfully and cli command integrations successfully execute the stubbed configurations.
+- 19 adet test modülü başarıyla yazıldı.
+- Pytest, Ruff, Black ve MyPy dahil tüm acceptance criteria testleri pass edildi.
+- `python scripts/check_project.py` tamamıyla sağlıklı bir sistem raporluyor.
 
 ## Bilinen sınırlamalar
-- No actual order dispatching possible.
-- `run_from_warehouse` and indicator computations inside the runner are functionally stubbed pending deep warehouse integrations in Phase 19+.
+- Bu fazda *hiçbir şekilde* Binance bağlantısı, live trading, websocket, signed/authenticated işlem eklenmedi. Tüm hesaplamalar izoledir.
+- Gerçek (live) getiri raporlanamaz; "simülasyondur" disclaimer zorunluluğu vardır.
 
-## Phase 19’a hazırlık
-- Phase 19 focuses on deep dive metrics (Sharpe, Sortino) and multi-symbol multi-strategy comparative reporting.
-
+## Phase 20'ye hazırlık
+Phase 19 başarılı bir şekilde tamamlanmıştır. Phase 20'de (Optimizer v1), parametre tarama (grid/random search), overfit guard'ı ve walk-forward altyapısı kurulacaktır. Raporların hash ve quality kontrol altyapısı tamamlandığı için Optimizer sonuçları güvenle derecelendirilebilecektir.

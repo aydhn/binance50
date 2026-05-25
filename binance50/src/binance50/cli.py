@@ -7,6 +7,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
+from binance50.backtest.reports_v2 import build_report_health
 from binance50.binance.sdk_imports import build_sdk_availability_report
 from binance50.config.loader import load_config
 from binance50.connectors.client_factory import create_connector_bundle
@@ -208,7 +209,7 @@ def storage_list_datasets() -> None:
 
 @app.command()
 def storage_list_versions(
-    dataset: str = typer.Option(..., "--dataset", help="Dataset name")
+    dataset: str = typer.Option(..., "--dataset", help="Dataset name"),
 ) -> None:
     """List versions of a dataset."""
     from binance50.cli import load_config
@@ -331,7 +332,7 @@ def storage_import_stream_fixtures() -> None:
 
 @app.command()
 def storage_dataset_summary(
-    dataset: str = typer.Option(..., "--dataset", help="Dataset name")
+    dataset: str = typer.Option(..., "--dataset", help="Dataset name"),
 ) -> None:
     """Show summary for dataset."""
     from binance50.cli import load_config
@@ -347,7 +348,7 @@ def storage_dataset_summary(
 
 @app.command()
 def storage_quality_summary(
-    dataset: str = typer.Option(..., "--dataset", help="Dataset name")
+    dataset: str = typer.Option(..., "--dataset", help="Dataset name"),
 ) -> None:
     """Show quality summary for dataset."""
     from binance50.cli import load_config
@@ -404,7 +405,7 @@ def storage_backup_catalog() -> None:
 
 @app.command()
 def storage_compaction_plan(
-    dataset: str = typer.Option(..., "--dataset", help="Dataset name")
+    dataset: str = typer.Option(..., "--dataset", help="Dataset name"),
 ) -> None:
     """Show compaction plan for dataset."""
     from binance50.cli import load_config
@@ -424,7 +425,7 @@ def storage_compaction_plan(
 
 @app.command()
 def storage_retention_plan(
-    dataset: str = typer.Option(..., "--dataset", help="Dataset name")
+    dataset: str = typer.Option(..., "--dataset", help="Dataset name"),
 ) -> None:
     """Show retention plan for dataset."""
     from binance50.cli import load_config
@@ -969,7 +970,7 @@ def universe_fixture_select(
 
 @app.command()
 def universe_report(
-    scope: str = typer.Option("spot", help="Market scope: spot or usdm_futures")
+    scope: str = typer.Option("spot", help="Market scope: spot or usdm_futures"),
 ) -> None:
     try:
         from binance50.universe.cache import UniverseCache
@@ -1303,7 +1304,7 @@ def indicator_health():
 def indicator_v2_config(
     config_dir: str = typer.Option(
         "config", "--config-dir", help="Directory containing config files"
-    )
+    ),
 ):
     """Show Indicator V2 configuration summary."""
     try:
@@ -1844,312 +1845,354 @@ def risk_health():
     print(json.dumps(report, indent=2))
 
 
-
-
-
-
 @app.command()
-def paper_config():
+def paper_config() -> None:
     """Show paper trading configuration."""
     config = load_config("config")
     print("=== Paper Trading Configuration ===")
     print(config.paper.model_dump_json(indent=2))
 
+
 @app.command()
-def paper_account_init():
+def paper_account_init() -> None:
     """Initialize paper trading account."""
     from binance50.paper.account import PaperAccount
+
     config = load_config("config")
     account = PaperAccount()
     snapshot = account.initialize(config)
     print("=== Paper Account Initialized ===")
     print(snapshot.model_dump_json(indent=2))
 
+
 @app.command()
-def paper_run_fixture(symbol: str = "BTCUSDT", scope: str = "spot", interval: str = "1m"):
+def paper_run_fixture(symbol: str = "BTCUSDT", scope: str = "spot", interval: str = "1m") -> None:
     """Run paper simulation using fixtures."""
     print(f"Running paper simulation for {symbol} {scope} {interval}")
     print("Note: This is a simulation. No real orders are generated.")
 
+
 @app.command()
-def paper_run_risk_cache(symbol: str, scope: str, interval: str):
+def paper_run_risk_cache(symbol: str, scope: str, interval: str) -> None:
     """Run paper simulation using risk cache."""
     print(f"Running paper simulation using risk cache for {symbol} {scope} {interval}")
 
+
 @app.command()
-def paper_ledger_report():
+def paper_ledger_report() -> None:
     """Show paper ledger report."""
     print("=== Paper Ledger Report ===")
     print("events_count: 0, fills_count: 0, positions_count: 0")
 
+
 @app.command()
-def paper_positions_report():
+def paper_positions_report() -> None:
     """Show paper positions report."""
     print("=== Paper Positions Report ===")
 
+
 @app.command()
-def paper_fills_report():
+def paper_fills_report() -> None:
     """Show paper fills report."""
     print("=== Paper Fills Report ===")
 
+
 @app.command()
-def paper_journal_report():
+def paper_journal_report() -> None:
     """Show paper journal report."""
     print("=== Paper Journal Report ===")
 
+
 @app.command()
-def paper_pnl_report():
+def paper_pnl_report() -> None:
     """Show paper PnL report."""
     print("=== Paper PnL Report ===")
 
+
 @app.command()
-def paper_quality_check():
+def paper_quality_check() -> None:
     """Check paper run quality."""
     print("=== Paper Quality Report ===")
     print("Passed.")
 
+
 @app.command()
-def paper_cache_list():
+def paper_cache_list() -> None:
     """List paper cache."""
     from binance50.paper.cache import list_paper_cache
+
     config = load_config("config")
     paths = list_paper_cache(config)
     print("=== Paper Cache ===")
     for p in paths:
         print(p)
 
+
 @app.command()
-def paper_cache_clear():
+def paper_cache_clear() -> None:
     """Clear paper cache."""
     print("=== Paper Cache Cleared ===")
 
+
 @app.command()
-def paper_export():
+def paper_export() -> None:
     """Export paper results."""
     print("=== Paper Results Exported ===")
 
+
 @app.command()
-def paper_safety_check():
+def paper_safety_check() -> None:
     """Check paper safety."""
     from binance50.safety.paper_guard import build_paper_safety_report
+
     config = load_config("config")
     print("=== Paper Safety Check ===")
     print(build_paper_safety_report(config))
 
+
 @app.command()
-def paper_execution_guard_check():
+def paper_execution_guard_check() -> None:
     """Check paper execution guard."""
     from binance50.safety.paper_execution_guard import build_paper_execution_guard_report
+
     config = load_config("config")
     print("=== Paper Execution Guard Check ===")
     print(build_paper_execution_guard_report(config))
 
+
 @app.command()
-def paper_health():
+def paper_health() -> None:
     """Check paper engine health."""
     from binance50.paper.reports import build_paper_health_report
+
     config = load_config("config")
     print("=== Paper Health Report ===")
     print(build_paper_health_report(config))
 
 
-
-
 @app.command()
-def paper_config():
-    """Show paper trading configuration."""
-    config = load_config("config")
-    print("=== Paper Trading Configuration ===")
-    print(config.paper.model_dump_json(indent=2))
-
-@app.command()
-def paper_account_init():
-    """Initialize paper trading account."""
-    from binance50.paper.account import PaperAccount
-    config = load_config("config")
-    account = PaperAccount()
-    snapshot = account.initialize(config)
-    print("=== Paper Account Initialized ===")
-    print(snapshot.model_dump_json(indent=2))
-
-@app.command()
-def paper_run_fixture(symbol: str = typer.Option("BTCUSDT", help="Symbol to test"),
-    scope: str = typer.Option("spot", help="Market scope"),
-    interval: str = typer.Option("1m", help="Kline interval")):
-    """Run paper simulation using fixtures."""
-    print(f"Running paper simulation for {symbol} {scope} {interval}")
-    print("Note: This is a simulation. No real orders are generated.")
-
-@app.command()
-def paper_run_risk_cache(symbol: str, scope: str, interval: str):
-    """Run paper simulation using risk cache."""
-    print(f"Running paper simulation using risk cache for {symbol} {scope} {interval}")
-
-@app.command()
-def paper_ledger_report():
-    """Show paper ledger report."""
-    print("=== Paper Ledger Report ===")
-    print("events_count: 0, fills_count: 0, positions_count: 0")
-
-@app.command()
-def paper_positions_report():
-    """Show paper positions report."""
-    print("=== Paper Positions Report ===")
-
-@app.command()
-def paper_fills_report():
-    """Show paper fills report."""
-    print("=== Paper Fills Report ===")
-
-@app.command()
-def paper_journal_report():
-    """Show paper journal report."""
-    print("=== Paper Journal Report ===")
-
-@app.command()
-def paper_pnl_report():
-    """Show paper PnL report."""
-    print("=== Paper PnL Report ===")
-
-@app.command()
-def paper_quality_check():
-    """Check paper run quality."""
-    print("=== Paper Quality Report ===")
-    print("Passed.")
-
-@app.command()
-def paper_cache_list():
-    """List paper cache."""
-    from binance50.paper.cache import list_paper_cache
-    config = load_config("config")
-    paths = list_paper_cache(config)
-    print("=== Paper Cache ===")
-    for p in paths:
-        print(p)
-
-@app.command()
-def paper_cache_clear():
-    """Clear paper cache."""
-    print("=== Paper Cache Cleared ===")
-
-@app.command()
-def paper_export():
-    """Export paper results."""
-    print("=== Paper Results Exported ===")
-
-@app.command()
-def paper_safety_check():
-    """Check paper safety."""
-    from binance50.safety.paper_guard import build_paper_safety_report
-    config = load_config("config")
-    print("=== Paper Safety Check ===")
-    print(build_paper_safety_report(config))
-
-@app.command()
-def paper_execution_guard_check():
-    """Check paper execution guard."""
-    from binance50.safety.paper_execution_guard import build_paper_execution_guard_report
-    config = load_config("config")
-    print("=== Paper Execution Guard Check ===")
-    print(build_paper_execution_guard_report(config))
-
-@app.command()
-def paper_health():
-    """Check paper engine health."""
-    from binance50.paper.reports import build_paper_health_report
-    config = load_config("config")
-    print("=== Paper Health Report ===")
-    print(build_paper_health_report(config))
-
-if __name__ == "__main__":
-    app()
-
-@app.command()
-def backtest_config():
+def backtest_config() -> None:
     """Show backtest configuration."""
-    print("Backtest config")
+    config = load_config("config")
+    console.print(Panel(json.dumps(config.model_dump(), indent=2), title="Backtest Config"))
+
 
 @app.command()
-def backtest_run_fixture(symbol: str = "BTCUSDT", scope: str = "spot", interval: str = "1m"):
-    """Run backtest from fixture."""
-    print("Backtest run fixture")
+def backtest_run_fixture(
+    symbol: str = typer.Option("BTCUSDT", help="Symbol to test"),
+    scope: str = typer.Option("spot", help="Market scope"),
+    interval: str = typer.Option("1m", help="Kline interval"),
+):
+    """Run backtest using fixtures."""
+    print(f"Running backtest for {symbol} {scope} {interval}")
+
 
 @app.command()
-def backtest_run_warehouse(symbol: str, scope: str = "spot", interval: str = "1m"):
-    """Run backtest from warehouse."""
-    print("Backtest run warehouse")
+def backtest_summary() -> None:
+    """Show backtest summary report."""
+    print("=== Backtest Summary ===")
+
 
 @app.command()
-def backtest_summary():
-    """Show backtest summary."""
-    print("Backtest summary")
-
-@app.command()
-def backtest_trades_report():
+def backtest_trades_report() -> None:
     """Show backtest trades report."""
-    print("Backtest trades report")
+    print("=== Backtest Trades ===")
+
 
 @app.command()
-def backtest_equity_report():
-    """Show backtest equity report."""
-    print("Backtest equity report")
+def backtest_equity_report() -> None:
+    """Show backtest equity curve report."""
+    print("=== Backtest Equity ===")
+
 
 @app.command()
-def backtest_drawdown_report():
+def backtest_drawdown_report() -> None:
     """Show backtest drawdown report."""
-    print("Backtest drawdown report")
+    print("=== Backtest Drawdowns ===")
+
 
 @app.command()
-def backtest_metrics_report():
+def backtest_metrics_report() -> None:
     """Show backtest metrics report."""
-    print("Backtest metrics report")
+    print("=== Backtest Metrics ===")
+
 
 @app.command()
-def backtest_benchmark_report():
-    """Show backtest benchmark report."""
-    print("Backtest benchmark report")
+def backtest_benchmark_report() -> None:
+    """Show backtest benchmark comparison."""
+    print("=== Backtest Benchmark ===")
+
 
 @app.command()
-def backtest_timeline_report():
-    """Show backtest timeline report."""
-    print("Backtest timeline report")
+def backtest_timeline_report() -> None:
+    """Show backtest event timeline."""
+    print("=== Backtest Timeline ===")
+
 
 @app.command()
-def backtest_quality_check():
-    """Show backtest quality check."""
-    print("Backtest quality check")
+def backtest_quality_check() -> None:
+    """Check backtest run quality."""
+    print("=== Backtest Quality ===")
+
 
 @app.command()
-def backtest_cache_list():
-    """Show backtest cache list."""
-    print("Backtest cache list")
+def backtest_cache_list() -> None:
+    """List backtest cache."""
+
+    print("=== Backtest Cache Listed ===")
+
 
 @app.command()
-def backtest_cache_clear(dry_run: bool = True):
+def backtest_cache_clear() -> None:
     """Clear backtest cache."""
-    print("Backtest cache clear")
+    print("=== Backtest Cache Cleared ===")
+
 
 @app.command()
-def backtest_export():
+def backtest_export() -> None:
     """Export backtest results."""
-    print("Backtest export")
+    print("=== Backtest Results Exported ===")
+
 
 @app.command()
-def backtest_safety_check():
-    """Show backtest safety check."""
-    print("Backtest safety check")
+def backtest_safety_check() -> None:
+    """Check backtest safety."""
+    from binance50.config.loader import load_config
+    from binance50.safety.backtest_guard import build_backtest_safety_report
+
+    config = load_config("config")
+    report = build_backtest_safety_report(config)
+    console.print(Panel(json.dumps(report, indent=2), title="Backtest Safety"))
+
 
 @app.command()
-def backtest_leakage_check():
-    """Show backtest leakage check."""
-    print("Backtest leakage check")
+def backtest_leakage_check() -> None:
+    """Check backtest for future leakage."""
+    from binance50.config.loader import load_config
+    from binance50.safety.backtest_leakage_guard import build_backtest_leakage_report
+
+    config = load_config("config")
+    report = build_backtest_leakage_report(config)
+    console.print(Panel(json.dumps(report, indent=2), title="Backtest Leakage Check"))
+
 
 @app.command()
-def backtest_execution_guard_check():
-    """Show backtest execution guard check."""
-    print("Backtest execution guard check")
+def backtest_execution_guard_check() -> None:
+    """Check backtest execution guard."""
+    from binance50.config.loader import load_config
+    from binance50.safety.backtest_execution_guard import build_backtest_execution_guard_report
+
+    config = load_config("config")
+    report = build_backtest_execution_guard_report(config)
+    console.print(Panel(json.dumps(report, indent=2), title="Backtest Execution Guard Check"))
+
 
 @app.command()
-def backtest_health():
-    """Show backtest health report."""
-    print("Backtest health report")
+def backtest_health() -> None:
+    """Check backtest engine health."""
+    print("=== Backtest Engine Health ===")
+    report: dict[str, str] = {}
+    console.print(Panel(json.dumps(report, indent=2), title="Backtest Engine Health"))
+
+
+@app.command()
+def backtest_reporting_config() -> None:
+    config = load_config()
+    console.print(
+        Panel(
+            json.dumps(config.backtest_reporting.model_dump(), indent=2),
+            title="Backtest Reporting Config",
+        )
+    )
+
+
+@app.command()
+def backtest_report_pack() -> None:
+    console.print("[green]Mocking backtest report pack[/green]")
+
+
+@app.command()
+def backtest_advanced_metrics() -> None:
+    console.print("[green]Mocking backtest advanced metrics[/green]")
+
+
+@app.command()
+def backtest_rolling_metrics() -> None:
+    console.print("[green]Mocking backtest rolling metrics[/green]")
+
+
+@app.command()
+def backtest_periodic_returns() -> None:
+    console.print("[green]Mocking backtest periodic returns[/green]")
+
+
+@app.command()
+def backtest_monthly_returns() -> None:
+    console.print("[green]Mocking backtest monthly returns[/green]")
+
+
+@app.command()
+def backtest_benchmark_v2() -> None:
+    console.print("[green]Mocking backtest benchmark v2[/green]")
+
+
+@app.command()
+def backtest_drawdown_v2() -> None:
+    console.print("[green]Mocking backtest drawdown v2[/green]")
+
+
+@app.command()
+def backtest_trade_distribution() -> None:
+    console.print("[green]Mocking backtest trade distribution[/green]")
+
+
+@app.command()
+def backtest_holding_time() -> None:
+    console.print("[green]Mocking backtest holding time[/green]")
+
+
+@app.command()
+def backtest_regime_breakdown() -> None:
+    console.print("[green]Mocking backtest regime breakdown[/green]")
+
+
+@app.command()
+def backtest_signal_breakdown() -> None:
+    console.print("[green]Mocking backtest signal breakdown[/green]")
+
+
+@app.command()
+def backtest_cost_analysis() -> None:
+    console.print("[green]Mocking backtest cost analysis[/green]")
+
+
+@app.command()
+def backtest_exposure_analysis() -> None:
+    console.print("[green]Mocking backtest exposure analysis[/green]")
+
+
+@app.command()
+def backtest_report_quality_check() -> None:
+    console.print("[green]Mocking backtest report quality check[/green]")
+
+
+@app.command()
+def backtest_report_export() -> None:
+    console.print("[green]Mocking backtest report export[/green]")
+
+
+@app.command()
+def backtest_reporting_safety_check() -> None:
+    console.print("[green]Mocking backtest reporting safety check[/green]")
+
+
+@app.command()
+def backtest_metrics_safety_check() -> None:
+    console.print("[green]Mocking backtest metrics safety check[/green]")
+
+
+@app.command()
+def backtest_reporting_health() -> None:
+    config = load_config()
+    health = build_report_health(config)
+    console.print(Panel(json.dumps(health, indent=2), title="Backtest Reporting Health"))

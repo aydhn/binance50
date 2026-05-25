@@ -234,3 +234,15 @@ Phase 14's signal scoring engine acts as a critical safety boundary between abst
 - Implements lookahead bias guards blocking future/nearest alignment.
 - Scans payloads to ensure no API keys, exchange order ids, or signed requests.
 - Low trade count alerts and disclaimer that past performance is not a guarantee.
+
+### Backtest Reporting v2 Security & Integrity
+
+- **Backtest raporu canlı performans kanıtı değildir:** The system strictly treats all reporting outputs as simulations. Under no circumstances should a report be presented or interpreted as guaranteed live trading results.
+- **Live performance claim guard:** The reporting engine employs a strict text-scanner (`assert_no_live_performance_claims`) that proactively blocks the generation or exportation of reports containing banned marketing phrases (e.g., "guaranteed profit", "live proven").
+- **NaN/inf metric riski:** Due to the nature of financial calculations (e.g., division by zero volatility), metrics can occasionally yield `NaN` or `inf`. The system actively sanitizes these to prevent downstream serialization failures or misleading metric averages.
+- **Low trade count riski:** A high Sharpe ratio generated from only 3 trades is statistically meaningless. The reporting engine requires a configurable minimum number of trades and observations, otherwise it will append explicit warnings to the report or reject it entirely based on quality guards.
+- **Overfitting riski:** While Phase 19 does not include an optimizer, the reporting tools make it easier to manually overfit parameters. The strict requirement for `input_hash` and `config_hash` on every report ensures that parameters cannot be stealthily altered after the fact.
+- **Benchmark yanıltıcılığı:** Comparing a high-leverage strategy against an unleveraged benchmark can artificially inflate excess return metrics. The reporting engine attempts to highlight differences in exposure.
+- **Rolling metrics lookahead riski:** The `RollingMetricsReport` strictly forbids `center=True` parameters in pandas `rolling()` calls. Centered windows would allow future price data to leak into current historical calculations, destroying the validity of the backtest.
+- **Static report dashboard değildir:** The system exports static JSON, CSV, and Markdown files. It explicitly avoids spinning up an interactive web server or dashboard, preventing unauthenticated network exposure or arbitrary code execution vulnerabilities common in web interfaces.
+- **Disclaimer zorunluluğu:** Every generated report pack must structurally contain a prominent disclaimer highlighting the simulated nature of the results. The storage importers will actively reject any report pack missing this disclaimer.

@@ -21,26 +21,36 @@ def build_trade_from_closed_position(position: BacktestPosition, context: dict) 
         entry_price=position.open_price,
         exit_price=position.close_price,
         simulated_quantity=position.simulated_quantity,
-        gross_pnl_usdt=position.realized_pnl_usdt + position.fees_paid_usdt + position.slippage_paid_usdt,
+        gross_pnl_usdt=position.realized_pnl_usdt
+        + position.fees_paid_usdt
+        + position.slippage_paid_usdt,
         net_pnl_usdt=position.realized_pnl_usdt,
-        return_pct=position.realized_pnl_usdt / position.simulated_notional_usdt if position.simulated_notional_usdt > 0 else 0,
+        return_pct=(
+            position.realized_pnl_usdt / position.simulated_notional_usdt
+            if position.simulated_notional_usdt > 0
+            else 0
+        ),
         fees_usdt=position.fees_paid_usdt,
         slippage_cost_usdt=position.slippage_paid_usdt,
         holding_bars=position.holding_bars,
         close_reason=position.close_reason or "UNKNOWN",
-        explanation="Simulated backtest trade"
+        explanation="Simulated backtest trade",
     )
+
 
 def trades_to_dataframe(trades: list[BacktestTrade]) -> pd.DataFrame:
     if not trades:
         return pd.DataFrame()
     return pd.DataFrame([t.model_dump() for t in trades])
 
+
 def dataframe_to_trades(df: pd.DataFrame) -> list[BacktestTrade]:
-    return [BacktestTrade(**row) for row in df.to_dict('records')]
+    return [BacktestTrade(**row) for row in df.to_dict("records")]
+
 
 def validate_trade(trade: BacktestTrade, config) -> None:
     pass
+
 
 def summarize_trades(trades: list[BacktestTrade]) -> dict:
     if not trades:
@@ -48,6 +58,6 @@ def summarize_trades(trades: list[BacktestTrade]) -> dict:
     df = trades_to_dataframe(trades)
     return {
         "count": len(df),
-        "total_net_pnl": df['net_pnl_usdt'].sum(),
-        "win_rate": len(df[df['net_pnl_usdt'] > 0]) / len(df) if len(df) > 0 else 0
+        "total_net_pnl": df["net_pnl_usdt"].sum(),
+        "win_rate": len(df[df["net_pnl_usdt"] > 0]) / len(df) if len(df) > 0 else 0,
     }

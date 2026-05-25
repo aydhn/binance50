@@ -23,6 +23,18 @@ from binance50.core.exceptions import (
     PatternAdapterError,
     PatternEngineError,
     PivotDetectionError,
+    RegimeCacheError,
+    RegimeClassificationError,
+    RegimeConfigError,
+    RegimeError,
+    RegimeFeatureError,
+    RegimeLeakageError,
+    RegimeModelAdapterError,
+    RegimeQualityError,
+    RegimeSmoothingError,
+    RegimeStabilityError,
+    RegimeTransitionError,
+    RegimeValidationError,
     RepaintingRiskError,
     StreamBufferOverflowError,
     StreamConnectionDisabledError,
@@ -254,22 +266,6 @@ def classify_strategy_error(error: Exception) -> type[Binance50Error]:
     return StrategyPluginError
 
 
-from binance50.core.exceptions import (
-    RegimeCacheError,
-    RegimeClassificationError,
-    RegimeConfigError,
-    RegimeError,
-    RegimeFeatureError,
-    RegimeLeakageError,
-    RegimeModelAdapterError,
-    RegimeQualityError,
-    RegimeSmoothingError,
-    RegimeStabilityError,
-    RegimeTransitionError,
-    RegimeValidationError,
-)
-
-
 def classify_regime_error(error: Exception) -> type[Binance50Error]:
     if isinstance(error, RegimeError):
         return type(error)
@@ -308,6 +304,7 @@ def classify_regime_error(error: Exception) -> type[Binance50Error]:
 
     return RegimeClassificationError
 
+
 def classify_backtest_error(message: str) -> type[Exception]:
     from binance50.core.exceptions import (
         BacktestError,
@@ -319,6 +316,7 @@ def classify_backtest_error(message: str) -> type[Exception]:
         BacktestQualityError,
         SameBarFillError,
     )
+
     if "same bar fill" in message.lower():
         return SameBarFillError
     elif "future column" in message.lower() or "centered rolling" in message.lower():

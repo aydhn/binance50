@@ -4,7 +4,9 @@ from .models import BacktestFill, BacktestPosition, BacktestPositionStatus
 
 
 class BacktestPositionManager:
-    def open_from_fill(self, fill: BacktestFill, source_signal_id: str, source_risk_id: str) -> BacktestPosition:
+    def open_from_fill(
+        self, fill: BacktestFill, source_signal_id: str, source_risk_id: str
+    ) -> BacktestPosition:
         return BacktestPosition(
             position_id=str(uuid.uuid4()),
             run_id=fill.run_id,
@@ -16,21 +18,28 @@ class BacktestPositionManager:
             simulated_quantity=fill.simulated_quantity,
             simulated_notional_usdt=fill.simulated_notional_usdt,
             fees_paid_usdt=fill.simulated_fee_usdt,
-            slippage_paid_usdt=fill.simulated_notional_usdt * (fill.simulated_slippage_bps / 10000.0),
+            slippage_paid_usdt=fill.simulated_notional_usdt
+            * (fill.simulated_slippage_bps / 10000.0),
             source_signal_id=source_signal_id,
-            source_risk_assessment_id=source_risk_id
+            source_risk_assessment_id=source_risk_id,
         )
 
-    def close_from_fill(self, position: BacktestPosition, fill: BacktestFill, reason: str) -> BacktestPosition:
+    def close_from_fill(
+        self, position: BacktestPosition, fill: BacktestFill, reason: str
+    ) -> BacktestPosition:
         position.status = BacktestPositionStatus.closed
         position.closed_at = fill.fill_time
         position.close_price = fill.simulated_price
         position.close_reason = reason
         position.fees_paid_usdt += fill.simulated_fee_usdt
-        position.slippage_paid_usdt += fill.simulated_notional_usdt * (fill.simulated_slippage_bps / 10000.0)
+        position.slippage_paid_usdt += fill.simulated_notional_usdt * (
+            fill.simulated_slippage_bps / 10000.0
+        )
         return position
 
-    def mark_to_market(self, open_positions: list[BacktestPosition], price_map: dict) -> list[BacktestPosition]:
+    def mark_to_market(
+        self, open_positions: list[BacktestPosition], price_map: dict
+    ) -> list[BacktestPosition]:
         for p in open_positions:
             if p.symbol in price_map:
                 current_price = price_map[p.symbol]
