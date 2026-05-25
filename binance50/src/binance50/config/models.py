@@ -2361,7 +2361,206 @@ class BacktestReportingConfig(BaseModel):
     quality: BacktestReportingQualityConfig = BacktestReportingQualityConfig()
 
 
+class OptimizerModeConfig(BaseModel):
+    default_method: Literal["grid", "random", "optuna_optional"] = "grid"
+    allowed_methods: list[str] = Field(
+        default_factory=lambda: ["grid", "random", "optuna_optional"]
+    )
+    deterministic: Literal[True] = True
+    random_seed: int = 42
+    max_trials: int = Field(default=100, ge=1, le=10000)
+    max_grid_combinations: int = Field(default=200, ge=1, le=10000)
+    max_parallel_trials: int = Field(default=1, le=1)
+    parallel_execution_enabled: Literal[False] = False
+    fail_fast: bool = False
+    continue_on_trial_failure: bool = True
+
+
+class OptimizerDataSplitConfig(BaseModel):
+    enabled: bool = True
+    split_method: str = "chronological"
+    train_pct: float = Field(default=0.60, ge=0.0, le=1.0)
+    validation_pct: float = Field(default=0.20, ge=0.0, le=1.0)
+    test_pct: float = Field(default=0.20, ge=0.0, le=1.0)
+    min_train_rows: int = Field(default=500, gt=0)
+    min_validation_rows: int = Field(default=200, gt=0)
+    min_test_rows: int = Field(default=200, gt=0)
+    embargo_bars: int = Field(default=0, ge=0)
+    purge_overlapping_labels: bool = False
+    time_series_cv_enabled: bool = True
+    time_series_cv_splits: int = 3
+    walk_forward_skeleton_enabled: bool = True
+    walk_forward_full_run_deferred: Literal[True] = True
+
+    @model_validator(mode="after")
+    def validate_split_pct(self) -> "OptimizerDataSplitConfig":
+        total = self.train_pct + self.validation_pct + self.test_pct
+        if abs(total - 1.0) > 1e-6:
+            raise ValueError("train_pct + validation_pct + test_pct must equal 1.0")
+        return self
+
+
+class OptimizerSearchSpaceConfig(BaseModel):
+    max_parameters: int = Field(default=20, ge=1, le=100)
+    max_values_per_parameter: int = 20
+    reject_empty_space: bool = True
+    reject_unbounded_space: bool = True
+    require_parameter_descriptions: bool = True
+    allow_strategy_params: bool = True
+    allow_signal_params: bool = True
+    allow_risk_params: bool = True
+    allow_backtest_params: bool = True
+    allow_execution_params: Literal[False] = False
+    allow_live_params: Literal[False] = False
+
+
+class OptimizerObjectiveComponentConfig(BaseModel):
+    total_return_weight: float = 0.20
+    sharpe_weight: float = 0.15
+    sortino_weight: float = 0.10
+    calmar_weight: float = 0.10
+    max_drawdown_weight: float = -0.20
+    profit_factor_weight: float = 0.10
+    expectancy_weight: float = 0.10
+    trade_count_weight: float = 0.05
+    stability_weight: float = 0.10
+    cost_drag_weight: float = -0.10
+    overfit_penalty_weight: float = -0.30
+
+
+class OptimizerObjectiveConfig(BaseModel):
+    primary_metric: str = "robust_score"
+    maximize: bool = True
+    components: OptimizerObjectiveComponentConfig = OptimizerObjectiveComponentConfig()
+    min_trade_count: int = 10
+    min_validation_trade_count: int = 5
+    max_drawdown_hard_limit_pct: float = 35.0
+    max_cost_drag_pct: float = 30.0
+    score_clamp_min: float = -100.0
+    score_clamp_max: float = 100.0
+
+    @model_validator(mode="after")
+    def validate_clamp(self) -> "OptimizerObjectiveConfig":
+        if self.score_clamp_min >= self.score_clamp_max:
+            raise ValueError("score_clamp_min must be strictly less than score_clamp_max")
+        return self
+
+
+class OptimizerOverfitConfig(BaseModel):
+    enabled: bool = True
+    reject_if_train_validation_gap_too_high: bool = True
+    max_train_validation_return_gap_pct: float = 50.0
+    max_train_validation_sharpe_gap: float = 1.5
+    reject_if_validation_bad: bool = True
+    reject_if_test_bad: bool = False
+    validation_score_min: float = 0.0
+    test_score_min_warning: float = 0.0
+    penalize_parameter_complexity: bool = True
+    complexity_penalty_per_parameter: float = 0.5
+    penalize_low_trade_count: bool = True
+    penalize_high_drawdown: bool = True
+    penalize_high_cost_drag: bool = True
+    warn_best_trial_only_good_on_train: bool = True
+    require_validation_rank_consistency: bool = True
+
+
+class OptimizerRobustnessConfig(BaseModel):
+    enabled: bool = True
+    compute_rank_stability: bool = True
+    compute_metric_dispersion: bool = True
+    compute_neighbor_sensitivity: bool = True
+    neighbor_distance_numeric_pct: float = 20.0
+    top_n_trials_for_robustness: int = 10
+    min_robustness_score: float = 0.0
+    warn_fragile_optimum: bool = True
+
+
+class OptimizerOptunaOptionalConfig(BaseModel):
+    enabled: bool = False
+    fail_if_missing: Literal[False] = False
+    sampler: str = "tpe"
+    pruner: str = "median"
+    n_trials: int = 50
+    timeout_seconds: int | None = None
+    direction: str = "maximize"
+    study_name_prefix: str = "binance50_optimizer"
+    persistent_storage_enabled: bool = False
+
+
+class OptimizerQualityConfig(BaseModel):
+    reject_no_trials: bool = True
+    reject_all_trials_failed: bool = True
+    reject_missing_objective: bool = True
+    reject_nan_inf_scores: bool = True
+    reject_missing_split_metadata: bool = True
+    reject_missing_reproducibility_hash: bool = True
+    warn_low_trial_count: bool = True
+    min_trial_count_warning: int = 10
+    warn_no_validation_set: bool = True
+    reject_live_or_paper_intent: bool = True
+
+
+class OptimizerConfig(BaseModel):
+    enabled: bool = True
+    output_dataset_name: str = "optimization_trials"
+    cache_enabled: bool = True
+    cache_dir: str = "data/optimizer/cache"
+    export_dir: str = "data/optimizer/exports"
+    reports_dir: str = "data/optimizer/reports"
+
+    real_exchange_forbidden: Literal[True] = True
+    paper_trade_forbidden: Literal[True] = True
+    live_trade_forbidden: Literal[True] = True
+    order_creation_forbidden: Literal[True] = True
+    api_key_forbidden: Literal[True] = True
+    signed_request_forbidden: Literal[True] = True
+    dashboard_forbidden: Literal[True] = True
+
+    mode: OptimizerModeConfig = OptimizerModeConfig()
+    data_split: OptimizerDataSplitConfig = OptimizerDataSplitConfig()
+    search_space: OptimizerSearchSpaceConfig = OptimizerSearchSpaceConfig()
+    default_search_spaces: dict[str, dict[str, list[float | int | str | bool]]] = Field(
+        default_factory=lambda: {
+            "strategy": {
+                "trend_following.min_adx": [18.0, 20.0, 22.0, 25.0],
+                "mean_reversion.rsi_oversold": [25.0, 30.0, 35.0],
+                "mean_reversion.rsi_overbought": [65.0, 70.0, 75.0],
+                "momentum_continuation.rsi_min": [48.0, 50.0, 55.0],
+            },
+            "signals": {
+                "thresholds.research_candidate_min": [45.0, 50.0, 55.0],
+                "thresholds.risk_review_min": [60.0, 65.0, 70.0],
+                "confluence.same_direction_bonus_per_plugin": [3.0, 5.0, 7.0],
+            },
+            "risk": {
+                "decision.min_final_risk_score": [55.0, 60.0, 65.0],
+                "volatility.high_volatility_penalty": [10.0, 15.0, 20.0],
+                "conflicts.high_conflict_penalty": [10.0, 20.0, 30.0],
+            },
+            "backtest": {
+                "sizing.fixed_notional_usdt": [25.0, 50.0, 75.0],
+                "slippage.default_slippage_bps": [1.0, 2.0, 5.0],
+                "exits.max_holding_bars": [50, 100, 150],
+            },
+        }
+    )
+    objective: OptimizerObjectiveConfig = OptimizerObjectiveConfig()
+    overfit: OptimizerOverfitConfig = OptimizerOverfitConfig()
+    robustness: OptimizerRobustnessConfig = OptimizerRobustnessConfig()
+    optuna_optional: OptimizerOptunaOptionalConfig = OptimizerOptunaOptionalConfig()
+    quality: OptimizerQualityConfig = OptimizerQualityConfig()
+
+    @model_validator(mode="after")
+    def validate_dataset_name(self) -> "OptimizerConfig":
+        if not re.match(r"^[a-zA-Z0-9_-]+$", self.output_dataset_name):
+            raise ValueError(
+                "output_dataset_name must contain only alphanumeric characters, underscores, and dashes"
+            )
+        return self
+
+
 class AppConfig(BaseModel):
+    optimizer: OptimizerConfig = OptimizerConfig()
     backtest_reporting: BacktestReportingConfig = BacktestReportingConfig()
 
     risk: RiskConfig = Field(default_factory=RiskConfig)

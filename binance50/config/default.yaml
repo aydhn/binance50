@@ -982,3 +982,154 @@ backtest_reporting:
     reject_mismatched_date_range: true
     warn_metric_instability: true
     reject_live_performance_claims: true
+
+optimizer:
+  enabled: true
+  output_dataset_name: optimization_trials
+  cache_enabled: true
+  cache_dir: data/optimizer/cache
+  export_dir: data/optimizer/exports
+  reports_dir: data/optimizer/reports
+
+  real_exchange_forbidden: true
+  paper_trade_forbidden: true
+  live_trade_forbidden: true
+  order_creation_forbidden: true
+  api_key_forbidden: true
+  signed_request_forbidden: true
+  dashboard_forbidden: true
+
+  mode:
+    default_method: grid
+    allowed_methods:
+      - grid
+      - random
+      - optuna_optional
+    deterministic: true
+    random_seed: 42
+    max_trials: 100
+    max_grid_combinations: 200
+    max_parallel_trials: 1
+    parallel_execution_enabled: false
+    fail_fast: false
+    continue_on_trial_failure: true
+
+  data_split:
+    enabled: true
+    split_method: chronological
+    train_pct: 0.60
+    validation_pct: 0.20
+    test_pct: 0.20
+    min_train_rows: 500
+    min_validation_rows: 200
+    min_test_rows: 200
+    embargo_bars: 0
+    purge_overlapping_labels: false
+    time_series_cv_enabled: true
+    time_series_cv_splits: 3
+    walk_forward_skeleton_enabled: true
+    walk_forward_full_run_deferred: true
+
+  search_space:
+    max_parameters: 20
+    max_values_per_parameter: 20
+    reject_empty_space: true
+    reject_unbounded_space: true
+    require_parameter_descriptions: true
+    allow_strategy_params: true
+    allow_signal_params: true
+    allow_risk_params: true
+    allow_backtest_params: true
+    allow_execution_params: false
+    allow_live_params: false
+
+  default_search_spaces:
+    strategy:
+      trend_following.min_adx: [18.0, 20.0, 22.0, 25.0]
+      mean_reversion.rsi_oversold: [25.0, 30.0, 35.0]
+      mean_reversion.rsi_overbought: [65.0, 70.0, 75.0]
+      momentum_continuation.rsi_min: [48.0, 50.0, 55.0]
+    signals:
+      thresholds.research_candidate_min: [45.0, 50.0, 55.0]
+      thresholds.risk_review_min: [60.0, 65.0, 70.0]
+      confluence.same_direction_bonus_per_plugin: [3.0, 5.0, 7.0]
+    risk:
+      decision.min_final_risk_score: [55.0, 60.0, 65.0]
+      volatility.high_volatility_penalty: [10.0, 15.0, 20.0]
+      conflicts.high_conflict_penalty: [10.0, 20.0, 30.0]
+    backtest:
+      sizing.fixed_notional_usdt: [25.0, 50.0, 75.0]
+      slippage.default_slippage_bps: [1.0, 2.0, 5.0]
+      exits.max_holding_bars: [50, 100, 150]
+
+  objective:
+    primary_metric: robust_score
+    maximize: true
+    components:
+      total_return_weight: 0.20
+      sharpe_weight: 0.15
+      sortino_weight: 0.10
+      calmar_weight: 0.10
+      max_drawdown_weight: -0.20
+      profit_factor_weight: 0.10
+      expectancy_weight: 0.10
+      trade_count_weight: 0.05
+      stability_weight: 0.10
+      cost_drag_weight: -0.10
+      overfit_penalty_weight: -0.30
+    min_trade_count: 10
+    min_validation_trade_count: 5
+    max_drawdown_hard_limit_pct: 35.0
+    max_cost_drag_pct: 30.0
+    score_clamp_min: -100.0
+    score_clamp_max: 100.0
+
+  overfit:
+    enabled: true
+    reject_if_train_validation_gap_too_high: true
+    max_train_validation_return_gap_pct: 50.0
+    max_train_validation_sharpe_gap: 1.5
+    reject_if_validation_bad: true
+    reject_if_test_bad: false
+    validation_score_min: 0.0
+    test_score_min_warning: 0.0
+    penalize_parameter_complexity: true
+    complexity_penalty_per_parameter: 0.5
+    penalize_low_trade_count: true
+    penalize_high_drawdown: true
+    penalize_high_cost_drag: true
+    warn_best_trial_only_good_on_train: true
+    require_validation_rank_consistency: true
+
+  robustness:
+    enabled: true
+    compute_rank_stability: true
+    compute_metric_dispersion: true
+    compute_neighbor_sensitivity: true
+    neighbor_distance_numeric_pct: 20.0
+    top_n_trials_for_robustness: 10
+    min_robustness_score: 0.0
+    warn_fragile_optimum: true
+
+  optuna_optional:
+    enabled: false
+    fail_if_missing: false
+    sampler: tpe
+    pruner: median
+    n_trials: 50
+    timeout_seconds: null
+    direction: maximize
+    study_name_prefix: binance50_optimizer
+    persistent_storage_enabled: false
+
+  quality:
+    reject_no_trials: true
+    reject_all_trials_failed: true
+    reject_missing_objective: true
+    reject_nan_inf_scores: true
+    reject_missing_split_metadata: true
+    reject_missing_reproducibility_hash: true
+    warn_low_trial_count: true
+    min_trial_count_warning: 10
+    warn_no_validation_set: true
+    reject_live_or_paper_intent: true

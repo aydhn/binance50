@@ -246,3 +246,15 @@ Phase 14's signal scoring engine acts as a critical safety boundary between abst
 - **Rolling metrics lookahead riski:** The `RollingMetricsReport` strictly forbids `center=True` parameters in pandas `rolling()` calls. Centered windows would allow future price data to leak into current historical calculations, destroying the validity of the backtest.
 - **Static report dashboard değildir:** The system exports static JSON, CSV, and Markdown files. It explicitly avoids spinning up an interactive web server or dashboard, preventing unauthenticated network exposure or arbitrary code execution vulnerabilities common in web interfaces.
 - **Disclaimer zorunluluğu:** Every generated report pack must structurally contain a prominent disclaimer highlighting the simulated nature of the results. The storage importers will actively reject any report pack missing this disclaimer.
+
+## Optimizer Security
+
+- **Optimizer result is not an order**: The optimizer produces parameter recommendations, never live orders or execution commands.
+- **Backtest overfitting risk**: Parameter optimization is prone to overfitting. We mitigate this using a multi-metric objective function and explicit Train/Validation splits.
+- **Test set leakage risk**: The test set is only scored at the very end and never used to rank or select the best parameter set.
+- **Train/validation/test separation**: Strict chronological isolation is enforced to prevent lookahead bias in optimization.
+- **Execution/live parameter prohibition**: Parameters governing quantity, live trading flags, and execution pathways are strictly banned from the search space.
+- **Search space complexity risk**: Large search spaces increase overfit probability. A complexity penalty is applied to parameter sets.
+- **Low trade count risk**: Parameters that yield high returns from very few trades are heavily penalized to avoid statistical anomalies.
+- **Fragile optimum warning**: Parameter sets that drop significantly in performance with minor tweaks (neighbor sensitivity) trigger robustness warnings.
+- **Optuna dashboard/persistent storage**: Defaulted to off to reduce attack surface and prevent accidental data exposure on local networks.

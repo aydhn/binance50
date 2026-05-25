@@ -1,4 +1,3 @@
-import re
 
 with open("docs/ARCHITECTURE.md") as f:
     text = f.read()

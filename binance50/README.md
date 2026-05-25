@@ -286,3 +286,31 @@ Statistical significance requires a sufficient sample size. If a backtest yields
 - `python -m binance50.cli backtest-report-quality-check`
 - `python -m binance50.cli backtest-reporting-safety-check`
 - `python -m binance50.cli backtest-reporting-health`
+
+## Optimizer (Phase 20)
+The Optimizer is an offline research tool that systematically explores parameter combinations to find robust configurations for the strategy engine.
+
+- **What does the optimizer do?** It generates different parameter sets and evaluates them against historical data using the Backtest engine.
+- **Why doesn't it generate orders?** Optimization is pure research. Automatically mapping optimized parameters to live execution creates extreme financial risk.
+- **Grid vs Random Search**: Grid search evaluates every combination in the parameter space exhaustively. Random search evaluates a specified number of randomly sampled combinations deterministically.
+- **Objective function**: It evaluates performance using a weighted combination of Total Return, Sharpe, Drawdown, Trade Count, and Cost Drag.
+- **Train/Validation/Test**: The data is split chronologically. The optimizer fits to the Train set, selects the best using the Validation set, and the Test set is kept untouched for final reporting.
+- **Overfit Guard**: Rejects or penalizes parameter sets where performance drops significantly between the Train and Validation sets.
+- **Robustness Score**: Measures how stable the performance is if the parameters are slightly perturbed, avoiding fragile optimums.
+- **Optuna**: Supported as an optional adapter for advanced search algorithms (e.g., TPE) but not required for base operation.
+
+### Optimizer Commands
+```bash
+python -m binance50.cli optimizer-config
+python -m binance50.cli optimizer-search-space
+python -m binance50.cli optimizer-split-report
+python -m binance50.cli optimizer-run-grid-fixture --symbol BTCUSDT --scope spot --interval 1m
+python -m binance50.cli optimizer-trials-report
+python -m binance50.cli optimizer-best-trial
+python -m binance50.cli optimizer-overfit-report
+python -m binance50.cli optimizer-robustness-report
+python -m binance50.cli optimizer-walk-forward-plan
+python -m binance50.cli optimizer-safety-check
+python -m binance50.cli optimizer-leakage-check
+python -m binance50.cli optimizer-health
+```

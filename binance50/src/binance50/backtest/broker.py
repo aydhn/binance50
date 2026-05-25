@@ -20,9 +20,7 @@ class BacktestSimulatedBroker:
             self.config.backtest.capital.max_cash_usage_pct / 100.0
         ):
             return False
-        if len(self._open_positions) >= self.config.backtest.capital.max_open_positions:
-            return False
-        return True
+        return not len(self._open_positions) >= self.config.backtest.capital.max_open_positions
 
     def open_position(self, fill: BacktestFill, context: dict) -> BacktestPosition:
         position = BacktestPosition(
