@@ -360,3 +360,19 @@ Provides skeleton adapters to interface with powerful third-party quantitative l
 ### Neden Phase 19'da optimizer yok?
 
 In Phase 19, the focus is entirely on correctly interpreting and reporting the results of a single deterministic backtest run. Introducing an optimizer here would distract from the core goal of establishing stable, mathematically sound evaluation primitives (Sharpe, Drawdown, Hash verification). Once the reporting primitives are rock-solid, Phase 20 will introduce the optimizer, utilizing these exact reports as the fitness scoring mechanism for parameter grids and walk-forward evaluations.
+
+## Optimizer v1 Architecture
+
+The optimizer is designed to find robust strategy parameters using exhaustive (grid) or random search, while remaining completely disconnected from live execution pathways.
+
+- **Search Space Model**: Defines the bounds and distributions of parameters. Execution and live-trading related parameters are strictly rejected from the search space.
+- **Grid Search**: Evaluates all combinations of parameters deterministically.
+- **Random Search**: Evaluates a random set of parameters, heavily reliant on deterministic seeds.
+- **Objective Scoring**: A composite scoring model incorporating return, drawdown, Sharpe, trade count, cost drag, and parameter complexity. Total return is never the sole metric.
+- **Time-Series Train/Validation/Test Split**: Enforces chronological evaluation and prevents future leakage using strict `train < validation < test` boundaries.
+- **Trial Runner**: Orchestrates the parameter application and backtest run per split.
+- **Overfit Guard**: Checks the performance gap between train and validation sets, penalizing or rejecting parameters that only perform well in-sample.
+- **Robustness Analysis**: Calculates the stability of a given parameter set by looking at nearby parameters to avoid fragile optimums.
+- **Walk-Forward Skeleton**: Prepares the definitions for walk-forward windows without running the full heavy compute cycle (deferred to Phase 21).
+- **Optional Optuna Adapter**: Allows extending search methods using Optuna when available, without creating a hard dependency on it.
+- **Why no live/paper in Phase 20?**: The optimizer is strictly an offline research tool. Allowing it to interact with execution models creates severe risks of unapproved, auto-generated orders.

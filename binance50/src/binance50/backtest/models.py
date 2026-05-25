@@ -1,10 +1,10 @@
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel
 
 
-class BacktestEventType(str, Enum):
+class BacktestEventType(StrEnum):
     run_started = "run_started"
     bar_opened = "bar_opened"
     bar_closed = "bar_closed"
@@ -21,7 +21,7 @@ class BacktestEventType(str, Enum):
     run_failed = "run_failed"
 
 
-class BacktestRunStatus(str, Enum):
+class BacktestRunStatus(StrEnum):
     pending = "pending"
     running = "running"
     completed = "completed"
@@ -29,19 +29,19 @@ class BacktestRunStatus(str, Enum):
     invalid = "invalid"
 
 
-class BacktestPositionStatus(str, Enum):
+class BacktestPositionStatus(StrEnum):
     open = "open"
     closed = "closed"
     rejected = "rejected"
 
 
-class BacktestFillModel(str, Enum):
+class BacktestFillModel(StrEnum):
     next_bar_open = "next_bar_open"
     next_bar_close = "next_bar_close"
     current_bar_close_for_debug_only = "current_bar_close_for_debug_only"
 
 
-class BacktestIntent(str, Enum):
+class BacktestIntent(StrEnum):
     simulation_only = "simulation_only"
     research_backtest = "research_backtest"
     no_order = "no_order"

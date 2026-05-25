@@ -354,6 +354,191 @@ def get_risk_assessments_schema() -> DatasetSchema:
     )
 
 
+def get_optimization_runs_schema() -> DatasetSchema:
+    return DatasetSchema(
+        dataset_name="optimization_runs",
+        dataset_kind=DatasetKind.OPTIMIZATION_RUNS,
+        version=1,
+        columns=[
+            ColumnSchema("run_id", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("symbol", "string", nullable=False),
+            ColumnSchema("market_scope", "string", nullable=False),
+            ColumnSchema("interval", "string", nullable=False),
+            ColumnSchema("method", "string", nullable=False),
+            ColumnSchema("trial_count", "int64", nullable=False),
+            ColumnSchema("completed_trial_count", "int64", nullable=False),
+            ColumnSchema("failed_trial_count", "int64", nullable=False),
+            ColumnSchema("rejected_trial_count", "int64", nullable=False),
+            ColumnSchema("input_hash", "string", nullable=False),
+            ColumnSchema("search_space_hash", "string", nullable=False),
+            ColumnSchema("config_hash", "string", nullable=False),
+            ColumnSchema("output_hash", "string", nullable=False),
+            ColumnSchema("generated_at_utc", "int64", nullable=False),
+            ColumnSchema("warnings_json", "string", nullable=False),
+            ColumnSchema("best_trial_id", "string", nullable=True),
+        ],
+        primary_keys=["run_id"],
+        partition_columns=["market_scope", "symbol", "interval"],
+        timestamp_column="generated_at_utc",
+        disallowed_column_names=[
+            "api_key",
+            "secret",
+            "signature",
+            "order_id",
+            "client_order_id",
+            "exchange_order_id",
+            "live_order",
+            "testnet_order",
+            "paper_order",
+            "real_order",
+            "execution_gateway",
+        ],
+    )
+
+
+def get_optimization_trials_schema() -> DatasetSchema:
+    return DatasetSchema(
+        dataset_name="optimization_trials",
+        dataset_kind=DatasetKind.OPTIMIZATION_TRIALS,
+        version=1,
+        columns=[
+            ColumnSchema("trial_id", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("run_id", "string", nullable=False),
+            ColumnSchema("method", "string", nullable=False),
+            ColumnSchema("status", "string", nullable=False),
+            ColumnSchema("objective_score", "float64", nullable=True),
+            ColumnSchema("robust_score", "float64", nullable=True),
+            ColumnSchema("started_at_utc", "int64", nullable=False),
+            ColumnSchema("finished_at_utc", "int64", nullable=True),
+            ColumnSchema("error_message", "string", nullable=True),
+            ColumnSchema("parameter_set_json", "string", nullable=False),
+            ColumnSchema("train_result_json", "string", nullable=True),
+            ColumnSchema("validation_result_json", "string", nullable=True),
+            ColumnSchema("test_result_json", "string", nullable=True),
+            ColumnSchema("overfit_report_json", "string", nullable=True),
+            ColumnSchema("robustness_report_json", "string", nullable=True),
+            ColumnSchema("metadata_json", "string", nullable=False),
+        ],
+        primary_keys=["trial_id"],
+        partition_columns=["run_id"],
+        timestamp_column="started_at_utc",
+        disallowed_column_names=[
+            "api_key",
+            "secret",
+            "signature",
+            "order_id",
+            "client_order_id",
+            "exchange_order_id",
+            "live_order",
+            "testnet_order",
+            "paper_order",
+            "real_order",
+            "execution_gateway",
+        ],
+    )
+
+
+def get_optimization_overfit_reports_schema() -> DatasetSchema:
+    return DatasetSchema(
+        dataset_name="optimization_overfit_reports",
+        dataset_kind=DatasetKind.OPTIMIZATION_OVERFIT_REPORTS,
+        version=1,
+        columns=[
+            ColumnSchema("trial_id", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("train_score", "float64", nullable=True),
+            ColumnSchema("validation_score", "float64", nullable=True),
+            ColumnSchema("test_score", "float64", nullable=True),
+            ColumnSchema("train_validation_gap", "float64", nullable=True),
+            ColumnSchema("train_validation_sharpe_gap", "float64", nullable=True),
+            ColumnSchema("validation_test_gap", "float64", nullable=True),
+            ColumnSchema("parameter_complexity", "float64", nullable=False),
+            ColumnSchema("low_trade_count_penalty", "float64", nullable=False),
+            ColumnSchema("high_drawdown_penalty", "float64", nullable=False),
+            ColumnSchema("cost_drag_penalty", "float64", nullable=False),
+            ColumnSchema("overfit_risk_level", "string", nullable=False),
+            ColumnSchema("rejected", "bool", nullable=False),
+            ColumnSchema("warnings_json", "string", nullable=False),
+            ColumnSchema("metadata_json", "string", nullable=False),
+        ],
+        primary_keys=["trial_id"],
+        disallowed_column_names=[
+            "api_key",
+            "secret",
+            "signature",
+            "order_id",
+            "client_order_id",
+            "exchange_order_id",
+            "live_order",
+            "testnet_order",
+            "paper_order",
+            "real_order",
+            "execution_gateway",
+        ],
+    )
+
+
+def get_optimization_robustness_reports_schema() -> DatasetSchema:
+    return DatasetSchema(
+        dataset_name="optimization_robustness_reports",
+        dataset_kind=DatasetKind.OPTIMIZATION_ROBUSTNESS_REPORTS,
+        version=1,
+        columns=[
+            ColumnSchema("trial_id", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("rank_stability_score", "float64", nullable=True),
+            ColumnSchema("metric_dispersion_score", "float64", nullable=True),
+            ColumnSchema("neighbor_sensitivity_score", "float64", nullable=True),
+            ColumnSchema("robustness_score", "float64", nullable=True),
+            ColumnSchema("fragile_optimum_warning", "bool", nullable=False),
+            ColumnSchema("comparable_neighbor_count", "int64", nullable=False),
+            ColumnSchema("warnings_json", "string", nullable=False),
+            ColumnSchema("metadata_json", "string", nullable=False),
+        ],
+        primary_keys=["trial_id"],
+        disallowed_column_names=[
+            "api_key",
+            "secret",
+            "signature",
+            "order_id",
+            "client_order_id",
+            "exchange_order_id",
+            "live_order",
+            "testnet_order",
+            "paper_order",
+            "real_order",
+            "execution_gateway",
+        ],
+    )
+
+
+def get_optimization_search_spaces_schema() -> DatasetSchema:
+    return DatasetSchema(
+        dataset_name="optimization_search_spaces",
+        dataset_kind=DatasetKind.OPTIMIZATION_SEARCH_SPACES,
+        version=1,
+        columns=[
+            ColumnSchema("search_space_hash", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("specs_json", "string", nullable=False),
+            ColumnSchema("total_parameters", "int64", nullable=False),
+            ColumnSchema("estimated_combinations", "int64", nullable=False),
+            ColumnSchema("metadata_json", "string", nullable=False),
+        ],
+        primary_keys=["search_space_hash"],
+        disallowed_column_names=[
+            "api_key",
+            "secret",
+            "signature",
+            "order_id",
+            "client_order_id",
+            "exchange_order_id",
+            "live_order",
+            "testnet_order",
+            "paper_order",
+            "real_order",
+            "execution_gateway",
+        ],
+    )
+
+
 def get_schema_registry() -> dict[str, DatasetSchema]:
     return {
         "ohlcv": get_ohlcv_schema(),
@@ -364,6 +549,11 @@ def get_schema_registry() -> dict[str, DatasetSchema]:
         "scored_signal_candidates": get_scored_signal_candidates_schema(),
         "market_regimes": get_market_regimes_schema(),
         "risk_assessments": get_risk_assessments_schema(),
+        "optimization_runs": get_optimization_runs_schema(),
+        "optimization_trials": get_optimization_trials_schema(),
+        "optimization_overfit_reports": get_optimization_overfit_reports_schema(),
+        "optimization_robustness_reports": get_optimization_robustness_reports_schema(),
+        "optimization_search_spaces": get_optimization_search_spaces_schema(),
     }
 
 

@@ -143,3 +143,25 @@ def import_backtest_report_pack(pack: Any, config: AppConfig) -> dict[str, Any]:
         "status": "imported",
         "hash": pack.report_hash,
     }
+
+
+from binance50.config.models import AppConfig
+from binance50.optimizer.datasets import optimization_run_to_dataframe
+from binance50.optimizer.models import OptimizationRunResult
+from binance50.storage.manifest import DatasetManifest
+
+
+def import_optimization_result(result: OptimizationRunResult, config: AppConfig) -> DatasetManifest:
+    # Minimal skeleton for importing optimization result
+
+    # Check safety before import
+    from binance50.safety.optimizer_guard import assert_optimizer_output_safe
+
+    assert_optimizer_output_safe(result, config)
+
+    optimization_run_to_dataframe(result)
+
+    # Assuming DatasetManager handles writing dataset. For skeleton, returning a dummy manifest.
+    return DatasetManifest(
+        dataset_name="optimization_runs", version=1, active_version=1, versions={}
+    )

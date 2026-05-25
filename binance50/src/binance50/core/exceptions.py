@@ -1104,3 +1104,67 @@ class MetricNaNInfError(BacktestMetricsError):
 
 class InsufficientMetricObservationsError(BacktestMetricsError):
     pass
+
+
+class OptimizerError(Binance50Error):
+    pass
+
+
+class OptimizerConfigError(OptimizerError):
+    pass
+
+
+class SearchSpaceError(OptimizerError):
+    pass
+
+
+class ParameterConstraintError(OptimizerError):
+    pass
+
+
+class OptimizerSamplerError(OptimizerError):
+    pass
+
+
+class OptimizationTrialError(OptimizerError):
+    pass
+
+
+class OptimizationObjectiveError(OptimizerError):
+    pass
+
+
+class OptimizationSplitError(OptimizerError):
+    pass
+
+
+class WalkForwardPlanError(OptimizerError):
+    pass
+
+
+class OverfitDetectedError(OptimizerError):
+    pass
+
+
+class RobustnessError(OptimizerError):
+    pass
+
+
+class OptimizerQualityError(OptimizerError):
+    pass
+
+
+class OptimizerCacheError(OptimizerError):
+    pass
+
+
+class OptimizerLeakageError(OptimizerError):
+    pass
+
+
+class OptimizerExecutionForbiddenError(OptimizerError):
+    pass
+
+
+class OptionalOptimizerBackendMissingError(OptimizerError):
+    pass
