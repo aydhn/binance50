@@ -822,7 +822,6 @@ backtest:
     reject_metric_nan_inf: true
     warn_low_trade_count: true
     min_trade_count_warning: 5
-
 backtest_reporting:
   enabled: true
   output_dataset_name: backtest_report_packs
@@ -830,14 +829,12 @@ backtest_reporting:
   cache_dir: data/backtest/reports_v2/cache
   export_dir: data/backtest/reports_v2/exports
   report_dir: data/backtest/reports_v2/reports
-
   real_exchange_forbidden: true
   no_live_claims: true
   require_disclaimer: true
   require_input_hash: true
   require_config_hash: true
   require_report_hash: true
-
   metrics:
     enabled: true
     annualization_periods_per_year:
@@ -867,21 +864,19 @@ backtest_reporting:
     min_observations_for_ratio_metrics: 30
     min_trades_for_trade_metrics: 5
     risk_free_rate_annual: 0.0
-
   rolling:
     enabled: true
     windows:
-      - 20
-      - 50
-      - 100
+    - 20
+    - 50
+    - 100
     compute_rolling_return: true
     compute_rolling_volatility: true
     compute_rolling_sharpe: true
     compute_rolling_drawdown: true
     compute_rolling_win_rate: true
     center_windows: false
-    min_periods_ratio: 0.70
-
+    min_periods_ratio: 0.7
   periodic_returns:
     enabled: true
     daily: true
@@ -892,7 +887,6 @@ backtest_reporting:
     calendar_heatmap_table: true
     use_resample: true
     require_datetime_index: true
-
   benchmark:
     enabled: true
     compare_buy_and_hold: true
@@ -904,7 +898,6 @@ backtest_reporting:
     compute_alpha_beta_placeholder: true
     require_same_date_range: true
     benchmark_label: buy_and_hold
-
   drawdown:
     enabled: true
     top_n_drawdowns: 10
@@ -914,7 +907,6 @@ backtest_reporting:
     compute_avg_drawdown: true
     compute_max_drawdown: true
     require_recovery_metadata: true
-
   trade_distribution:
     enabled: true
     compute_win_loss_distribution: true
@@ -924,7 +916,6 @@ backtest_reporting:
     top_n_trades: 10
     compute_consecutive_wins_losses: true
     compute_holding_time_distribution: true
-
   breakdowns:
     enabled: true
     by_regime: true
@@ -935,7 +926,6 @@ backtest_reporting:
     by_symbol: true
     by_interval: true
     min_trades_per_bucket_warning: 3
-
   costs:
     enabled: true
     analyze_fees: true
@@ -944,7 +934,6 @@ backtest_reporting:
     compute_cost_drag_pct: true
     warn_high_cost_drag: true
     high_cost_drag_pct: 25.0
-
   report_pack:
     enabled: true
     include_summary: true
@@ -962,7 +951,6 @@ backtest_reporting:
     export_markdown: true
     export_csv_tables: true
     export_html_static_skeleton: false
-
   adapters:
     empyrical_optional:
       enabled: true
@@ -972,7 +960,6 @@ backtest_reporting:
       enabled: true
       fail_if_missing: false
       generate_external_report: false
-
   quality:
     reject_nan_inf_metrics: true
     warn_low_observation_count: true
@@ -982,7 +969,6 @@ backtest_reporting:
     reject_mismatched_date_range: true
     warn_metric_instability: true
     reject_live_performance_claims: true
-
 optimizer:
   enabled: true
   output_dataset_name: optimization_trials
@@ -990,7 +976,6 @@ optimizer:
   cache_dir: data/optimizer/cache
   export_dir: data/optimizer/exports
   reports_dir: data/optimizer/reports
-
   real_exchange_forbidden: true
   paper_trade_forbidden: true
   live_trade_forbidden: true
@@ -998,13 +983,12 @@ optimizer:
   api_key_forbidden: true
   signed_request_forbidden: true
   dashboard_forbidden: true
-
   mode:
     default_method: grid
     allowed_methods:
-      - grid
-      - random
-      - optuna_optional
+    - grid
+    - random
+    - optuna_optional
     deterministic: true
     random_seed: 42
     max_trials: 100
@@ -1013,13 +997,12 @@ optimizer:
     parallel_execution_enabled: false
     fail_fast: false
     continue_on_trial_failure: true
-
   data_split:
     enabled: true
     split_method: chronological
-    train_pct: 0.60
-    validation_pct: 0.20
-    test_pct: 0.20
+    train_pct: 0.6
+    validation_pct: 0.2
+    test_pct: 0.2
     min_train_rows: 500
     min_validation_rows: 200
     min_test_rows: 200
@@ -1029,7 +1012,6 @@ optimizer:
     time_series_cv_splits: 3
     walk_forward_skeleton_enabled: true
     walk_forward_full_run_deferred: true
-
   search_space:
     max_parameters: 20
     max_values_per_parameter: 20
@@ -1042,48 +1024,85 @@ optimizer:
     allow_backtest_params: true
     allow_execution_params: false
     allow_live_params: false
-
   default_search_spaces:
     strategy:
-      trend_following.min_adx: [18.0, 20.0, 22.0, 25.0]
-      mean_reversion.rsi_oversold: [25.0, 30.0, 35.0]
-      mean_reversion.rsi_overbought: [65.0, 70.0, 75.0]
-      momentum_continuation.rsi_min: [48.0, 50.0, 55.0]
+      trend_following.min_adx:
+      - 18.0
+      - 20.0
+      - 22.0
+      - 25.0
+      mean_reversion.rsi_oversold:
+      - 25.0
+      - 30.0
+      - 35.0
+      mean_reversion.rsi_overbought:
+      - 65.0
+      - 70.0
+      - 75.0
+      momentum_continuation.rsi_min:
+      - 48.0
+      - 50.0
+      - 55.0
     signals:
-      thresholds.research_candidate_min: [45.0, 50.0, 55.0]
-      thresholds.risk_review_min: [60.0, 65.0, 70.0]
-      confluence.same_direction_bonus_per_plugin: [3.0, 5.0, 7.0]
+      thresholds.research_candidate_min:
+      - 45.0
+      - 50.0
+      - 55.0
+      thresholds.risk_review_min:
+      - 60.0
+      - 65.0
+      - 70.0
+      confluence.same_direction_bonus_per_plugin:
+      - 3.0
+      - 5.0
+      - 7.0
     risk:
-      decision.min_final_risk_score: [55.0, 60.0, 65.0]
-      volatility.high_volatility_penalty: [10.0, 15.0, 20.0]
-      conflicts.high_conflict_penalty: [10.0, 20.0, 30.0]
+      decision.min_final_risk_score:
+      - 55.0
+      - 60.0
+      - 65.0
+      volatility.high_volatility_penalty:
+      - 10.0
+      - 15.0
+      - 20.0
+      conflicts.high_conflict_penalty:
+      - 10.0
+      - 20.0
+      - 30.0
     backtest:
-      sizing.fixed_notional_usdt: [25.0, 50.0, 75.0]
-      slippage.default_slippage_bps: [1.0, 2.0, 5.0]
-      exits.max_holding_bars: [50, 100, 150]
-
+      sizing.fixed_notional_usdt:
+      - 25.0
+      - 50.0
+      - 75.0
+      slippage.default_slippage_bps:
+      - 1.0
+      - 2.0
+      - 5.0
+      exits.max_holding_bars:
+      - 50
+      - 100
+      - 150
   objective:
     primary_metric: robust_score
     maximize: true
     components:
-      total_return_weight: 0.20
+      total_return_weight: 0.2
       sharpe_weight: 0.15
-      sortino_weight: 0.10
-      calmar_weight: 0.10
-      max_drawdown_weight: -0.20
-      profit_factor_weight: 0.10
-      expectancy_weight: 0.10
+      sortino_weight: 0.1
+      calmar_weight: 0.1
+      max_drawdown_weight: -0.2
+      profit_factor_weight: 0.1
+      expectancy_weight: 0.1
       trade_count_weight: 0.05
-      stability_weight: 0.10
-      cost_drag_weight: -0.10
-      overfit_penalty_weight: -0.30
+      stability_weight: 0.1
+      cost_drag_weight: -0.1
+      overfit_penalty_weight: -0.3
     min_trade_count: 10
     min_validation_trade_count: 5
     max_drawdown_hard_limit_pct: 35.0
     max_cost_drag_pct: 30.0
     score_clamp_min: -100.0
     score_clamp_max: 100.0
-
   overfit:
     enabled: true
     reject_if_train_validation_gap_too_high: true
@@ -1100,7 +1119,6 @@ optimizer:
     penalize_high_cost_drag: true
     warn_best_trial_only_good_on_train: true
     require_validation_rank_consistency: true
-
   robustness:
     enabled: true
     compute_rank_stability: true
@@ -1110,7 +1128,6 @@ optimizer:
     top_n_trials_for_robustness: 10
     min_robustness_score: 0.0
     warn_fragile_optimum: true
-
   optuna_optional:
     enabled: false
     fail_if_missing: false
@@ -1121,7 +1138,6 @@ optimizer:
     direction: maximize
     study_name_prefix: binance50_optimizer
     persistent_storage_enabled: false
-
   quality:
     reject_no_trials: true
     reject_all_trials_failed: true
@@ -1132,4 +1148,134 @@ optimizer:
     warn_low_trial_count: true
     min_trial_count_warning: 10
     warn_no_validation_set: true
+    reject_live_or_paper_intent: true
+walkforward:
+  enabled: true
+  output_dataset_name: walkforward_runs
+  cache_enabled: true
+  cache_dir: data/walkforward/cache
+  export_dir: data/walkforward/exports
+  reports_dir: data/walkforward/reports
+  real_exchange_forbidden: true
+  paper_trade_forbidden: true
+  live_trade_forbidden: true
+  order_creation_forbidden: true
+  api_key_forbidden: true
+  signed_request_forbidden: true
+  dashboard_forbidden: true
+  mode:
+    default_mode: rolling_window
+    allowed_modes:
+    - rolling_window
+    - expanding_window
+    - anchored_expanding
+    deterministic: true
+    random_seed: 42
+    max_windows: 20
+    min_windows_required: 3
+    run_optimizer_per_window: true
+    allow_fixed_params_mode: true
+    max_optimizer_trials_per_window: 50
+    parallel_windows_enabled: false
+    max_parallel_windows: 1
+    continue_on_window_failure: true
+  windows:
+    train_bars: 2000
+    validation_bars: 500
+    test_bars: 500
+    step_bars: 500
+    min_train_bars: 1000
+    min_validation_bars: 200
+    min_test_bars: 200
+    embargo_bars: 0
+    gap_bars_between_train_validation: 0
+    gap_bars_between_validation_test: 0
+    allow_overlapping_oos_windows: false
+    require_equal_oos_duration: true
+  expanding:
+    initial_train_bars: 2000
+    train_expansion_step_bars: 500
+    max_train_bars: null
+    anchored_start: true
+  optimizer:
+    method: grid
+    inherit_optimizer_config: true
+    override_max_trials: 50
+    select_best_by: validation_robust_score
+    use_test_for_selection: false
+    require_overfit_guard: true
+    require_robustness_guard: true
+    reject_overfit_trials: true
+  oos:
+    enabled: true
+    stitch_oos_equity: true
+    compound_oos_equity: false
+    reset_capital_each_window: true
+    starting_cash_usdt: 1000.0
+    require_oos_backtest_report: true
+    min_oos_trade_count_warning: 3
+    aggregate_oos_metrics: true
+  stability:
+    enabled: true
+    compute_window_score_stability: true
+    compute_oos_return_stability: true
+    compute_oos_drawdown_stability: true
+    compute_trade_count_stability: true
+    compute_parameter_stability: true
+    min_stability_score: 0.0
+    max_stability_score: 100.0
+    warn_unstable_windows: true
+  degradation:
+    enabled: true
+    compare_train_validation_oos: true
+    max_validation_to_oos_score_drop: 40.0
+    max_validation_to_oos_return_drop_pct: 50.0
+    max_validation_to_oos_sharpe_drop: 1.5
+    warn_severe_degradation: true
+  parameter_drift:
+    enabled: true
+    compute_numeric_drift: true
+    compute_categorical_drift: true
+    warn_high_drift: true
+    high_drift_threshold: 0.6
+    stable_parameter_bonus: true
+  regime_analysis:
+    enabled: true
+    analyze_oos_by_regime: true
+    analyze_window_regime_distribution: true
+    warn_regime_concentration: true
+    max_single_regime_oos_ratio: 0.8
+    warn_regime_shift_between_train_oos: true
+  robustness:
+    enabled: true
+    compute_window_rank_consistency: true
+    compute_best_trial_recurrence: true
+    compute_oos_metric_dispersion: true
+    compute_oos_hit_rate_consistency: true
+    compute_walkforward_robust_score: true
+    min_walkforward_robust_score_warning: 40.0
+  leakage:
+    prevent_lookahead_bias: true
+    reject_future_columns: true
+    reject_target_columns: true
+    reject_label_columns: true
+    reject_split_overlap: true
+    reject_test_selection: true
+    reject_forward_alignment: true
+    reject_nearest_alignment: true
+    require_backward_asof_alignment: true
+    reject_same_bar_fill: true
+    reject_oos_overlap_when_disabled: true
+  quality:
+    reject_no_windows: true
+    reject_all_windows_failed: true
+    reject_missing_oos_results: true
+    reject_missing_window_metadata: true
+    reject_missing_best_trial: true
+    reject_missing_hashes: true
+    reject_nan_inf_metrics: true
+    warn_low_window_count: true
+    warn_low_oos_trade_count: true
+    warn_high_parameter_drift: true
+    warn_high_degradation: true
     reject_live_or_paper_intent: true

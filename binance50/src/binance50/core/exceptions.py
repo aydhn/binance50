@@ -1168,3 +1168,63 @@ class OptimizerExecutionForbiddenError(OptimizerError):
 
 class OptionalOptimizerBackendMissingError(OptimizerError):
     pass
+
+
+class WalkForwardError(Binance50Error):
+    pass
+
+
+class WalkForwardConfigError(WalkForwardError):
+    pass
+
+
+class WalkForwardWindowError(WalkForwardError):
+    pass
+
+
+class WalkForwardSplitError(WalkForwardError):
+    pass
+
+
+class WalkForwardRunnerError(WalkForwardError):
+    pass
+
+
+class WalkForwardOptimizerBridgeError(WalkForwardError):
+    pass
+
+
+class WalkForwardOOSEvaluationError(WalkForwardError):
+    pass
+
+
+class WalkForwardStitchingError(WalkForwardError):
+    pass
+
+
+class WalkForwardParameterDriftError(WalkForwardError):
+    pass
+
+
+class WalkForwardDegradationError(WalkForwardError):
+    pass
+
+
+class WalkForwardStabilityError(WalkForwardError):
+    pass
+
+
+class WalkForwardRobustnessError(WalkForwardError):
+    pass
+
+
+class WalkForwardQualityError(WalkForwardError):
+    pass
+
+
+class WalkForwardLeakageError(WalkForwardError):
+    pass
+
+
+class WalkForwardExecutionForbiddenError(WalkForwardError):
+    pass

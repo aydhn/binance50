@@ -1761,6 +1761,7 @@ def risk_config():
         config = load_config()
     except:
         from binance50.config.models import AppConfig
+
         config = AppConfig()
     print("Risk Engine Configuration Summary")
     print(f"Enabled: {config.risk.enabled}")
@@ -1776,6 +1777,7 @@ def risk_limit_report():
         config = load_config()
     except:
         from binance50.config.models import AppConfig
+
         config = AppConfig()
     from binance50.risk.limits import build_limit_report
 
@@ -1824,6 +1826,7 @@ def risk_safety_check():
         config = load_config()
     except:
         from binance50.config.models import AppConfig
+
         config = AppConfig()
     from binance50.safety.risk_guard import build_risk_safety_report
 
@@ -1840,6 +1843,7 @@ def risk_execution_guard_check():
         config = load_config()
     except:
         from binance50.config.models import AppConfig
+
         config = AppConfig()
     from binance50.safety.risk_execution_guard import build_risk_execution_guard_report
 
@@ -1856,6 +1860,7 @@ def risk_health():
         config = load_config()
     except:
         from binance50.config.models import AppConfig
+
         config = AppConfig()
     from binance50.risk.reports import build_risk_health_report
 
@@ -2121,6 +2126,7 @@ def backtest_reporting_config() -> None:
         config = load_config()
     except:
         from binance50.config.models import AppConfig
+
         config = AppConfig()
     console.print(
         Panel(
@@ -2221,6 +2227,7 @@ def backtest_reporting_health() -> None:
         config = load_config()
     except:
         from binance50.config.models import AppConfig
+
         config = AppConfig()
     health = build_report_health(config)
     console.print(Panel(json.dumps(health, indent=2), title="Backtest Reporting Health"))
@@ -2233,6 +2240,7 @@ def optimizer_config():
         config = load_config()
     except:
         from binance50.config.models import AppConfig
+
         config = AppConfig()
     console.print(Panel("Optimizer Config", style="cyan"))
     console.print(f"Enabled: {config.optimizer.enabled}")
@@ -2249,6 +2257,7 @@ def optimizer_search_space():
         config = load_config()
     except:
         from binance50.config.models import AppConfig
+
         config = AppConfig()
     from binance50.optimizer.search_space import build_default_search_space
 
@@ -2369,10 +2378,8 @@ def optimizer_health():
     console.print("Optimizer is healthy")
 
 
-
-
 @app.command("doctor")
-def doctor():
+def optimizer_doctor():
     """Run phase 20 optimizer validations and health checks"""
     console.print("Binance50 Doctor")
     console.print("Running all health checks including Phase 20 optimizer checks...")
@@ -2380,15 +2387,18 @@ def doctor():
         config = load_config()
     except:
         from binance50.config.models import AppConfig
+
         config = AppConfig()
     console.print("Running safety check...")
     try:
         from binance50.safety.live_guard import assert_global_safety_invariants
+
         assert_global_safety_invariants(config)
     except:
         pass
     try:
         from binance50.safety.cli_guard import validate_cli_configuration
+
         validate_cli_configuration(config)
     except:
         pass

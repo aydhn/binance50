@@ -1,5 +1,3 @@
-
-
 def test_parameter_spec_valid():
     pass
 

@@ -73,7 +73,8 @@ MIGRATIONS = [
     Migration(
         version=2,
         name="002_add_quality_index",
-        sql_statements=["""CREATE TABLE IF NOT EXISTS quality_index (
+        sql_statements=[
+            """CREATE TABLE IF NOT EXISTS quality_index (
                 quality_id TEXT PRIMARY KEY,
                 version_id TEXT NOT NULL,
                 dataset_name TEXT NOT NULL,
@@ -86,14 +87,16 @@ MIGRATIONS = [
                 last_seen_open_time INTEGER,
                 created_at_utc TEXT NOT NULL,
                 FOREIGN KEY(version_id) REFERENCES dataset_versions(version_id)
-            )"""],
+            )"""
+        ],
         destructive=False,
         created_at_utc="2024-05-22T00:00:00Z",
     ),
     Migration(
         version=3,
         name="003_add_data_index",
-        sql_statements=["""CREATE TABLE IF NOT EXISTS data_index (
+        sql_statements=[
+            """CREATE TABLE IF NOT EXISTS data_index (
                 coverage_id TEXT PRIMARY KEY,
                 dataset_name TEXT NOT NULL,
                 market_scope TEXT NOT NULL,
@@ -107,7 +110,8 @@ MIGRATIONS = [
                 version_id TEXT NOT NULL,
                 updated_at_utc TEXT NOT NULL,
                 FOREIGN KEY(version_id) REFERENCES dataset_versions(version_id)
-            )"""],
+            )"""
+        ],
         destructive=False,
         created_at_utc="2024-05-22T00:00:00Z",
     ),
