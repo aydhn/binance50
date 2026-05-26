@@ -1273,3 +1273,21 @@ class MLDatasetCacheError(MLDatasetError):
 
 class MLDatasetExportError(MLDatasetError):
     pass
+
+class MLTrainingError(Binance50Error): pass
+class MLTrainingConfigError(MLTrainingError): pass
+class MLTrainingDatasetError(MLTrainingError): pass
+class MLFeatureMatrixError(MLTrainingError): pass
+class MLTargetError(MLTrainingError): pass
+class MLEstimatorError(MLTrainingError): pass
+class MLValidationError(MLTrainingError): pass
+class MLMetricsError(MLTrainingError): pass
+class MLCalibrationError(MLTrainingError): pass
+class MLFeatureImportanceError(MLTrainingError): pass
+class MLModelArtifactError(MLTrainingError): pass
+class MLModelRegistryError(MLTrainingError): pass
+class MLModelCardError(MLTrainingError): pass
+class MLTrainingQualityError(MLTrainingError): pass
+class MLTrainingSafetyError(MLTrainingError): pass
+class MLModelLeakageError(MLTrainingError): pass
+class MLServingForbiddenError(MLTrainingError): pass

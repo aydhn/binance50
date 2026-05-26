@@ -1149,7 +1149,6 @@ optimizer:
     min_trial_count_warning: 10
     warn_no_validation_set: true
     reject_live_or_paper_intent: true
-
 ml_dataset:
   enabled: true
   output_dataset_name: ml_datasets
@@ -1157,7 +1156,6 @@ ml_dataset:
   cache_dir: data/ml/datasets/cache
   export_dir: data/ml/datasets/exports
   registry_dir: data/ml/datasets/registry
-
   real_exchange_forbidden: true
   paper_trade_forbidden: true
   live_trade_forbidden: true
@@ -1167,7 +1165,6 @@ ml_dataset:
   dashboard_forbidden: true
   model_training_deferred: true
   prediction_deferred: true
-
   sources:
     use_indicator_v1: true
     use_indicator_v2: true
@@ -1179,65 +1176,63 @@ ml_dataset:
     use_walkforward_metadata: false
     require_source_hashes: true
     require_source_timestamps: true
-
   feature_selection:
     enabled: true
     include_prefixes:
-      - trend_
-      - mom_
-      - vol_
-      - volu_
-      - tr_
-      - div_
-      - mtf_
-      - pat_
-      - reg_
-      - signal_
-      - risk_
+    - trend_
+    - mom_
+    - vol_
+    - volu_
+    - tr_
+    - div_
+    - mtf_
+    - pat_
+    - reg_
+    - signal_
+    - risk_
     exclude_prefixes:
-      - label_
-      - target_
-      - future_
-      - next_
-      - forward_
-      - order_
-      - execution_
+    - label_
+    - target_
+    - future_
+    - next_
+    - forward_
+    - order_
+    - execution_
     required_base_columns:
-      - symbol
-      - market_scope
-      - interval
-      - open_time
-      - close_time
+    - symbol
+    - market_scope
+    - interval
+    - open_time
+    - close_time
     max_feature_columns: 1500
     min_feature_columns: 10
     reject_all_nan_features: true
     reject_constant_features: false
     warn_constant_features: true
-    max_nan_ratio_per_feature: 0.40
+    max_nan_ratio_per_feature: 0.4
     max_inf_count: 0
     allow_object_features: false
     allow_boolean_features: true
     allow_categorical_features: true
     categorical_encoding_deferred: true
-
   labels:
     enabled: true
     default_label_type: forward_return_classification
     allowed_label_types:
-      - forward_return_regression
-      - forward_return_classification
-      - volatility_adjusted_return_classification
-      - triple_barrier_skeleton
-      - ranking_skeleton
+    - forward_return_regression
+    - forward_return_classification
+    - volatility_adjusted_return_classification
+    - triple_barrier_skeleton
+    - ranking_skeleton
     horizons_bars:
-      - 1
-      - 3
-      - 5
-      - 10
-      - 20
+    - 1
+    - 3
+    - 5
+    - 10
+    - 20
     default_horizon_bars: 5
     return_source: close
-    classification_threshold_pct: 0.20
+    classification_threshold_pct: 0.2
     neutral_zone_pct: 0.05
     include_neutral_class: true
     label_column_prefix: label_
@@ -1251,13 +1246,12 @@ ml_dataset:
       stop_loss_pct: 0.5
       max_holding_bars: 20
       full_engine_deferred: true
-
   splits:
     enabled: true
     split_method: chronological
-    train_pct: 0.60
-    validation_pct: 0.20
-    test_pct: 0.20
+    train_pct: 0.6
+    validation_pct: 0.2
+    test_pct: 0.2
     min_train_rows: 500
     min_validation_rows: 200
     min_test_rows: 200
@@ -1268,17 +1262,16 @@ ml_dataset:
     test_set_for_final_report_only: true
     reject_split_overlap: true
     reject_test_selection: true
-
   preprocessing:
     enabled: true
     fit_transform_train_only: true
     transform_validation_test_only: true
     scaler: standard
     allowed_scalers:
-      - none
-      - standard
-      - robust
-      - minmax
+    - none
+    - standard
+    - robust
+    - minmax
     imputation:
       enabled: true
       strategy: median_train_only
@@ -1296,7 +1289,6 @@ ml_dataset:
       encoding_deferred: true
     persist_preprocessor: true
     preprocessor_registry_enabled: true
-
   alignment:
     enabled: true
     method: backward_asof
@@ -1305,7 +1297,6 @@ ml_dataset:
     require_no_future_join: true
     tolerance_bars: 1
     require_closed_candles: true
-
   leakage:
     prevent_lookahead_bias: true
     reject_future_columns_in_features: true
@@ -1321,7 +1312,6 @@ ml_dataset:
     reject_test_fit: true
     reject_validation_fit: true
     reject_same_bar_label_as_feature: true
-
   quality:
     reject_empty_dataset: true
     reject_missing_labels: true
@@ -1337,7 +1327,6 @@ ml_dataset:
     reject_leakage_warnings: true
     warn_low_row_count: true
     min_total_rows_warning: 1000
-
 walkforward:
   enabled: true
   output_dataset_name: walkforward_runs
@@ -1467,4 +1456,184 @@ walkforward:
     warn_low_oos_trade_count: true
     warn_high_parameter_drift: true
     warn_high_degradation: true
+    reject_live_or_paper_intent: true
+ml_training:
+  enabled: true
+  output_dataset_name: ml_training_runs
+  cache_enabled: true
+  cache_dir: data/ml/training/cache
+  export_dir: data/ml/training/exports
+  registry_dir: data/ml/training/registry
+  artifacts_dir: data/ml/training/artifacts
+  reports_dir: data/ml/training/reports
+  real_exchange_forbidden: true
+  paper_trade_forbidden: true
+  live_trade_forbidden: true
+  order_creation_forbidden: true
+  api_key_forbidden: true
+  signed_request_forbidden: true
+  dashboard_forbidden: true
+  prediction_serving_deferred: true
+  execution_integration_forbidden: true
+  auto_strategy_update_forbidden: true
+  dataset:
+    require_ml_dataset_manifest: true
+    require_leakage_free_dataset: true
+    require_quality_passed_dataset: true
+    allowed_label_types:
+    - forward_return_classification
+    - forward_return_regression
+    - volatility_adjusted_return_classification
+    default_label_column: label_forward_return_classification_5
+    require_split_metadata: true
+    require_preprocessor_metadata: true
+    reject_if_feature_contains_label: true
+    reject_if_feature_contains_future: true
+    reject_if_feature_contains_target: true
+    reject_if_missing_train_validation_test: true
+  task:
+    default_task_type: classification
+    allowed_task_types:
+    - classification
+    - regression_skeleton
+    multiclass_enabled: true
+    binary_enabled: true
+    regression_default_enabled: false
+    ranking_deferred: true
+  models:
+    enabled_models:
+    - dummy_classifier
+    - logistic_regression
+    - random_forest_classifier
+    - hist_gradient_boosting_classifier
+    default_model: logistic_regression
+    allow_regression_skeletons: true
+    random_state: 42
+    n_jobs: 1
+    max_fit_seconds_per_model: 300
+    max_models_per_run: 10
+    allow_gpu: false
+    require_deterministic_models: true
+    logistic_regression:
+      enabled: true
+      max_iter: 1000
+      class_weight: balanced
+      solver: lbfgs
+      C: 1.0
+    random_forest_classifier:
+      enabled: true
+      n_estimators: 200
+      max_depth: 6
+      min_samples_leaf: 20
+      class_weight: balanced_subsample
+      random_state: 42
+      n_jobs: 1
+    hist_gradient_boosting_classifier:
+      enabled: true
+      max_iter: 200
+      max_leaf_nodes: 31
+      learning_rate: 0.05
+      l2_regularization: 0.0
+      random_state: 42
+    dummy_classifier:
+      enabled: true
+      strategy: most_frequent
+  validation:
+    enabled: true
+    method: time_series_split
+    use_existing_ml_splits: true
+    train_split_name: train
+    validation_split_name: validation
+    test_split_name: test
+    time_series_cv_enabled: true
+    time_series_cv_splits: 3
+    test_set_final_report_only: true
+    reject_test_selection: true
+    reject_split_overlap: true
+    require_chronological_order: true
+    min_train_rows: 500
+    min_validation_rows: 200
+    min_test_rows: 200
+    min_class_count_per_split: 2
+    min_samples_per_class_warning: 25
+  calibration:
+    enabled: true
+    calibrate_classifiers: true
+    method: sigmoid
+    allowed_methods:
+    - sigmoid
+    - isotonic
+    calibration_split: validation
+    fit_calibrator_on_test_forbidden: true
+    require_calibration_report: true
+    reliability_bins: 10
+    compute_brier_score: true
+    compute_expected_calibration_error: true
+    warn_uncalibrated_probabilities: true
+    isotonic_min_samples_warning: 1000
+  metrics:
+    classification:
+      compute_accuracy: true
+      compute_balanced_accuracy: true
+      compute_precision_recall_f1: true
+      compute_roc_auc: true
+      compute_pr_auc: true
+      compute_log_loss: true
+      compute_brier_score: true
+      compute_confusion_matrix: true
+      compute_classification_report: true
+      average: weighted
+      zero_division: 0
+    regression:
+      compute_mae: true
+      compute_rmse: true
+      compute_r2: true
+      compute_directional_accuracy: true
+      regression_deferred: true
+  feature_importance:
+    enabled: true
+    native_model_importance: true
+    permutation_importance: true
+    permutation_n_repeats: 5
+    permutation_random_state: 42
+    permutation_split: validation
+    max_features_reported: 100
+    warn_high_cardinality_importance_bias: true
+  overfit:
+    enabled: true
+    compare_train_validation: true
+    max_train_validation_metric_gap: 0.25
+    max_train_validation_auc_gap: 0.2
+    warn_if_train_much_better: true
+    reject_if_validation_worse_than_dummy: false
+    warn_if_validation_worse_than_dummy: true
+    warn_if_test_much_worse_than_validation: true
+    test_degradation_warning_gap: 0.2
+  registry:
+    enabled: true
+    active_model_serving_forbidden: true
+    auto_promote_forbidden: true
+    require_model_card: true
+    require_training_manifest: true
+    require_dataset_manifest_link: true
+    require_reproducibility_hashes: true
+    persist_model_artifacts: true
+    artifact_format: joblib
+    persist_pickled_objects_warning: true
+    allow_loading_untrusted_artifacts: false
+  quality:
+    reject_no_models_trained: true
+    reject_all_models_failed: true
+    reject_missing_metrics: true
+    reject_missing_calibration_report: false
+    reject_missing_model_card: true
+    reject_missing_dataset_manifest: true
+    reject_missing_hashes: true
+    reject_nan_inf_metrics: true
+    warn_low_sample_count: true
+    warn_class_imbalance: true
+    warn_single_class_split: true
+    reject_single_class_train: true
+    reject_single_class_validation: false
+    warn_uncalibrated_model: true
     reject_live_or_paper_intent: true
