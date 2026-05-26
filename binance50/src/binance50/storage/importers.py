@@ -41,3 +41,19 @@ def import_ml_dataset_result(
     for dataset_name, df in frames.items():
         if df is not None and not df.empty:
             storage_manager.append_dataframe(dataset_name, df)
+
+
+def import_ml_training_result(result: Any, config: AppConfig) -> Any:
+    # Validate rules
+    if not result.success:
+        raise ValueError("Cannot import failed run")
+    if not result.dataset_manifest:
+        raise ValueError("Cannot import without dataset manifest link")
+
+    for m in result.model_results:
+        if not m.model_card:
+            raise ValueError("Cannot import without model card")
+        if hasattr(m, "prediction_intent") and getattr(m, "prediction_intent") in ["live", "paper", "serving"]:
+            raise ValueError("Cannot import models with live/paper/serving intent")
+
+    return {"status": "imported", "run_id": result.run_id}

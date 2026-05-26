@@ -1,201 +1,230 @@
-import re
+import yaml
+from pathlib import Path
 
-with open("binance50/config/default.yaml", "r") as f:
-    content = f.read()
+config_path = Path("binance50/config/default.yaml")
+with open(config_path, "r") as f:
+    config = yaml.safe_load(f)
 
-ml_config = """
-ml_dataset:
-  enabled: true
-  output_dataset_name: ml_datasets
-  cache_enabled: true
-  cache_dir: data/ml/datasets/cache
-  export_dir: data/ml/datasets/exports
-  registry_dir: data/ml/datasets/registry
+if "ml_training" not in config:
+    config["ml_training"] = {
+        "enabled": True,
+        "output_dataset_name": "ml_training_runs",
+        "cache_enabled": True,
+        "cache_dir": "data/ml/training/cache",
+        "export_dir": "data/ml/training/exports",
+        "registry_dir": "data/ml/training/registry",
+        "artifacts_dir": "data/ml/training/artifacts",
+        "reports_dir": "data/ml/training/reports",
 
-  real_exchange_forbidden: true
-  paper_trade_forbidden: true
-  live_trade_forbidden: true
-  order_creation_forbidden: true
-  api_key_forbidden: true
-  signed_request_forbidden: true
-  dashboard_forbidden: true
-  model_training_deferred: true
-  prediction_deferred: true
+        "real_exchange_forbidden": True,
+        "paper_trade_forbidden": True,
+        "live_trade_forbidden": True,
+        "order_creation_forbidden": True,
+        "api_key_forbidden": True,
+        "signed_request_forbidden": True,
+        "dashboard_forbidden": True,
+        "prediction_serving_deferred": True,
+        "execution_integration_forbidden": True,
+        "auto_strategy_update_forbidden": True,
 
-  sources:
-    use_indicator_v1: true
-    use_indicator_v2: true
-    use_strategy_candidates: false
-    use_scored_signals: true
-    use_regimes: true
-    use_risk_assessments: true
-    use_backtest_metadata: false
-    use_walkforward_metadata: false
-    require_source_hashes: true
-    require_source_timestamps: true
+        "dataset": {
+            "require_ml_dataset_manifest": True,
+            "require_leakage_free_dataset": True,
+            "require_quality_passed_dataset": True,
+            "allowed_label_types": [
+                "forward_return_classification",
+                "forward_return_regression",
+                "volatility_adjusted_return_classification"
+            ],
+            "default_label_column": "label_forward_return_classification_5",
+            "require_split_metadata": True,
+            "require_preprocessor_metadata": True,
+            "reject_if_feature_contains_label": True,
+            "reject_if_feature_contains_future": True,
+            "reject_if_feature_contains_target": True,
+            "reject_if_missing_train_validation_test": True
+        },
 
-  feature_selection:
-    enabled: true
-    include_prefixes:
-      - trend_
-      - mom_
-      - vol_
-      - volu_
-      - tr_
-      - div_
-      - mtf_
-      - pat_
-      - reg_
-      - signal_
-      - risk_
-    exclude_prefixes:
-      - label_
-      - target_
-      - future_
-      - next_
-      - forward_
-      - order_
-      - execution_
-    required_base_columns:
-      - symbol
-      - market_scope
-      - interval
-      - open_time
-      - close_time
-    max_feature_columns: 1500
-    min_feature_columns: 10
-    reject_all_nan_features: true
-    reject_constant_features: false
-    warn_constant_features: true
-    max_nan_ratio_per_feature: 0.40
-    max_inf_count: 0
-    allow_object_features: false
-    allow_boolean_features: true
-    allow_categorical_features: true
-    categorical_encoding_deferred: true
+        "task": {
+            "default_task_type": "classification",
+            "allowed_task_types": [
+                "classification",
+                "regression_skeleton"
+            ],
+            "multiclass_enabled": True,
+            "binary_enabled": True,
+            "regression_default_enabled": False,
+            "ranking_deferred": True
+        },
 
-  labels:
-    enabled: true
-    default_label_type: forward_return_classification
-    allowed_label_types:
-      - forward_return_regression
-      - forward_return_classification
-      - volatility_adjusted_return_classification
-      - triple_barrier_skeleton
-      - ranking_skeleton
-    horizons_bars:
-      - 1
-      - 3
-      - 5
-      - 10
-      - 20
-    default_horizon_bars: 5
-    return_source: close
-    classification_threshold_pct: 0.20
-    neutral_zone_pct: 0.05
-    include_neutral_class: true
-    label_column_prefix: label_
-    future_return_column_prefix: label_future_return_
-    allow_label_columns_in_features: false
-    drop_rows_without_label: true
-    drop_last_horizon_rows: true
-    triple_barrier:
-      enabled: false
-      profit_take_pct: 1.0
-      stop_loss_pct: 0.5
-      max_holding_bars: 20
-      full_engine_deferred: true
+        "models": {
+            "enabled_models": [
+                "dummy_classifier",
+                "logistic_regression",
+                "random_forest_classifier",
+                "hist_gradient_boosting_classifier"
+            ],
+            "default_model": "logistic_regression",
+            "allow_regression_skeletons": True,
+            "random_state": 42,
+            "n_jobs": 1,
+            "max_fit_seconds_per_model": 300,
+            "max_models_per_run": 10,
+            "allow_gpu": False,
+            "require_deterministic_models": True,
 
-  splits:
-    enabled: true
-    split_method: chronological
-    train_pct: 0.60
-    validation_pct: 0.20
-    test_pct: 0.20
-    min_train_rows: 500
-    min_validation_rows: 200
-    min_test_rows: 200
-    time_series_cv_enabled: true
-    time_series_cv_splits: 3
-    embargo_bars: 0
-    purge_overlapping_labels: true
-    test_set_for_final_report_only: true
-    reject_split_overlap: true
-    reject_test_selection: true
+            "logistic_regression": {
+                "enabled": True,
+                "max_iter": 1000,
+                "class_weight": "balanced",
+                "solver": "lbfgs",
+                "C": 1.0
+            },
 
-  preprocessing:
-    enabled: true
-    fit_transform_train_only: true
-    transform_validation_test_only: true
-    scaler: standard
-    allowed_scalers:
-      - none
-      - standard
-      - robust
-      - minmax
-    imputation:
-      enabled: true
-      strategy: median_train_only
-      allow_bfill: false
-      allow_ffill: true
-      fit_imputer_train_only: true
-    clipping:
-      enabled: true
-      method: train_quantile
-      lower_quantile: 0.001
-      upper_quantile: 0.999
-      fit_clipper_train_only: true
-    categorical:
-      enabled: false
-      encoding_deferred: true
-    persist_preprocessor: true
-    preprocessor_registry_enabled: true
+            "random_forest_classifier": {
+                "enabled": True,
+                "n_estimators": 200,
+                "max_depth": 6,
+                "min_samples_leaf": 20,
+                "class_weight": "balanced_subsample",
+                "random_state": 42,
+                "n_jobs": 1
+            },
 
-  alignment:
-    enabled: true
-    method: backward_asof
-    reject_forward_alignment: true
-    reject_nearest_alignment: true
-    require_no_future_join: true
-    tolerance_bars: 1
-    require_closed_candles: true
+            "hist_gradient_boosting_classifier": {
+                "enabled": True,
+                "max_iter": 200,
+                "max_leaf_nodes": 31,
+                "learning_rate": 0.05,
+                "l2_regularization": 0.0,
+                "random_state": 42
+            },
 
-  leakage:
-    prevent_lookahead_bias: true
-    reject_future_columns_in_features: true
-    reject_target_columns_in_features: true
-    reject_label_columns_in_features: true
-    reject_next_columns_in_features: true
-    reject_forward_columns_in_features: true
-    reject_negative_shift_features: true
-    allow_forward_shift_only_for_labels: true
-    reject_global_scaler_fit: true
-    reject_global_imputer_fit: true
-    reject_global_clipper_fit: true
-    reject_test_fit: true
-    reject_validation_fit: true
-    reject_same_bar_label_as_feature: true
+            "dummy_classifier": {
+                "enabled": True,
+                "strategy": "most_frequent"
+            }
+        },
 
-  quality:
-    reject_empty_dataset: true
-    reject_missing_labels: true
-    reject_missing_features: true
-    reject_single_class_labels: false
-    warn_single_class_labels: true
-    warn_class_imbalance: true
-    max_majority_class_ratio: 0.85
-    reject_nan_inf_features: true
-    reject_nan_inf_labels: true
-    reject_missing_split_metadata: true
-    reject_missing_hashes: true
-    reject_leakage_warnings: true
-    warn_low_row_count: true
-    min_total_rows_warning: 1000
+        "validation": {
+            "enabled": True,
+            "method": "time_series_split",
+            "use_existing_ml_splits": True,
+            "train_split_name": "train",
+            "validation_split_name": "validation",
+            "test_split_name": "test",
+            "time_series_cv_enabled": True,
+            "time_series_cv_splits": 3,
+            "test_set_final_report_only": True,
+            "reject_test_selection": True,
+            "reject_split_overlap": True,
+            "require_chronological_order": True,
+            "min_train_rows": 500,
+            "min_validation_rows": 200,
+            "min_test_rows": 200,
+            "min_class_count_per_split": 2,
+            "min_samples_per_class_warning": 25
+        },
 
-walkforward:
-  enabled: true"""
+        "calibration": {
+            "enabled": True,
+            "calibrate_classifiers": True,
+            "method": "sigmoid",
+            "allowed_methods": [
+                "sigmoid",
+                "isotonic"
+            ],
+            "calibration_split": "validation",
+            "fit_calibrator_on_test_forbidden": True,
+            "require_calibration_report": True,
+            "reliability_bins": 10,
+            "compute_brier_score": True,
+            "compute_expected_calibration_error": True,
+            "warn_uncalibrated_probabilities": True,
+            "isotonic_min_samples_warning": 1000
+        },
 
-content = content.replace("walkforward:\n  enabled: true", ml_config)
+        "metrics": {
+            "classification": {
+                "compute_accuracy": True,
+                "compute_balanced_accuracy": True,
+                "compute_precision_recall_f1": True,
+                "compute_roc_auc": True,
+                "compute_pr_auc": True,
+                "compute_log_loss": True,
+                "compute_brier_score": True,
+                "compute_confusion_matrix": True,
+                "compute_classification_report": True,
+                "average": "weighted",
+                "zero_division": 0
+            },
 
-with open("binance50/config/default.yaml", "w") as f:
-    f.write(content)
+            "regression": {
+                "compute_mae": True,
+                "compute_rmse": True,
+                "compute_r2": True,
+                "compute_directional_accuracy": True,
+                "regression_deferred": True
+            }
+        },
+
+        "feature_importance": {
+            "enabled": True,
+            "native_model_importance": True,
+            "permutation_importance": True,
+            "permutation_n_repeats": 5,
+            "permutation_random_state": 42,
+            "permutation_split": "validation",
+            "max_features_reported": 100,
+            "warn_high_cardinality_importance_bias": True
+        },
+
+        "overfit": {
+            "enabled": True,
+            "compare_train_validation": True,
+            "max_train_validation_metric_gap": 0.25,
+            "max_train_validation_auc_gap": 0.20,
+            "warn_if_train_much_better": True,
+            "reject_if_validation_worse_than_dummy": False,
+            "warn_if_validation_worse_than_dummy": True,
+            "warn_if_test_much_worse_than_validation": True,
+            "test_degradation_warning_gap": 0.20
+        },
+
+        "registry": {
+            "enabled": True,
+            "active_model_serving_forbidden": True,
+            "auto_promote_forbidden": True,
+            "require_model_card": True,
+            "require_training_manifest": True,
+            "require_dataset_manifest_link": True,
+            "require_reproducibility_hashes": True,
+            "persist_model_artifacts": True,
+            "artifact_format": "joblib",
+            "persist_pickled_objects_warning": True,
+            "allow_loading_untrusted_artifacts": False
+        },
+
+        "quality": {
+            "reject_no_models_trained": True,
+            "reject_all_models_failed": True,
+            "reject_missing_metrics": True,
+            "reject_missing_calibration_report": False,
+            "reject_missing_model_card": True,
+            "reject_missing_dataset_manifest": True,
+            "reject_missing_hashes": True,
+            "reject_nan_inf_metrics": True,
+            "warn_low_sample_count": True,
+            "warn_class_imbalance": True,
+            "warn_single_class_split": True,
+            "reject_single_class_train": True,
+            "reject_single_class_validation": False,
+            "warn_uncalibrated_model": True,
+            "reject_live_or_paper_intent": True
+        }
+    }
+
+    with open(config_path, "w") as f:
+        yaml.dump(config, f, default_flow_style=False, sort_keys=False)
+
+print("Updated config/default.yaml")

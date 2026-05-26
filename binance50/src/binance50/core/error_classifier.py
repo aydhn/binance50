@@ -348,3 +348,28 @@ def classify_backtest_error(message: str) -> type[Exception]:
     elif "quality fail" in message.lower():
         return BacktestQualityError
     return BacktestError
+
+def is_ml_training_error(error: Exception) -> bool:
+    from binance50.core.exceptions import MLTrainingError
+    return isinstance(error, MLTrainingError)
+
+def classify_ml_error(error_message: str) -> str:
+    from binance50.core.error_codes import ErrorCode
+    msg = error_message.lower()
+    if "leakage" in msg or "future" in msg or "target" in msg:
+        return ErrorCode.ML_MODEL_LEAKAGE_DETECTED
+    if "single class" in msg:
+        return ErrorCode.ML_TARGET_INVALID
+    if "fit error" in msg:
+        return ErrorCode.ML_ESTIMATOR_FAILED
+    if "nan" in msg or "inf" in msg:
+        return ErrorCode.ML_METRICS_FAILED
+    if "calibration fit on test" in msg:
+        return ErrorCode.ML_CALIBRATION_FAILED
+    if "missing model card" in msg:
+        return ErrorCode.ML_MODEL_CARD_FAILED
+    if "serving promotion attempt" in msg:
+        return ErrorCode.ML_SERVING_FORBIDDEN
+    if "untrusted artifact load" in msg:
+        return ErrorCode.ML_MODEL_ARTIFACT_FAILED
+    return ErrorCode.ML_TRAINING_CONFIG_INVALID
