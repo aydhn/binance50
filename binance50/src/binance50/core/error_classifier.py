@@ -41,6 +41,22 @@ from binance50.core.exceptions import (
     StreamDuplicateEventError,
     StreamParseError,
     StreamRouteError,
+
+    MLDatasetError,
+    MLDatasetConfigError,
+    MLFeatureSourceError,
+    MLFeatureSelectionError,
+    MLLabelError,
+    MLLabelSpecError,
+    MLSplitError,
+    MLPreprocessingError,
+    MLScalerError,
+    MLAlignmentError,
+    MLLeakageError,
+    MLDatasetQualityError,
+    MLDatasetRegistryError,
+    MLDatasetCacheError,
+    MLDatasetExportError,
     StreamStaleEventError,
 )
 

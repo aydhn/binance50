@@ -1,76 +1,52 @@
-1. **Config and Exceptions Setup**
-   - We already patched `AppConfig` and models (`config/models.py`), default config (`config/default.yaml`), exceptions (`core/exceptions.py`), error codes (`core/error_codes.py`), and error classifier (`core/error_classifier.py`).
-
-2. **Domain Models (`indicators/models.py`)**
-   - Create enums `IndicatorGroup`, `IndicatorBackend`, `IndicatorOutputStatus`, `IndicatorWarmupStatus`.
-   - Create models `IndicatorSpec`, `IndicatorRunRequest`, `IndicatorRunResult`, `IndicatorFrameMetadata`, `IndicatorColumnMetadata`.
-   - Add `to_dict(redacted=True)` methods.
-
-3. **Context Module (`indicators/context.py`)**
-   - Create `IndicatorContext` class and helper functions to build it and convert to metadata.
-
-4. **Validation Module (`indicators/validators.py`)**
-   - Create input/output validation functions (`validate_ohlcv_input`, `validate_required_columns`, etc.).
-   - Reject lookahead columns (`future_return`, `target`, `label`, `next_close`, `forward`).
-
-5. **Warmup/Lookback Module (`indicators/warmup.py`)**
-   - Functions to estimate lookback, mark warmup rows, summarize, and assert sufficient history.
-
-6. **Transform Helpers (`indicators/transforms.py`)**
-   - Implement `typical_price`, `median_price`, `weighted_close`, `hl_range`, `oc_change`, `true_range`, `returns`, `log_returns`, `rolling_zscore`, etc.
-
-7. **Native Indicators - Trend (`indicators/trend.py`)**
-   - Implement native SMA, EMA, WMA, DEMA, TEMA, MACD, ADX, AROON.
-
-8. **Native Indicators - Momentum (`indicators/momentum.py`)**
-   - Implement native RSI, Stochastic, Stoch RSI, ROC, Momentum, CCI, Williams %R.
-
-9. **Native Indicators - Volatility (`indicators/volatility.py`)**
-   - Implement native ATR, NATR, Bollinger Bands, Keltner Channels, Donchian Channels, Rolling STD, Realized Volatility.
-
-10. **Native Indicators - Volume (`indicators/volume.py`)**
-    - Implement native OBV, Volume SMA, Volume EMA, VWAP, MFI, CMF, ADL.
-
-11. **Registry (`indicators/registry.py`)**
-    - `IndicatorRegistry` class to manage specs, validate params, and build defaults.
-
-12. **Adapters (`indicators/adapters/`)**
-    - `base.py`: Define `IndicatorBackendAdapter` protocol.
-    - `native.py`: Implement `NativeIndicatorAdapter`.
-    - `talib_adapter.py`: Optional adapter for TA-Lib.
-    - `pandas_ta_adapter.py`: Optional adapter for pandas-ta.
-
-13. **Indicator Quality (`indicators/quality.py`)**
-    - Models and functions to check for all NaN, high NaN ratio, infs, constant columns, extreme values.
-
-14. **Indicator Cache (`indicators/cache.py`)**
-    - Parquet/JSON cache for indicators.
-
-15. **Indicator Exports & Reports (`indicators/export.py`, `indicators/reports.py`)**
-    - Report generation and data exporting helpers.
-
-16. **Indicator Engine (`indicators/engine.py`)**
-    - Main orchestration class `IndicatorEngine`.
-
-17. **Features (`features/basic_returns.py`)**
-    - Basic past returns for future feature store.
-
-18. **Safety Guard (`safety/indicator_guard.py`)**
-    - Guards against lookahead bias, invalid configuration, and missing backends.
-
-19. **Storage Schema & Imports (`storage/schemas.py`, `storage/importers.py`)**
-    - Update `schemas.py` to add `DatasetKind.INDICATORS` and the dynamic schema.
-    - Add `import_indicator_result` to `importers.py`.
-
-20. **CLI and Doctor (`cli.py`, `scripts/check_project.py`)**
-    - Add indicator CLI commands.
-    - Add indicator checks to `doctor` command and `check_project.py`.
-
-21. **Tests**
-    - Write tests for models, registry, warmup, transforms, trend, momentum, volatility, volume, engine, adapters, quality, cache, guard, cli.
-
-22. **Documentation**
-    - Update `ARCHITECTURE.md`, `SECURITY.md`, `PHASE_PLAN.md`, `README.md`.
-
-23. **Pre-commit Steps**
-    - Verify with tests, format, lint, type check.
+1. **Update `config/default.yaml`**: Edit `config/default.yaml` to include the `ml_dataset` configuration section as requested.
+2. **Verify `config/default.yaml`**: Use `cat binance50/config/default.yaml` to verify the added configuration block.
+3. **Update `src/binance50/config/models.py`**: Add Pydantic models: `MLDatasetSourceConfig`, `MLFeatureSelectionConfig`, `MLLabelTripleBarrierConfig`, `MLLabelConfig`, `MLSplitConfig`, `MLPreprocessingImputationConfig`, `MLPreprocessingClippingConfig`, `MLPreprocessingCategoricalConfig`, `MLPreprocessingConfig`, `MLAlignmentConfig`, `MLLeakageConfig`, `MLQualityConfig`, `MLDatasetConfig`. Enforce validation rules like `train_pct + validation_pct + test_pct == 1.0` and flags checking (`model_training_deferred == True`, etc.).
+4. **Verify `src/binance50/config/models.py`**: Run `cat binance50/src/binance50/config/models.py` to confirm the changes.
+5. **Update `src/binance50/storage/schemas.py`**: Add schema definitions `ml_datasets`, `ml_features`, `ml_labels`, `ml_dataset_manifests`, `ml_split_metadata`, `ml_preprocessor_metadata`, `ml_leakage_reports`, `ml_quality_reports` to the `DatasetKind` enum. Add rules for primary keys and forbidden feature columns.
+6. **Verify `src/binance50/storage/schemas.py`**: Run `cat binance50/src/binance50/storage/schemas.py` to check changes.
+7. **Update `src/binance50/storage/importers.py`**: Implement `import_ml_dataset_result` in `importers.py` incorporating quality and leakage checks (blocking leaky imports).
+8. **Verify `src/binance50/storage/importers.py`**: Run `cat binance50/src/binance50/storage/importers.py` to check changes.
+9. **Update Exceptions**: Edit `src/binance50/core/exceptions.py` adding `MLDatasetError`, `MLDatasetConfigError`, `MLFeatureSourceError`, `MLFeatureSelectionError`, `MLLabelError`, `MLLabelSpecError`, `MLSplitError`, `MLPreprocessingError`, `MLScalerError`, `MLAlignmentError`, `MLLeakageError`, `MLDatasetQualityError`, `MLDatasetRegistryError`, `MLDatasetCacheError`, `MLDatasetExportError`.
+10. **Update Error Codes**: Edit `src/binance50/core/error_codes.py` adding `ML_DATASET_CONFIG_INVALID`, `ML_FEATURE_SOURCE_FAILED`, `ML_FEATURE_SELECTION_FAILED`, `ML_LABEL_FAILED`, `ML_LABEL_SPEC_INVALID`, `ML_SPLIT_FAILED`, `ML_PREPROCESSING_FAILED`, `ML_SCALER_FAILED`, `ML_ALIGNMENT_FAILED`, `ML_LEAKAGE_DETECTED`, `ML_DATASET_QUALITY_FAILED`, `ML_DATASET_REGISTRY_FAILED`, `ML_DATASET_CACHE_FAILED`, `ML_DATASET_EXPORT_FAILED`.
+11. **Update Error Classifier**: Edit `src/binance50/core/error_classifier.py` to map specific ML issues (like label in features, global scaler fit, split overlap) to corresponding exceptions.
+12. **Verify Exceptions and Codes**: Run `cat binance50/src/binance50/core/exceptions.py`, `cat binance50/src/binance50/core/error_codes.py` and `cat binance50/src/binance50/core/error_classifier.py`.
+13. **Create Domain Models**: Create `src/binance50/ml/datasets/models.py` with enums (`MLDatasetStatus`, `MLFeatureSource`, `MLLabelType`, `MLSplitName`, `MLDatasetIntent`) and Pydantic models (`MLFeatureColumnMetadata`, `MLLabelSpec`, `MLSplitMetadata`, `MLPreprocessorMetadata`, `MLDatasetManifest`, `MLDatasetBuildRequest`, `MLDatasetBuildResult`).
+14. **Verify Domain Models**: Run `cat binance50/src/binance50/ml/datasets/models.py`.
+15. **Create Feature Sources**: Create `src/binance50/ml/datasets/sources.py` implementing `MLFeatureSourceRegistry` and loaders (`load_indicator_v1_features`, `load_indicator_v2_features`, `load_scored_signal_features`, `load_regime_features`, `load_risk_assessment_features`, `load_strategy_candidate_features`, `load_backtest_metadata_features`, `load_walkforward_metadata_features`).
+16. **Verify Feature Sources**: Run `cat binance50/src/binance50/ml/datasets/sources.py`.
+17. **Create Safe Feature Selector**: Create `src/binance50/ml/datasets/feature_selector.py` with `MLFeatureSelector` having methods `select_features`, `infer_feature_groups`, `exclude_forbidden_columns`, `validate_feature_columns`, `detect_constant_features`, `detect_high_nan_features`, `detect_inf_features`, `build_feature_metadata`.
+18. **Verify Safe Feature Selector**: Run `cat binance50/src/binance50/ml/datasets/feature_selector.py`.
+19. **Create Label Specifications**: Create `src/binance50/ml/datasets/label_specs.py` implementing `build_default_label_specs`, `build_label_spec`, `validate_label_spec`, `validate_label_specs`, `label_spec_to_report`.
+20. **Verify Label Specifications**: Run `cat binance50/src/binance50/ml/datasets/label_specs.py`.
+21. **Create Label Generator**: Create `src/binance50/ml/datasets/labels.py` for `build_labels`, `compute_forward_return_label`, `compute_forward_return_classification_label`, `compute_volatility_adjusted_label`, `build_triple_barrier_skeleton_labels`, `build_ranking_skeleton_labels`, `drop_unlabeled_tail_rows`, `validate_labels`.
+22. **Verify Label Generator**: Run `cat binance50/src/binance50/ml/datasets/labels.py`.
+23. **Create Alignment Module**: Create `src/binance50/ml/datasets/alignment.py` implementing `align_feature_sources`, `align_single_source_backward_asof`, `validate_no_future_alignment`, `validate_alignment_metadata`, `build_alignment_report`.
+24. **Verify Alignment Module**: Run `cat binance50/src/binance50/ml/datasets/alignment.py`.
+25. **Create Splitters**: Create `src/binance50/ml/datasets/splitters.py` implementing `chronological_ml_split`, `build_time_series_cv_metadata`, `purge_overlapping_label_rows`, `apply_embargo`, `validate_ml_splits`, `build_ml_split_report`.
+26. **Verify Splitters**: Run `cat binance50/src/binance50/ml/datasets/splitters.py`.
+27. **Create Preprocessing**: Create `src/binance50/ml/datasets/preprocessing.py` implementing `MLPreprocessingPipeline` and `src/binance50/ml/datasets/scalers.py` with `MLScalerProtocol`, `NoOpScaler`, `StandardScalerAdapter`, `RobustScalerAdapter`, `MinMaxScalerAdapter`, `build_scaler`, `validate_scaler_metadata`.
+28. **Verify Preprocessing**: Run `cat binance50/src/binance50/ml/datasets/preprocessing.py` and `cat binance50/src/binance50/ml/datasets/scalers.py`.
+29. **Create Leakage & Quality Guards**: Create `src/binance50/ml/datasets/leakage.py` (`build_ml_leakage_report`, `detect_label_columns_in_features`, etc.) and `src/binance50/ml/datasets/quality.py` (`build_ml_dataset_quality_report`, `detect_missing_features`, etc.).
+30. **Verify Leakage & Quality Guards**: Run `cat binance50/src/binance50/ml/datasets/leakage.py` and `cat binance50/src/binance50/ml/datasets/quality.py`.
+31. **Create Registry & Reproducibility**: Create `src/binance50/ml/datasets/registry.py` (`MLDatasetRegistry`) and `src/binance50/ml/datasets/reproducibility.py` (`compute_ml_input_hash`, `compute_feature_hash`, etc.).
+32. **Verify Registry & Reproducibility**: Run `cat binance50/src/binance50/ml/datasets/registry.py` and `cat binance50/src/binance50/ml/datasets/reproducibility.py`.
+33. **Create Main Builder**: Create `src/binance50/ml/datasets/builder.py` implementing `MLDatasetBuilder` class and its methods.
+34. **Verify Main Builder**: Run `cat binance50/src/binance50/ml/datasets/builder.py`.
+35. **Create Support Tools**: Create `src/binance50/ml/datasets/reports.py` (summary generators), `src/binance50/ml/datasets/cache.py` (cache path and save logic), `src/binance50/ml/datasets/export.py` (parquet and csv exporters), and `src/binance50/ml/datasets/storage.py` (storage payloads).
+36. **Verify Support Tools**: Run `cat binance50/src/binance50/ml/datasets/reports.py`, `cat binance50/src/binance50/ml/datasets/cache.py`, `cat binance50/src/binance50/ml/datasets/export.py`, and `cat binance50/src/binance50/ml/datasets/storage.py`.
+37. **Create Safety Checkers**: Create `src/binance50/safety/ml_dataset_guard.py` (dataset configuration and intent checks), `src/binance50/safety/ml_leakage_guard.py` (no future columns, label forward shift isolated, split overlaps), and `src/binance50/safety/ml_preprocessing_guard.py` (fit train only, no bfill, no global imputation).
+38. **Verify Safety Checkers**: Run `cat binance50/src/binance50/safety/ml_dataset_guard.py`, `cat binance50/src/binance50/safety/ml_leakage_guard.py`, and `cat binance50/src/binance50/safety/ml_preprocessing_guard.py`.
+39. **Integrate CLI**: Update `src/binance50/cli.py` to add new typer commands (`ml-dataset-config`, `ml-feature-sources`, `ml-label-specs`, `ml-build-dataset-fixture`, `ml-build-dataset-warehouse`, `ml-dataset-summary`, `ml-feature-report`, `ml-label-distribution`, `ml-split-report`, `ml-preprocessing-report`, `ml-leakage-check`, `ml-quality-check`, `ml-dataset-registry`, `ml-dataset-cache-list`, `ml-dataset-cache-clear`, `ml-dataset-export`, `ml-dataset-safety-check`, `ml-preprocessing-safety-check`, `ml-dataset-health`). Update `scripts/check_project.py` to execute these commands in the `doctor` test run.
+40. **Verify CLI**: Run `cat binance50/src/binance50/cli.py` and `cat binance50/scripts/check_project.py`.
+41. **Testing Core and Sources**: Create `tests/test_ml_dataset_models.py` (test valid metadata, no order/live intent, deterministic hash) and `tests/test_ml_feature_sources.py` (test source registry, mock loading, missing open_time error).
+42. **Testing Pre-Processing**: Create `tests/test_ml_feature_selector.py` (test include/exclude prefixes, reject target/future, high nan detection) and `tests/test_ml_labels.py` (test forward return regression/classification, neutral class, negative shift bounds, drop tail).
+43. **Testing Pipeline Mechanics**: Create `tests/test_ml_splitters.py` (test chronological split, overlap detection, TimeSeriesSplit), `tests/test_ml_preprocessing.py` (test fit train only, ffill allowed, bfill blocked), and `tests/test_ml_scalers.py` (test scaler train fit, metadata valid).
+44. **Testing Advanced Pipeline**: Create `tests/test_ml_alignment.py` (test backward asof, reject forward) and `tests/test_ml_leakage.py` (detect label/future in features, global scaler fit, split overlap).
+45. **Testing Integrated Systems**: Create `tests/test_ml_dataset_builder.py` (test fixture full build), `tests/test_ml_dataset_quality.py` (test empty dataset, missing labels, NaN inf issues), `tests/test_ml_dataset_registry.py` (test registration and versioning).
+46. **Testing Safety and Utilities**: Create `tests/test_ml_dataset_reproducibility.py` (hash deterministic checks), `tests/test_ml_dataset_cache.py`, `tests/test_ml_dataset_export.py`, `tests/test_ml_dataset_guard.py` (test defaults and error raising), `tests/test_ml_leakage_guard.py`, `tests/test_ml_preprocessing_guard.py` and `tests/test_cli_ml_dataset.py` (run each CLI command).
+47. **Verify Test Files**: Run `ls binance50/tests/` to confirm the creation of the new test files.
+48. **Documentation Updates**: Append ML architecture description to `docs/ARCHITECTURE.md`. Append Security ML rules to `docs/SECURITY.md`. Update Phase 22 string in `docs/PHASE_PLAN.md`. Add ML Builder section with CLI commands to `README.md`.
+49. **Verify Documentation Updates**: Run `cat binance50/docs/ARCHITECTURE.md`, `cat binance50/docs/SECURITY.md`, `cat binance50/docs/PHASE_PLAN.md`, and `cat binance50/README.md`.
+50. **Final Verification**: Run the global `pytest` suite, formatters (`black`), linters (`ruff`), and static analysis (`mypy`). Run `python scripts/check_project.py`.
+51. **Pre-commit Steps**: Complete pre-commit steps to ensure proper testing, verification, review, and reflection are done.
+52. **Submit Change**: Submit branch.
