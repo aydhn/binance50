@@ -1,19 +1,7 @@
-from typing import Any
+with open("binance50/src/binance50/storage/importers.py", "r") as f:
+    content = f.read()
 
-from binance50.config.models import AppConfig
-from binance50.walkforward.models import WalkForwardRunResult
-from binance50.walkforward.validators import validate_no_live_or_paper_intent
-
-
-def import_walkforward_result(result: WalkForwardRunResult, config: AppConfig) -> Any:
-    validate_no_live_or_paper_intent(getattr(result, "request", {}))
-
-    # Dummy manifest implementation
-    class DatasetManifest:
-        pass
-
-    return DatasetManifest()
-
+new_importer = """
 from binance50.ml.datasets.models import MLDatasetBuildResult
 from binance50.core.exceptions import DatasetImportError
 from binance50.ml.datasets.storage import ml_dataset_to_storage_frames
@@ -41,3 +29,8 @@ def import_ml_dataset_result(
     for dataset_name, df in frames.items():
         if df is not None and not df.empty:
             storage_manager.append_dataframe(dataset_name, df)
+"""
+
+content += new_importer
+with open("binance50/src/binance50/storage/importers.py", "w") as f:
+    f.write(content)
