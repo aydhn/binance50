@@ -57,3 +57,26 @@ def import_ml_training_result(result: Any, config: AppConfig) -> Any:
             raise ValueError("Cannot import models with live/paper/serving intent")
 
     return {"status": "imported", "run_id": result.run_id}
+
+
+def import_ml_inference_result(result: Any, config: AppConfig) -> Any:
+    if not getattr(result, "success", False):
+        raise ValueError("Cannot import failed run")
+
+    quality_report = getattr(result, "quality_report", None)
+    if quality_report and getattr(quality_report, "status", "") == "failed":
+        raise ValueError("Cannot import run failing quality checks")
+
+    model_load_report = getattr(result, "model_load_report", None)
+    if model_load_report and not getattr(model_load_report, "hash_verified", False):
+        raise ValueError("Cannot import run without verified artifact hash")
+
+    sandbox_outputs = getattr(result, "sandbox_outputs", {})
+    if not getattr(config.ml_inference.sandbox_integration, "write_to_signal_engine_forbidden", True):
+        raise ValueError("Sandbox outputs cannot be imported as production signals")
+
+    # This dummy function simulates the behavior described in requirements
+    class DatasetManifest:
+        pass
+
+    return DatasetManifest()

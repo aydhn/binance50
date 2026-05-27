@@ -3298,9 +3298,265 @@ class MLTrainingConfig(BaseModel):
 
         return self
 
+
+class MLInferenceModelSourceConfig(BaseModel):
+    require_training_registry: bool = True
+    require_model_card: bool = True
+    require_artifact_metadata: bool = True
+    require_artifact_hash: bool = True
+    require_dataset_manifest_link: bool = True
+    require_feature_columns_hash: bool = True
+    allow_untrusted_artifact_load: bool = False
+    allow_registry_external_paths: bool = False
+    allow_manual_artifact_path: bool = False
+    trusted_artifact_only: bool = True
+    verify_artifact_hash_before_load: bool = True
+    verify_environment_metadata: bool = True
+    warn_environment_mismatch: bool = True
+    block_environment_mismatch: bool = False
+
+class MLInferenceDatasetConfig(BaseModel):
+    require_ml_dataset_manifest: bool = True
+    require_leakage_free_dataset: bool = True
+    require_quality_passed_dataset: bool = True
+    use_latest_dataset_if_not_specified: bool = True
+    allow_inference_on_train_split: bool = True
+    allow_inference_on_validation_split: bool = True
+    allow_inference_on_test_split: bool = True
+    allow_inference_on_new_offline_dataset: bool = True
+    new_offline_dataset_requires_schema_match: bool = True
+    reject_if_feature_contains_label: bool = True
+    reject_if_feature_contains_future: bool = True
+    reject_if_feature_contains_target: bool = True
+    reject_if_feature_contains_order_execution: bool = True
+
+class MLInferenceFeatureSchemaConfig(BaseModel):
+    require_exact_feature_columns: bool = True
+    require_exact_feature_order: bool = True
+    allow_missing_features: bool = False
+    allow_extra_features: bool = False
+    allow_dtype_cast_numeric: bool = True
+    reject_object_features: bool = True
+    reject_nan_inf_features: bool = True
+    max_nan_ratio_per_feature: float = 0.0
+    feature_schema_hash_required: bool = True
+
+class MLInferencePreprocessingConfig(BaseModel):
+    transform_only: bool = True
+    fit_forbidden: bool = True
+    require_training_preprocessor_metadata: bool = True
+    require_preprocessor_hash: bool = True
+    allow_refit: bool = False
+    allow_validation_fit: bool = False
+    allow_test_fit: bool = False
+    allow_inference_fit: bool = False
+    imputer_transform_only: bool = True
+    scaler_transform_only: bool = True
+    clipper_transform_only: bool = True
+
+class MLInferencePredictionConfig(BaseModel):
+    mode: str = "offline_batch"
+    allowed_modes: list[str] = Field(default_factory=lambda: ["offline_batch"])
+    max_rows_per_batch: int = 100000
+    batch_size: int = 10000
+    deterministic: bool = True
+    random_seed: int = 42
+    require_predict_output: bool = True
+    require_predict_proba_if_classifier_supports: bool = True
+    allow_decision_function: bool = True
+    store_raw_predictions: bool = True
+    store_probabilities: bool = True
+    store_confidence: bool = True
+    prediction_intent: str = "research_only"
+    output_trade_signal_forbidden: bool = True
+    output_order_intent_forbidden: bool = True
+
+class MLInferenceProbabilityConfig(BaseModel):
+    enabled: bool = True
+    require_probability_metadata: bool = True
+    calibrated_probability_preferred: bool = True
+    allow_uncalibrated_probability: bool = True
+    warn_uncalibrated_probability: bool = True
+    min_probability: float = 0.0
+    max_probability: float = 1.0
+    reject_probability_out_of_range: bool = True
+    normalize_probability_rows: bool = False
+    reject_probability_sum_invalid: bool = True
+    probability_sum_tolerance: float = 0.000001
+
+class MLInferenceCalibrationCheckConfig(BaseModel):
+    enabled: bool = True
+    compute_brier_score_if_labels_available: bool = True
+    compute_ece_if_labels_available: bool = True
+    compute_reliability_bins_if_labels_available: bool = True
+    reliability_bins: int = 10
+    require_label_for_calibration_metrics: bool = False
+    warn_if_labels_missing: bool = True
+    compare_to_training_calibration_report: bool = True
+    max_brier_degradation_warning: float = 0.05
+    max_ece_warning: float = 0.10
+
+class MLInferenceThresholdSweepConfig(BaseModel):
+    enabled: bool = True
+    research_only: bool = True
+    thresholds: list[float] = Field(default_factory=lambda: [0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80])
+    compute_precision_recall_by_threshold: bool = True
+    compute_prediction_count_by_threshold: bool = True
+    compute_coverage_by_threshold: bool = True
+    execution_threshold_forbidden: bool = True
+    auto_apply_threshold_forbidden: bool = True
+
+class MLInferenceDistributionConfig(BaseModel):
+    enabled: bool = True
+    analyze_prediction_distribution: bool = True
+    analyze_probability_distribution: bool = True
+    analyze_confidence_buckets: bool = True
+    analyze_class_distribution: bool = True
+    confidence_buckets: list[list[float]] = Field(default_factory=lambda: [[0.0, 0.5], [0.5, 0.6], [0.6, 0.7], [0.7, 0.8], [0.8, 0.9], [0.9, 1.0]])
+    warn_single_class_prediction_ratio: float = 0.90
+    warn_low_confidence_mean: float = 0.55
+    warn_probability_collapse: bool = True
+
+class MLInferenceDriftConfig(BaseModel):
+    enabled: bool = True
+    skeleton_only: bool = True
+    compare_to_training_feature_stats: bool = True
+    compute_basic_feature_shift: bool = True
+    compute_prediction_shift: bool = True
+    compute_population_stability_index_skeleton: bool = True
+    warn_high_feature_shift: bool = True
+    warn_high_prediction_shift: bool = True
+    drift_threshold_warning: float = 0.25
+    production_drift_monitoring_deferred: bool = True
+
+class MLInferenceSandboxIntegrationConfig(BaseModel):
+    enabled: bool = True
+    create_ml_signal_candidate_sandbox: bool = True
+    create_ml_risk_context_sandbox: bool = True
+    write_to_signal_engine_forbidden: bool = True
+    write_to_risk_engine_forbidden: bool = True
+    write_to_strategy_engine_forbidden: bool = True
+    write_to_paper_engine_forbidden: bool = True
+    write_to_live_engine_forbidden: bool = True
+    require_integration_contract: bool = True
+    require_no_order_intent: bool = True
+    require_research_only_intent: bool = True
+
+class MLInferenceQualityConfig(BaseModel):
+    reject_no_model_loaded: bool = True
+    reject_untrusted_artifact: bool = True
+    reject_hash_mismatch: bool = True
+    reject_schema_mismatch: bool = True
+    reject_missing_model_card: bool = True
+    reject_missing_dataset_manifest: bool = True
+    reject_missing_predictions: bool = True
+    reject_probability_out_of_range: bool = True
+    reject_probability_sum_invalid: bool = True
+    reject_nan_inf_outputs: bool = True
+    reject_missing_inference_manifest: bool = True
+    reject_missing_hashes: bool = True
+    warn_uncalibrated_probability: bool = True
+    warn_labels_missing_for_calibration_check: bool = True
+    warn_prediction_single_class_collapse: bool = True
+    warn_low_confidence: bool = True
+    warn_feature_drift: bool = True
+    reject_live_or_paper_intent: bool = True
+
+class MLInferenceConfig(BaseModel):
+    enabled: bool = True
+    output_dataset_name: str = "ml_inference_runs"
+    cache_enabled: bool = True
+    cache_dir: str = "data/ml/inference/cache"
+    export_dir: str = "data/ml/inference/exports"
+    reports_dir: str = "data/ml/inference/reports"
+    registry_dir: str = "data/ml/inference/registry"
+
+    real_exchange_forbidden: bool = True
+    paper_trade_forbidden: bool = True
+    live_trade_forbidden: bool = True
+    order_creation_forbidden: bool = True
+    api_key_forbidden: bool = True
+    signed_request_forbidden: bool = True
+    dashboard_forbidden: bool = True
+    prediction_serving_forbidden: bool = True
+    online_inference_forbidden: bool = True
+    execution_integration_forbidden: bool = True
+    signal_auto_write_forbidden: bool = True
+    risk_auto_write_forbidden: bool = True
+    auto_strategy_update_forbidden: bool = True
+    auto_model_promotion_forbidden: bool = True
+
+    model_source: MLInferenceModelSourceConfig = Field(default_factory=MLInferenceModelSourceConfig)
+    dataset: MLInferenceDatasetConfig = Field(default_factory=MLInferenceDatasetConfig)
+    feature_schema: MLInferenceFeatureSchemaConfig = Field(default_factory=MLInferenceFeatureSchemaConfig)
+    preprocessing: MLInferencePreprocessingConfig = Field(default_factory=MLInferencePreprocessingConfig)
+    prediction: MLInferencePredictionConfig = Field(default_factory=MLInferencePredictionConfig)
+    probability: MLInferenceProbabilityConfig = Field(default_factory=MLInferenceProbabilityConfig)
+    calibration_check: MLInferenceCalibrationCheckConfig = Field(default_factory=MLInferenceCalibrationCheckConfig)
+    threshold_sweep: MLInferenceThresholdSweepConfig = Field(default_factory=MLInferenceThresholdSweepConfig)
+    distribution: MLInferenceDistributionConfig = Field(default_factory=MLInferenceDistributionConfig)
+    drift: MLInferenceDriftConfig = Field(default_factory=MLInferenceDriftConfig)
+    sandbox_integration: MLInferenceSandboxIntegrationConfig = Field(default_factory=MLInferenceSandboxIntegrationConfig)
+    quality: MLInferenceQualityConfig = Field(default_factory=MLInferenceQualityConfig)
+
+    @model_validator(mode="after")
+    def validate_safety_flags(self) -> "MLInferenceConfig":
+        if not self.real_exchange_forbidden: raise ValueError("real_exchange_forbidden must be True")
+        if not self.paper_trade_forbidden: raise ValueError("paper_trade_forbidden must be True")
+        if not self.live_trade_forbidden: raise ValueError("live_trade_forbidden must be True")
+        if not self.order_creation_forbidden: raise ValueError("order_creation_forbidden must be True")
+        if not self.api_key_forbidden: raise ValueError("api_key_forbidden must be True")
+        if not self.signed_request_forbidden: raise ValueError("signed_request_forbidden must be True")
+        if not self.dashboard_forbidden: raise ValueError("dashboard_forbidden must be True")
+        if not self.prediction_serving_forbidden: raise ValueError("prediction_serving_forbidden must be True")
+        if not self.online_inference_forbidden: raise ValueError("online_inference_forbidden must be True")
+        if not self.execution_integration_forbidden: raise ValueError("execution_integration_forbidden must be True")
+        if not self.signal_auto_write_forbidden: raise ValueError("signal_auto_write_forbidden must be True")
+        if not self.risk_auto_write_forbidden: raise ValueError("risk_auto_write_forbidden must be True")
+        if not self.auto_strategy_update_forbidden: raise ValueError("auto_strategy_update_forbidden must be True")
+        if not self.auto_model_promotion_forbidden: raise ValueError("auto_model_promotion_forbidden must be True")
+
+        if self.model_source.allow_untrusted_artifact_load: raise ValueError("allow_untrusted_artifact_load must be False")
+        if self.model_source.allow_manual_artifact_path: raise ValueError("allow_manual_artifact_path must be False")
+        if not self.model_source.trusted_artifact_only: raise ValueError("trusted_artifact_only must be True")
+        if not self.model_source.verify_artifact_hash_before_load: raise ValueError("verify_artifact_hash_before_load must be True")
+
+        if not self.feature_schema.require_exact_feature_columns: raise ValueError("require_exact_feature_columns must be True")
+        if not self.feature_schema.require_exact_feature_order: raise ValueError("require_exact_feature_order must be True")
+        if self.feature_schema.allow_missing_features: raise ValueError("allow_missing_features must be False")
+        if self.feature_schema.allow_extra_features: raise ValueError("allow_extra_features must be False")
+
+        if not self.preprocessing.transform_only: raise ValueError("transform_only must be True")
+        if not self.preprocessing.fit_forbidden: raise ValueError("fit_forbidden must be True")
+        if self.preprocessing.allow_refit: raise ValueError("allow_refit must be False")
+
+        if self.prediction.mode != "offline_batch": raise ValueError("prediction mode must be offline_batch")
+        if self.prediction.prediction_intent not in ("research_only", "no_order", "validation_only", "no_live", "no_paper"): raise ValueError("prediction_intent must be research_only or no_order")
+        if not self.prediction.output_trade_signal_forbidden: raise ValueError("output_trade_signal_forbidden must be True")
+        if not self.prediction.output_order_intent_forbidden: raise ValueError("output_order_intent_forbidden must be True")
+
+        if self.probability.min_probability < 0.0 or self.probability.max_probability > 1.0: raise ValueError("probability min/max must be between 0 and 1")
+        if self.calibration_check.reliability_bins < 2 or self.calibration_check.reliability_bins > 50: raise ValueError("reliability_bins must be between 2 and 50")
+        if any(t < 0.0 or t > 1.0 for t in self.threshold_sweep.thresholds): raise ValueError("threshold values must be between 0 and 1")
+
+        if not self.threshold_sweep.execution_threshold_forbidden: raise ValueError("execution_threshold_forbidden must be True")
+        if not self.threshold_sweep.auto_apply_threshold_forbidden: raise ValueError("auto_apply_threshold_forbidden must be True")
+
+        if not self.sandbox_integration.write_to_signal_engine_forbidden: raise ValueError("write_to_signal_engine_forbidden must be True")
+        if not self.sandbox_integration.write_to_risk_engine_forbidden: raise ValueError("write_to_risk_engine_forbidden must be True")
+        if not self.sandbox_integration.write_to_strategy_engine_forbidden: raise ValueError("write_to_strategy_engine_forbidden must be True")
+        if not self.sandbox_integration.write_to_paper_engine_forbidden: raise ValueError("write_to_paper_engine_forbidden must be True")
+        if not self.sandbox_integration.write_to_live_engine_forbidden: raise ValueError("write_to_live_engine_forbidden must be True")
+
+        if not re.match(r"^[a-zA-Z0-9_-]+$", self.output_dataset_name): raise ValueError("output_dataset_name is not safe")
+
+        return self
+
+
 class AppConfig(BaseModel):
     ml_dataset: MLDatasetConfig = Field(default_factory=MLDatasetConfig)
     ml_training: MLTrainingConfig = Field(default_factory=MLTrainingConfig)
+    ml_inference: MLInferenceConfig = Field(default_factory=MLInferenceConfig)
 
 
     optimizer: OptimizerConfig = OptimizerConfig()

@@ -373,3 +373,43 @@ def classify_ml_error(error_message: str) -> str:
     if "untrusted artifact load" in msg:
         return ErrorCode.ML_MODEL_ARTIFACT_FAILED
     return ErrorCode.ML_TRAINING_CONFIG_INVALID
+
+def is_ml_inference_error(error: Exception) -> bool:
+    from binance50.core.exceptions import MLInferenceError
+    return isinstance(error, MLInferenceError)
+
+def classify_ml_inference_error(error_message: str) -> str:
+    from binance50.core.error_codes import (
+        ML_ARTIFACT_UNTRUSTED,
+        ML_ARTIFACT_HASH_MISMATCH,
+        ML_FEATURE_SCHEMA_INVALID,
+        ML_INFERENCE_PREPROCESSING_FAILED,
+        ML_PROBABILITY_INVALID,
+        ML_CALIBRATION_CHECK_FAILED,
+        ML_SIGNAL_INTEGRATION_FORBIDDEN,
+        ML_SERVING_FORBIDDEN,
+        ML_INFERENCE_QUALITY_FAILED,
+        ML_INFERENCE_CONFIG_INVALID
+    )
+    msg = error_message.lower()
+
+    if "untrusted artifact" in msg or "manual artifact path" in msg:
+        return ML_ARTIFACT_UNTRUSTED
+    if "hash mismatch" in msg:
+        return ML_ARTIFACT_HASH_MISMATCH
+    if "feature schema mismatch" in msg or "extra feature" in msg or "missing feature" in msg:
+        return ML_FEATURE_SCHEMA_INVALID
+    if "inference fit attempt" in msg:
+        return ML_INFERENCE_PREPROCESSING_FAILED
+    if "probability out of range" in msg or "probability sum invalid" in msg:
+        return ML_PROBABILITY_INVALID
+    if "calibration check failure" in msg:
+        return ML_CALIBRATION_CHECK_FAILED
+    if "production signal write attempt" in msg:
+        return ML_SIGNAL_INTEGRATION_FORBIDDEN
+    if "serving attempt" in msg:
+        return ML_SERVING_FORBIDDEN
+    if "quality fail" in msg:
+        return ML_INFERENCE_QUALITY_FAILED
+
+    return ML_INFERENCE_CONFIG_INVALID

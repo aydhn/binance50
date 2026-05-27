@@ -1291,3 +1291,26 @@ class MLTrainingQualityError(MLTrainingError): pass
 class MLTrainingSafetyError(MLTrainingError): pass
 class MLModelLeakageError(MLTrainingError): pass
 class MLServingForbiddenError(MLTrainingError): pass
+
+
+class MLInferenceError(Binance50Error): pass
+class MLInferenceConfigError(MLInferenceError): pass
+class MLRegistryResolveError(MLInferenceError): pass
+class MLArtifactLoadError(MLInferenceError): pass
+class MLArtifactTrustError(MLInferenceError): pass
+class MLArtifactHashMismatchError(MLInferenceError): pass
+class MLFeatureSchemaError(MLInferenceError): pass
+class MLInferencePreprocessingError(MLInferenceError): pass
+class MLPredictionError(MLInferenceError): pass
+class MLProbabilityError(MLInferenceError): pass
+class MLCalibrationCheckError(MLInferenceError): pass
+class MLThresholdSweepError(MLInferenceError): pass
+class MLPredictionDistributionError(MLInferenceError): pass
+class MLInferenceDriftError(MLInferenceError): pass
+class MLSandboxIntegrationError(MLInferenceError): pass
+class MLInferenceQualityError(MLInferenceError): pass
+class MLInferenceSafetyError(MLInferenceError): pass
+class MLServingForbiddenError(MLInferenceError): pass
+class MLSignalIntegrationForbiddenError(MLInferenceError): pass
+
+class DatasetImportError(Binance50Error): pass

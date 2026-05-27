@@ -28,6 +28,17 @@ class DatasetKind(StrEnum):
     BACKTEST_BENCHMARK_COMPARISONS = "backtest_benchmark_comparisons"
     BACKTEST_DRAWDOWN_REPORTS = "backtest_drawdown_reports"
     ML_DATASETS = "ml_datasets"
+    ML_INFERENCE_RUNS = "ml_inference_runs"
+    ML_PREDICTIONS = "ml_predictions"
+    ML_PROBABILITY_REPORTS = "ml_probability_reports"
+    ML_CALIBRATION_CHECK_REPORTS = "ml_calibration_check_reports"
+    ML_THRESHOLD_SWEEP_REPORTS = "ml_threshold_sweep_reports"
+    ML_PREDICTION_DISTRIBUTION_REPORTS = "ml_prediction_distribution_reports"
+    ML_CONFIDENCE_BUCKET_REPORTS = "ml_confidence_bucket_reports"
+    ML_INFERENCE_DRIFT_REPORTS = "ml_inference_drift_reports"
+    ML_SANDBOX_OUTPUTS = "ml_sandbox_outputs"
+    ML_INFERENCE_MANIFESTS = "ml_inference_manifests"
+
     ML_FEATURES = "ml_features"
     ML_LABELS = "ml_labels"
     ML_DATASET_MANIFESTS = "ml_dataset_manifests"
@@ -706,6 +717,148 @@ def get_ml_quality_reports_schema() -> DatasetSchema:
             ColumnSchema("metadata_json", "string", nullable=False),
         ],
         primary_keys=["dataset_id"],
+    )
+
+
+def get_ml_inference_runs_schema() -> DatasetSchema:
+    return DatasetSchema(
+        dataset_name="ml_inference_runs",
+        dataset_kind=DatasetKind.ML_INFERENCE_RUNS,
+        version=1,
+        columns=[
+            ColumnSchema("run_id", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("status", "string", nullable=False),
+            ColumnSchema("metadata_json", "string", nullable=False),
+        ],
+        primary_keys=["run_id"],
+    )
+
+def get_ml_predictions_schema() -> DatasetSchema:
+    return DatasetSchema(
+        dataset_name="ml_predictions",
+        dataset_kind=DatasetKind.ML_PREDICTIONS,
+        version=1,
+        columns=[
+            ColumnSchema("prediction_id", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("model_id", "string", nullable=False),
+            ColumnSchema("dataset_id", "string", nullable=False),
+            ColumnSchema("symbol", "string", nullable=False),
+            ColumnSchema("market_scope", "string", nullable=False),
+            ColumnSchema("interval", "string", nullable=False),
+            ColumnSchema("open_time", "string", nullable=False),
+            ColumnSchema("close_time", "string", nullable=True),
+            ColumnSchema("predicted_label", "string", nullable=False),
+            ColumnSchema("predicted_class_index", "int64", nullable=False),
+            ColumnSchema("probabilities", "string", nullable=True),
+            ColumnSchema("max_probability", "float64", nullable=True),
+            ColumnSchema("confidence", "float64", nullable=True),
+            ColumnSchema("decision_score", "float64", nullable=True),
+            ColumnSchema("calibrated", "bool", nullable=True),
+            ColumnSchema("calibration_method", "string", nullable=True),
+            ColumnSchema("prediction_intent", "string", nullable=False),
+            ColumnSchema("feature_schema_hash", "string", nullable=False),
+            ColumnSchema("metadata_json", "string", nullable=False),
+        ],
+        primary_keys=["prediction_id"],
+    )
+
+def get_ml_probability_reports_schema() -> DatasetSchema:
+    return DatasetSchema(
+        dataset_name="ml_probability_reports",
+        dataset_kind=DatasetKind.ML_PROBABILITY_REPORTS,
+        version=1,
+        columns=[
+            ColumnSchema("run_id", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("metadata_json", "string", nullable=False),
+        ],
+        primary_keys=["run_id"],
+    )
+
+def get_ml_calibration_check_reports_schema() -> DatasetSchema:
+    return DatasetSchema(
+        dataset_name="ml_calibration_check_reports",
+        dataset_kind=DatasetKind.ML_CALIBRATION_CHECK_REPORTS,
+        version=1,
+        columns=[
+            ColumnSchema("run_id", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("metadata_json", "string", nullable=False),
+        ],
+        primary_keys=["run_id"],
+    )
+
+def get_ml_threshold_sweep_reports_schema() -> DatasetSchema:
+    return DatasetSchema(
+        dataset_name="ml_threshold_sweep_reports",
+        dataset_kind=DatasetKind.ML_THRESHOLD_SWEEP_REPORTS,
+        version=1,
+        columns=[
+            ColumnSchema("run_id", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("threshold", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("metadata_json", "string", nullable=False),
+        ],
+        primary_keys=["run_id", "threshold"],
+    )
+
+def get_ml_prediction_distribution_reports_schema() -> DatasetSchema:
+    return DatasetSchema(
+        dataset_name="ml_prediction_distribution_reports",
+        dataset_kind=DatasetKind.ML_PREDICTION_DISTRIBUTION_REPORTS,
+        version=1,
+        columns=[
+            ColumnSchema("run_id", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("metadata_json", "string", nullable=False),
+        ],
+        primary_keys=["run_id"],
+    )
+
+def get_ml_confidence_bucket_reports_schema() -> DatasetSchema:
+    return DatasetSchema(
+        dataset_name="ml_confidence_bucket_reports",
+        dataset_kind=DatasetKind.ML_CONFIDENCE_BUCKET_REPORTS,
+        version=1,
+        columns=[
+            ColumnSchema("run_id", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("bucket_start", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("bucket_end", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("metadata_json", "string", nullable=False),
+        ],
+        primary_keys=["run_id", "bucket_start", "bucket_end"],
+    )
+
+def get_ml_inference_drift_reports_schema() -> DatasetSchema:
+    return DatasetSchema(
+        dataset_name="ml_inference_drift_reports",
+        dataset_kind=DatasetKind.ML_INFERENCE_DRIFT_REPORTS,
+        version=1,
+        columns=[
+            ColumnSchema("run_id", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("metadata_json", "string", nullable=False),
+        ],
+        primary_keys=["run_id"],
+    )
+
+def get_ml_sandbox_outputs_schema() -> DatasetSchema:
+    return DatasetSchema(
+        dataset_name="ml_sandbox_outputs",
+        dataset_kind=DatasetKind.ML_SANDBOX_OUTPUTS,
+        version=1,
+        columns=[
+            ColumnSchema("sandbox_id", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("metadata_json", "string", nullable=False),
+        ],
+        primary_keys=["sandbox_id"],
+    )
+
+def get_ml_inference_manifests_schema() -> DatasetSchema:
+    return DatasetSchema(
+        dataset_name="ml_inference_manifests",
+        dataset_kind=DatasetKind.ML_INFERENCE_MANIFESTS,
+        version=1,
+        columns=[
+            ColumnSchema("inference_id", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("metadata_json", "string", nullable=False),
+        ],
+        primary_keys=["inference_id"],
     )
 
 def get_schema_registry() -> dict[str, DatasetSchema]:
