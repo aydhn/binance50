@@ -336,3 +336,12 @@ python -m binance50.cli optimizer-health
   - `python -m binance50.cli walkforward-safety-check`
   - `python -m binance50.cli walkforward-leakage-check`
   - `python -m binance50.cli walkforward-health`
+
+## ML Blending Sandbox
+- ML blending sandbox ne yapar? Offline araştırma için model ve rule signal birleştirir.
+- Blended score neden gerçek sinyal değildir? Production write yasaktır.
+- Weighted probability blend nasıl çalışır? Config'den statik ağırlıklar.
+- Komutlar:
+  - `python -m binance50.cli ml-blending-config`
+  - `python -m binance50.cli ml-blending-inputs`
+  - `python -m binance50.cli ml-run-blending-fixture --symbol BTCUSDT --scope spot --interval 1m`

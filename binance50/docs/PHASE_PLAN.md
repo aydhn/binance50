@@ -27,3 +27,6 @@ Phase 15'te rejim sınıflandırma v1 kurulacak; trend/range/volatile/calm piyas
 
 - Phase 21: Walk-forward validation v1; rolling/expanding/anchored windows, optimizer bridge, OOS evaluation, OOS equity stitching, degradation/drift/stability/robustness/regime analysis ve leakage/safety guard altyapısını kurar.
 - Phase 22: Phase 22'de ML dataset builder v1 kurulacak; indicator/signal/regime/risk/backtest çıktıları leakage-safe feature-label dataset hazırlığına bağlanacak, fakat ML training henüz kontrollü/skeleton kalacak.
+
+- Phase 25: ML ensemble ve model-signal blending sandbox; ML inference probabilities ile rule-based signal skorlarını static/calibration-aware weighted blend, disagreement/diversity/confidence analysis, sandbox candidates, integration contract ve safety/leakage/threshold guard altyapısıyla production'a yazmadan birleştirir.
+- Phase 26: portfolio candidate selection sandbox kurulacak; signal/risk/ML-blend sandbox adayları correlation, exposure ve portfolio constraints altında yine production/paper/live yazmadan sıralanacak.

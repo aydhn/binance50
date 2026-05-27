@@ -390,3 +390,20 @@ The optimizer is designed to find robust strategy parameters using exhaustive (g
 - **Regime robustness analysis**: Protects against over-exposure in single trends.
 - **Walk-forward leakage guards**: Ensures no nearest fill, forward-fill or future hints are fed to models.
 - **Neden Phase 21'de execution yok?**: Phase 21 focuses solely on robust statistical generation instead of active order triggering.
+
+## ML Ensemble and Blending Sandbox (Phase 25)
+- ML ensemble and blending sandbox architecture
+- Input loaders
+- Time-safe alignment
+- Static weight engine
+- Probability blending
+- Rule-based signal blending
+- Calibration-aware weighting
+- Regime/risk context blending
+- Disagreement analysis
+- Diversity analysis
+- Sandbox blended candidates
+- Integration contract
+- Soft voting skeleton
+- Stacking skeleton
+- No production write in Phase 25.
