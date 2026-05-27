@@ -1310,7 +1310,21 @@ class MLInferenceDriftError(MLInferenceError): pass
 class MLSandboxIntegrationError(MLInferenceError): pass
 class MLInferenceQualityError(MLInferenceError): pass
 class MLInferenceSafetyError(MLInferenceError): pass
-class MLServingForbiddenError(MLInferenceError): pass
 class MLSignalIntegrationForbiddenError(MLInferenceError): pass
 
 class DatasetImportError(Binance50Error): pass
+
+class MLBlendingError(Binance50Error): pass
+class MLBlendingConfigError(MLBlendingError): pass
+class MLBlendingInputError(MLBlendingError): pass
+class MLBlendingAlignmentError(MLBlendingError): pass
+class MLBlendingWeightError(MLBlendingError): pass
+class MLProbabilityBlendError(MLBlendingError): pass
+class MLSignalBlendError(MLBlendingError): pass
+class MLEnsembleError(MLBlendingError): pass
+class MLDisagreementError(MLBlendingError): pass
+class MLBlendingQualityError(MLBlendingError): pass
+class MLBlendingSafetyError(MLBlendingError): pass
+class MLBlendingLeakageError(MLBlendingError): pass
+class MLBlendingIntegrationError(MLBlendingError): pass
+class MLBlendingThresholdError(MLBlendingError): pass

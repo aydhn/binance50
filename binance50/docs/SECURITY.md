@@ -269,3 +269,15 @@ Phase 14's signal scoring engine acts as a critical safety boundary between abst
 - **Regime concentration riski**: Flag strategy models built around only trending regimes.
 - **Düşük OOS trade count riski**: Limit statistical reporting on minimal trading occurrences.
 - **Walk-forward'ın gelecek performans garantisi olmadığı**: Reiterate this strictly.
+
+## ML Blending Sandbox Security (Phase 25)
+- Blended score emir değildir
+- Blended score production signal değildir
+- Signal/risk auto-write yasağı
+- Dynamic weight training yasağı
+- OOS ile weight tuning yasağı
+- Forward/nearest alignment riski
+- Uncalibrated probability riski
+- Model disagreement riski
+- Threshold sweep execution threshold değildir
+- Stacking leakage riski
