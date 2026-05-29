@@ -47,6 +47,17 @@ class DatasetKind(StrEnum):
     ML_LEAKAGE_REPORTS = "ml_leakage_reports"
     ML_QUALITY_REPORTS = "ml_quality_reports"
 
+    PORTFOLIO_SELECTION_RUNS = "portfolio_selection_runs"
+    PORTFOLIO_INPUT_CANDIDATES = "portfolio_input_candidates"
+    PORTFOLIO_SELECTED_SANDBOX_CANDIDATES = "portfolio_selected_sandbox_candidates"
+    PORTFOLIO_CANDIDATE_SCORE_BREAKDOWNS = "portfolio_candidate_score_breakdowns"
+    PORTFOLIO_CORRELATION_REPORTS = "portfolio_correlation_reports"
+    PORTFOLIO_SIMILARITY_REPORTS = "portfolio_similarity_reports"
+    PORTFOLIO_EXPOSURE_REPORTS = "portfolio_exposure_reports"
+    PORTFOLIO_CONCENTRATION_REPORTS = "portfolio_concentration_reports"
+    PORTFOLIO_DIVERSIFICATION_REPORTS = "portfolio_diversification_reports"
+    PORTFOLIO_RISK_BUDGET_REPORTS = "portfolio_risk_budget_reports"
+    PORTFOLIO_QUALITY_REPORTS = "portfolio_quality_reports"
 
 
 @dataclass
@@ -558,8 +569,6 @@ def get_optimization_search_spaces_schema() -> DatasetSchema:
     )
 
 
-
-
 def get_ml_datasets_schema() -> DatasetSchema:
     return DatasetSchema(
         dataset_name="ml_datasets",
@@ -571,14 +580,39 @@ def get_ml_datasets_schema() -> DatasetSchema:
         ],
         primary_keys=["dataset_id", "open_time"],
         dynamic_columns_allowed=True,
-        dynamic_column_prefixes=["trend_", "mom_", "vol_", "volu_", "tr_", "div_", "mtf_", "pat_", "reg_", "signal_", "risk_", "label_"],
+        dynamic_column_prefixes=[
+            "trend_",
+            "mom_",
+            "vol_",
+            "volu_",
+            "tr_",
+            "div_",
+            "mtf_",
+            "pat_",
+            "reg_",
+            "signal_",
+            "risk_",
+            "label_",
+        ],
         disallowed_column_names=[
-            "target", "future_return", "next_close", "forward_return",
-            "order_id", "client_order_id", "exchange_order_id", "live_order",
-            "testnet_order", "paper_order", "real_order", "execution_gateway",
-            "api_key", "secret", "signature"
-        ]
+            "target",
+            "future_return",
+            "next_close",
+            "forward_return",
+            "order_id",
+            "client_order_id",
+            "exchange_order_id",
+            "live_order",
+            "testnet_order",
+            "paper_order",
+            "real_order",
+            "execution_gateway",
+            "api_key",
+            "secret",
+            "signature",
+        ],
     )
+
 
 def get_ml_features_schema() -> DatasetSchema:
     return DatasetSchema(
@@ -591,14 +625,39 @@ def get_ml_features_schema() -> DatasetSchema:
         ],
         primary_keys=["dataset_id", "open_time"],
         dynamic_columns_allowed=True,
-        dynamic_column_prefixes=["trend_", "mom_", "vol_", "volu_", "tr_", "div_", "mtf_", "pat_", "reg_", "signal_", "risk_"],
+        dynamic_column_prefixes=[
+            "trend_",
+            "mom_",
+            "vol_",
+            "volu_",
+            "tr_",
+            "div_",
+            "mtf_",
+            "pat_",
+            "reg_",
+            "signal_",
+            "risk_",
+        ],
         disallowed_column_names=[
-            "target", "future_return", "next_close", "forward_return", "label_",
-            "order_id", "client_order_id", "exchange_order_id", "live_order",
-            "testnet_order", "paper_order", "real_order", "execution_gateway",
-            "api_key", "secret", "signature"
-        ]
+            "target",
+            "future_return",
+            "next_close",
+            "forward_return",
+            "label_",
+            "order_id",
+            "client_order_id",
+            "exchange_order_id",
+            "live_order",
+            "testnet_order",
+            "paper_order",
+            "real_order",
+            "execution_gateway",
+            "api_key",
+            "secret",
+            "signature",
+        ],
     )
+
 
 def get_ml_labels_schema() -> DatasetSchema:
     return DatasetSchema(
@@ -613,11 +672,20 @@ def get_ml_labels_schema() -> DatasetSchema:
         ],
         primary_keys=["dataset_id", "open_time", "label_column"],
         disallowed_column_names=[
-            "order_id", "client_order_id", "exchange_order_id", "live_order",
-            "testnet_order", "paper_order", "real_order", "execution_gateway",
-            "api_key", "secret", "signature"
-        ]
+            "order_id",
+            "client_order_id",
+            "exchange_order_id",
+            "live_order",
+            "testnet_order",
+            "paper_order",
+            "real_order",
+            "execution_gateway",
+            "api_key",
+            "secret",
+            "signature",
+        ],
     )
+
 
 def get_ml_dataset_manifests_schema() -> DatasetSchema:
     return DatasetSchema(
@@ -642,6 +710,7 @@ def get_ml_dataset_manifests_schema() -> DatasetSchema:
         primary_keys=["dataset_id"],
     )
 
+
 def get_ml_split_metadata_schema() -> DatasetSchema:
     return DatasetSchema(
         dataset_name="ml_split_metadata",
@@ -664,6 +733,7 @@ def get_ml_split_metadata_schema() -> DatasetSchema:
         primary_keys=["split_id"],
     )
 
+
 def get_ml_preprocessor_metadata_schema() -> DatasetSchema:
     return DatasetSchema(
         dataset_name="ml_preprocessor_metadata",
@@ -682,6 +752,7 @@ def get_ml_preprocessor_metadata_schema() -> DatasetSchema:
         primary_keys=["preprocessor_id"],
     )
 
+
 def get_ml_leakage_reports_schema() -> DatasetSchema:
     return DatasetSchema(
         dataset_name="ml_leakage_reports",
@@ -699,6 +770,7 @@ def get_ml_leakage_reports_schema() -> DatasetSchema:
         ],
         primary_keys=["dataset_id"],
     )
+
 
 def get_ml_quality_reports_schema() -> DatasetSchema:
     return DatasetSchema(
@@ -733,6 +805,7 @@ def get_ml_inference_runs_schema() -> DatasetSchema:
         primary_keys=["run_id"],
     )
 
+
 def get_ml_predictions_schema() -> DatasetSchema:
     return DatasetSchema(
         dataset_name="ml_predictions",
@@ -762,6 +835,7 @@ def get_ml_predictions_schema() -> DatasetSchema:
         primary_keys=["prediction_id"],
     )
 
+
 def get_ml_probability_reports_schema() -> DatasetSchema:
     return DatasetSchema(
         dataset_name="ml_probability_reports",
@@ -774,6 +848,7 @@ def get_ml_probability_reports_schema() -> DatasetSchema:
         primary_keys=["run_id"],
     )
 
+
 def get_ml_calibration_check_reports_schema() -> DatasetSchema:
     return DatasetSchema(
         dataset_name="ml_calibration_check_reports",
@@ -785,6 +860,7 @@ def get_ml_calibration_check_reports_schema() -> DatasetSchema:
         ],
         primary_keys=["run_id"],
     )
+
 
 def get_ml_threshold_sweep_reports_schema() -> DatasetSchema:
     return DatasetSchema(
@@ -799,6 +875,7 @@ def get_ml_threshold_sweep_reports_schema() -> DatasetSchema:
         primary_keys=["run_id", "threshold"],
     )
 
+
 def get_ml_prediction_distribution_reports_schema() -> DatasetSchema:
     return DatasetSchema(
         dataset_name="ml_prediction_distribution_reports",
@@ -810,6 +887,7 @@ def get_ml_prediction_distribution_reports_schema() -> DatasetSchema:
         ],
         primary_keys=["run_id"],
     )
+
 
 def get_ml_confidence_bucket_reports_schema() -> DatasetSchema:
     return DatasetSchema(
@@ -825,6 +903,7 @@ def get_ml_confidence_bucket_reports_schema() -> DatasetSchema:
         primary_keys=["run_id", "bucket_start", "bucket_end"],
     )
 
+
 def get_ml_inference_drift_reports_schema() -> DatasetSchema:
     return DatasetSchema(
         dataset_name="ml_inference_drift_reports",
@@ -836,6 +915,7 @@ def get_ml_inference_drift_reports_schema() -> DatasetSchema:
         ],
         primary_keys=["run_id"],
     )
+
 
 def get_ml_sandbox_outputs_schema() -> DatasetSchema:
     return DatasetSchema(
@@ -849,6 +929,7 @@ def get_ml_sandbox_outputs_schema() -> DatasetSchema:
         primary_keys=["sandbox_id"],
     )
 
+
 def get_ml_inference_manifests_schema() -> DatasetSchema:
     return DatasetSchema(
         dataset_name="ml_inference_manifests",
@@ -860,6 +941,72 @@ def get_ml_inference_manifests_schema() -> DatasetSchema:
         ],
         primary_keys=["inference_id"],
     )
+
+
+def get_portfolio_selection_runs_schema() -> DatasetSchema:
+    return DatasetSchema(
+        dataset_name="portfolio_selection_runs",
+        dataset_kind=DatasetKind.PORTFOLIO_SELECTION_RUNS,
+        version=1,
+        columns=[
+            ColumnSchema("run_id", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("metadata_json", "string", nullable=False),
+        ],
+        primary_keys=["run_id"],
+    )
+
+
+def get_portfolio_input_candidates_schema() -> DatasetSchema:
+    return DatasetSchema(
+        dataset_name="portfolio_input_candidates",
+        dataset_kind=DatasetKind.PORTFOLIO_INPUT_CANDIDATES,
+        version=1,
+        columns=[
+            ColumnSchema("candidate_id", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("metadata_json", "string", nullable=False),
+        ],
+        primary_keys=["candidate_id"],
+    )
+
+
+def get_portfolio_selected_sandbox_candidates_schema() -> DatasetSchema:
+    return DatasetSchema(
+        dataset_name="portfolio_selected_sandbox_candidates",
+        dataset_kind=DatasetKind.PORTFOLIO_SELECTED_SANDBOX_CANDIDATES,
+        version=1,
+        columns=[
+            ColumnSchema("selected_id", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("metadata_json", "string", nullable=False),
+        ],
+        primary_keys=["selected_id"],
+    )
+
+
+def get_portfolio_candidate_score_breakdowns_schema() -> DatasetSchema:
+    return DatasetSchema(
+        dataset_name="portfolio_candidate_score_breakdowns",
+        dataset_kind=DatasetKind.PORTFOLIO_CANDIDATE_SCORE_BREAKDOWNS,
+        version=1,
+        columns=[
+            ColumnSchema("selected_id", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("metadata_json", "string", nullable=False),
+        ],
+        primary_keys=["selected_id"],
+    )
+
+
+def get_portfolio_reports_schema(name: str, kind: DatasetKind) -> DatasetSchema:
+    return DatasetSchema(
+        dataset_name=name,
+        dataset_kind=kind,
+        version=1,
+        columns=[
+            ColumnSchema("run_id", "string", nullable=False, is_primary_key=True),
+            ColumnSchema("metadata_json", "string", nullable=False),
+        ],
+        primary_keys=["run_id"],
+    )
+
 
 def get_schema_registry() -> dict[str, DatasetSchema]:
     return {
@@ -884,8 +1031,32 @@ def get_schema_registry() -> dict[str, DatasetSchema]:
         "ml_preprocessor_metadata": get_ml_preprocessor_metadata_schema(),
         "ml_leakage_reports": get_ml_leakage_reports_schema(),
         "ml_quality_reports": get_ml_quality_reports_schema(),
+        "portfolio_selection_runs": get_portfolio_selection_runs_schema(),
+        "portfolio_input_candidates": get_portfolio_input_candidates_schema(),
+        "portfolio_selected_sandbox_candidates": get_portfolio_selected_sandbox_candidates_schema(),
+        "portfolio_candidate_score_breakdowns": get_portfolio_candidate_score_breakdowns_schema(),
+        "portfolio_correlation_reports": get_portfolio_reports_schema(
+            "portfolio_correlation_reports", DatasetKind.PORTFOLIO_CORRELATION_REPORTS
+        ),
+        "portfolio_similarity_reports": get_portfolio_reports_schema(
+            "portfolio_similarity_reports", DatasetKind.PORTFOLIO_SIMILARITY_REPORTS
+        ),
+        "portfolio_exposure_reports": get_portfolio_reports_schema(
+            "portfolio_exposure_reports", DatasetKind.PORTFOLIO_EXPOSURE_REPORTS
+        ),
+        "portfolio_concentration_reports": get_portfolio_reports_schema(
+            "portfolio_concentration_reports", DatasetKind.PORTFOLIO_CONCENTRATION_REPORTS
+        ),
+        "portfolio_diversification_reports": get_portfolio_reports_schema(
+            "portfolio_diversification_reports", DatasetKind.PORTFOLIO_DIVERSIFICATION_REPORTS
+        ),
+        "portfolio_risk_budget_reports": get_portfolio_reports_schema(
+            "portfolio_risk_budget_reports", DatasetKind.PORTFOLIO_RISK_BUDGET_REPORTS
+        ),
+        "portfolio_quality_reports": get_portfolio_reports_schema(
+            "portfolio_quality_reports", DatasetKind.PORTFOLIO_QUALITY_REPORTS
+        ),
     }
-
 
 
 def validate_dataframe_schema(df: pd.DataFrame, schema: DatasetSchema) -> None:

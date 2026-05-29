@@ -14,9 +14,11 @@ def import_walkforward_result(result: WalkForwardRunResult, config: AppConfig) -
 
     return DatasetManifest()
 
+
 from binance50.ml.datasets.models import MLDatasetBuildResult
 from binance50.core.exceptions import DatasetImportError
 from binance50.ml.datasets.storage import ml_dataset_to_storage_frames
+
 
 def import_ml_dataset_result(
     storage_manager: Any,
@@ -28,7 +30,7 @@ def import_ml_dataset_result(
         raise DatasetImportError("Cannot import failed or empty ML dataset result")
 
     if result.quality_report.status != "passed" and result.quality_report.status != "warnings":
-         raise DatasetImportError("Cannot import dataset failing quality checks")
+        raise DatasetImportError("Cannot import dataset failing quality checks")
 
     if result.leakage_report.status != "clean" and result.leakage_report.status != "warnings":
         raise DatasetImportError("Cannot import dataset with critical leakage issues")
@@ -53,7 +55,11 @@ def import_ml_training_result(result: Any, config: AppConfig) -> Any:
     for m in result.model_results:
         if not m.model_card:
             raise ValueError("Cannot import without model card")
-        if hasattr(m, "prediction_intent") and getattr(m, "prediction_intent") in ["live", "paper", "serving"]:
+        if hasattr(m, "prediction_intent") and getattr(m, "prediction_intent") in [
+            "live",
+            "paper",
+            "serving",
+        ]:
             raise ValueError("Cannot import models with live/paper/serving intent")
 
     return {"status": "imported", "run_id": result.run_id}
@@ -72,10 +78,36 @@ def import_ml_inference_result(result: Any, config: AppConfig) -> Any:
         raise ValueError("Cannot import run without verified artifact hash")
 
     sandbox_outputs = getattr(result, "sandbox_outputs", {})
-    if not getattr(config.ml_inference.sandbox_integration, "write_to_signal_engine_forbidden", True):
+    if not getattr(
+        config.ml_inference.sandbox_integration, "write_to_signal_engine_forbidden", True
+    ):
         raise ValueError("Sandbox outputs cannot be imported as production signals")
 
     # This dummy function simulates the behavior described in requirements
+    class DatasetManifest:
+        pass
+
+    return DatasetManifest()
+
+
+def import_portfolio_selection_result(result: Any, config: AppConfig) -> Any:
+    # Validate rules before import
+    from binance50.core.exceptions import DatasetImportError
+
+    if getattr(result, "status", None) and result.status.value != "completed":
+        raise DatasetImportError("Cannot import incomplete portfolio selection result")
+
+    q_rep = getattr(result, "quality_report", {})
+    if isinstance(q_rep, dict) and q_rep.get("status") == "failed":
+        raise DatasetImportError("Cannot import portfolio selection that failed quality checks")
+
+    for c in getattr(result, "selected_candidates", []):
+        if not getattr(c, "blocked_from_execution", False):
+            raise DatasetImportError(
+                "Production execution/allocation candidates cannot be imported"
+            )
+
+    # Dummy manifest implementation
     class DatasetManifest:
         pass
 
