@@ -293,3 +293,13 @@ Phase 14's signal scoring engine acts as a critical safety boundary between abst
 - **Exposure hypothetical-only**: Limits calculated against exposure use hypothetical dollars.
 - **Risk budget placeholder**: Same as exposure; strictly offline.
 - **SciPy optimizer skeleton**: Even if SciPy provides valid optimal weights, they must remain securely locked in the sandbox format.
+
+
+## Portfolio Construction Safety
+- **Hypothetical allocation emir değildir:** No orders are executed from the construction output.
+- **Quantity output yasağı:** Fields like `quantity` or `position_size` are forbidden.
+- **Leverage output yasağı:** Leverage multipliers are explicitly banned to prevent accidental risk amplification.
+- **Entry/exit/SL/TP output yasağı:** Trading directives are blocked.
+- **Production allocation yasağı:** Output is explicitly marked as sandbox/research intent.
+- **Real balance fetch yasağı:** Balances are simulated rather than queried from the exchange.
+- **Optional optimizer output sandbox-only kalır:** Any optimizations are guaranteed not to propagate to execution engines.
