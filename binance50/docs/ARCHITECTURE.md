@@ -421,3 +421,17 @@ The optimizer is designed to find robust strategy parameters using exhaustive (g
 - **Ranking engine**: Weights scores and applies penalties.
 - **Optional constrained optimizer skeleton**: Provides Scipy optimization logic structure, but restricts output to sandbox-only.
 - **Sandbox selected candidates**: The final product is a non-executable list of portfolio candidate selections, which must never be confused with live execution commands or position sizing.
+
+
+## Portfolio Construction Sandbox Architecture
+The portfolio construction sandbox layer is responsible for creating hypothetical allocations from selected candidates. It includes:
+- **Selected candidate loader:** Validates and loads inputs.
+- **Returns and covariance matrix:** Calculates historical data necessary for risk assessment.
+- **Volatility estimation:** Handles scaling based on historical behavior.
+- **Equal weight baseline & Inverse volatility allocation:** Deterministic rule-based allocation methods.
+- **Volatility targeting skeleton & Risk parity skeleton:** Optimization methods that stop short of executing real trades.
+- **Risk contribution analysis:** Computes the marginal and component risk of each candidate.
+- **Constraint checker:** Verifies adherence to predefined limits.
+- **Optional SciPy SLSQP & PyPortfolioOpt adapters:** Used solely for research purposes without triggering live orders.
+
+Production allocation is strictly forbidden in Phase 27 to maintain absolute separation between research projections and execution realities.

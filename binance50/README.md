@@ -367,3 +367,22 @@ python -m binance50.cli portfolio-diversification-report
 python -m binance50.cli portfolio-safety-check
 python -m binance50.cli portfolio-sandbox-health
 ```
+
+
+## Portfolio Construction Sandbox
+The Portfolio Construction layer generates hypothetical allocation structures from selected candidates. It supports:
+- **Equal Weight and Inverse Volatility:** Deterministic rule-based distributions.
+- **Volatility Targeting and Risk Parity:** Skeletons for advanced optimization approaches.
+
+**Note:** All outputs are strictly hypothetical. No quantities, leverages, or real orders are produced.
+
+### Commands
+- `python -m binance50.cli portfolio-construction-config`
+- `python -m binance50.cli portfolio-run-construction-fixture --symbol BTCUSDT --scope spot --interval 1m`
+- `python -m binance50.cli portfolio-allocation-table`
+- `python -m binance50.cli portfolio-method-comparison`
+- `python -m binance50.cli portfolio-covariance-report`
+- `python -m binance50.cli portfolio-volatility-report`
+- `python -m binance50.cli portfolio-risk-contribution-report`
+- `python -m binance50.cli portfolio-allocation-safety-check`
+- `python -m binance50.cli portfolio-construction-health`

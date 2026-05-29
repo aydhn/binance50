@@ -3819,8 +3819,204 @@ class PortfolioSandboxConfig(BaseModel):
 
         return self
 
+
+
+class PortfolioConstructionInputConfig(BaseModel):
+    require_portfolio_selection_result: bool = True
+    require_selected_sandbox_candidates: bool = True
+    require_blocked_flags: bool = True
+    require_research_only_intent: bool = True
+    require_no_order_intent: bool = True
+    reject_production_candidates: bool = True
+    reject_execution_fields: bool = True
+    reject_live_paper_intent: bool = True
+    min_selected_candidates: int = 1
+    max_selected_candidates: int = 20
+
+class PortfolioConstructionMarketDataConfig(BaseModel):
+    source_priority: list[str] = Field(default_factory=lambda: ["warehouse", "market_data_cache", "fixture"])
+    require_closed_candles: bool = True
+    lookback_bars: int = 1000
+    min_periods: int = 250
+    return_source: str = "close"
+    reject_forward_returns: bool = True
+    reject_future_columns: bool = True
+    allow_missing_symbol_returns: bool = False
+    missing_returns_policy: str = "reject"
+
+class PortfolioCovarianceConfig(BaseModel):
+    enabled: bool = True
+    method: str = "sample"
+    allowed_methods: list[str] = Field(default_factory=lambda: ["sample", "shrinkage_skeleton", "ewma_skeleton"])
+    annualization_periods: int = 365
+    min_periods: int = 250
+    reject_non_finite_covariance: bool = True
+    reject_non_symmetric_covariance: bool = True
+    warn_non_positive_semidefinite: bool = True
+    covariance_regularization_epsilon: float = 0.000001
+
+class PortfolioVolatilityConfig(BaseModel):
+    enabled: bool = True
+    method: str = "realized"
+    lookback_bars: int = 500
+    annualize: bool = True
+    min_volatility_floor_pct: float = 1.0
+    max_volatility_cap_pct: float = 500.0
+    reject_zero_volatility: bool = True
+    volatility_targeting_enabled: bool = True
+    target_portfolio_volatility_pct: float = 20.0
+    max_target_leverage: float = 1.0
+    leverage_forbidden: bool = True
+
+class PortfolioEqualWeightConfig(BaseModel):
+    enabled: bool = True
+    max_single_weight_pct: float = 25.0
+    normalize_weights: bool = True
+
+class PortfolioInverseVolatilityConfig(BaseModel):
+    enabled: bool = True
+    use_volatility_floor: bool = True
+    max_single_weight_pct: float = 25.0
+    min_single_weight_pct: float = 0.0
+    normalize_weights: bool = True
+
+class PortfolioVolatilityTargetingConfig(BaseModel):
+    enabled: bool = True
+    skeleton_only: bool = True
+    target_volatility_pct: float = 20.0
+    max_scale_factor: float = 1.0
+    allow_leverage: bool = False
+    cash_buffer_allowed: bool = True
+    production_scaling_forbidden: bool = True
+
+class PortfolioRiskParityConfig(BaseModel):
+    enabled: bool = True
+    skeleton_only: bool = True
+    objective: str = "equal_risk_contribution"
+    max_iterations: int = 1000
+    tolerance: float = 0.000001
+    use_scipy_if_available: bool = True
+    fail_if_scipy_missing: bool = False
+    max_single_weight_pct: float = 25.0
+    min_single_weight_pct: float = 0.0
+    production_risk_parity_forbidden: bool = True
+
+class PortfolioAllocationMethodsConfig(BaseModel):
+    enabled_methods: list[str] = Field(default_factory=lambda: ["equal_weight", "inverse_volatility", "volatility_targeting_skeleton", "risk_parity_skeleton"])
+    default_method: str = "inverse_volatility"
+    allow_method_comparison: bool = True
+    allow_scipy_optimizer_skeleton: bool = True
+    allow_pyportfolioopt_adapter_skeleton: bool = True
+    production_optimizer_forbidden: bool = True
+
+class PortfolioSimulatedCapitalConfig(BaseModel):
+    enabled: bool = True
+    simulated_equity_usdt: float = 1000.0
+    cash_buffer_pct: float = 10.0
+    max_allocated_capital_pct: float = 30.0
+    max_single_candidate_allocation_pct: float = 10.0
+    max_single_symbol_allocation_pct: float = 15.0
+    max_same_direction_allocation_pct: float = 25.0
+    real_balance_fetch_forbidden: bool = True
+    allocation_is_hypothetical: bool = True
+
+class PortfolioConstructionConstraintConfig(BaseModel):
+    enabled: bool = True
+    weights_sum_lte_one: bool = True
+    long_only_weights: bool = True
+    max_single_weight_pct: float = 25.0
+    max_symbol_weight_pct: float = 15.0
+    max_pair_correlation: float = 0.80
+    max_portfolio_volatility_pct_warning: float = 35.0
+    max_portfolio_volatility_pct_block: float = 60.0
+    max_concentration_score_warning: float = 70.0
+    max_total_allocated_pct: float = 30.0
+    require_weight_sum_validation: bool = True
+    require_constraint_report: bool = True
+
+class PortfolioRiskContributionConfig(BaseModel):
+    enabled: bool = True
+    compute_marginal_risk_contribution: bool = True
+    compute_component_risk_contribution: bool = True
+    compute_percent_risk_contribution: bool = True
+    warn_dominant_risk_contributor: bool = True
+    max_single_risk_contribution_pct_warning: float = 50.0
+
+class PortfolioConstructionReportingConfig(BaseModel):
+    include_method_comparison: bool = True
+    include_allocation_table: bool = True
+    include_risk_contribution_table: bool = True
+    include_covariance_summary: bool = True
+    include_volatility_summary: bool = True
+    include_constraint_report: bool = True
+    include_caveats: bool = True
+    require_explanations: bool = True
+
+class PortfolioConstructionQualityConfig(BaseModel):
+    reject_no_candidates: bool = True
+    reject_missing_allocation_breakdown: bool = True
+    reject_missing_explanation: bool = True
+    reject_weight_out_of_range: bool = True
+    reject_weight_sum_invalid: bool = True
+    reject_non_finite_covariance: bool = True
+    reject_non_finite_volatility: bool = True
+    reject_nan_inf_outputs: bool = True
+    reject_missing_hashes: bool = True
+    reject_forward_returns: bool = True
+    reject_future_columns: bool = True
+    reject_quantity_output: bool = True
+    reject_order_like_output: bool = True
+    reject_production_allocation_intent: bool = True
+    reject_live_or_paper_intent: bool = True
+    warn_high_portfolio_volatility: bool = True
+    warn_high_concentration: bool = True
+    warn_dominant_risk_contributor: bool = True
+    warn_missing_optional_optimizer: bool = True
+
+class PortfolioConstructionConfig(BaseModel):
+    enabled: bool = True
+    output_dataset_name: str = "portfolio_construction_sandbox"
+    cache_enabled: bool = True
+    cache_dir: str = "data/portfolio/construction/cache"
+    export_dir: str = "data/portfolio/construction/exports"
+    reports_dir: str = "data/portfolio/construction/reports"
+
+    real_exchange_forbidden: bool = True
+    paper_trade_forbidden: bool = True
+    live_trade_forbidden: bool = True
+    order_creation_forbidden: bool = True
+    api_key_forbidden: bool = True
+    signed_request_forbidden: bool = True
+    dashboard_forbidden: bool = True
+    production_allocation_forbidden: bool = True
+    production_position_sizing_forbidden: bool = True
+    quantity_output_forbidden: bool = True
+    leverage_output_forbidden: bool = True
+    entry_exit_price_output_forbidden: bool = True
+    stop_take_profit_output_forbidden: bool = True
+    signal_auto_write_forbidden: bool = True
+    risk_auto_write_forbidden: bool = True
+    paper_auto_write_forbidden: bool = True
+    live_auto_write_forbidden: bool = True
+
+    inputs: PortfolioConstructionInputConfig = Field(default_factory=PortfolioConstructionInputConfig)
+    market_data: PortfolioConstructionMarketDataConfig = Field(default_factory=PortfolioConstructionMarketDataConfig)
+    covariance: PortfolioCovarianceConfig = Field(default_factory=PortfolioCovarianceConfig)
+    volatility: PortfolioVolatilityConfig = Field(default_factory=PortfolioVolatilityConfig)
+    allocation_methods: PortfolioAllocationMethodsConfig = Field(default_factory=PortfolioAllocationMethodsConfig)
+    equal_weight: PortfolioEqualWeightConfig = Field(default_factory=PortfolioEqualWeightConfig)
+    inverse_volatility: PortfolioInverseVolatilityConfig = Field(default_factory=PortfolioInverseVolatilityConfig)
+    volatility_targeting: PortfolioVolatilityTargetingConfig = Field(default_factory=PortfolioVolatilityTargetingConfig)
+    risk_parity: PortfolioRiskParityConfig = Field(default_factory=PortfolioRiskParityConfig)
+    simulated_capital: PortfolioSimulatedCapitalConfig = Field(default_factory=PortfolioSimulatedCapitalConfig)
+    constraints: PortfolioConstructionConstraintConfig = Field(default_factory=PortfolioConstructionConstraintConfig)
+    risk_contribution: PortfolioRiskContributionConfig = Field(default_factory=PortfolioRiskContributionConfig)
+    reporting: PortfolioConstructionReportingConfig = Field(default_factory=PortfolioConstructionReportingConfig)
+    quality: PortfolioConstructionQualityConfig = Field(default_factory=PortfolioConstructionQualityConfig)
+
 class AppConfig(BaseModel):
     portfolio_sandbox: PortfolioSandboxConfig = Field(default_factory=PortfolioSandboxConfig)
+    portfolio_construction: PortfolioConstructionConfig = Field(default_factory=PortfolioConstructionConfig)
     ml_dataset: MLDatasetConfig = Field(default_factory=MLDatasetConfig)
     ml_training: MLTrainingConfig = Field(default_factory=MLTrainingConfig)
     ml_inference: MLInferenceConfig = Field(default_factory=MLInferenceConfig)

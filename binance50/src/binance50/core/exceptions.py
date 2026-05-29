@@ -1560,3 +1560,48 @@ class PortfolioSandboxSafetyError(PortfolioSandboxError):
 
 class PortfolioIntegrationForbiddenError(PortfolioSandboxError):
     pass
+
+class PortfolioConstructionError(Binance50Error):
+    pass
+
+class PortfolioConstructionConfigError(PortfolioConstructionError):
+    pass
+
+class PortfolioConstructionInputError(PortfolioConstructionError):
+    pass
+
+class PortfolioReturnsError(PortfolioConstructionError):
+    pass
+
+class PortfolioCovarianceError(PortfolioConstructionError):
+    pass
+
+class PortfolioVolatilityError(PortfolioConstructionError):
+    pass
+
+class PortfolioAllocationError(PortfolioConstructionError):
+    pass
+
+class PortfolioRiskParityError(PortfolioConstructionError):
+    pass
+
+class PortfolioRiskContributionError(PortfolioConstructionError):
+    pass
+
+class PortfolioConstructionConstraintError(PortfolioConstructionError):
+    pass
+
+class PortfolioConstructionOptimizerError(PortfolioConstructionError):
+    pass
+
+class PortfolioConstructionQualityError(PortfolioConstructionError):
+    pass
+
+class PortfolioConstructionSafetyError(PortfolioConstructionError):
+    pass
+
+class PortfolioAllocationForbiddenError(PortfolioConstructionError):
+    pass
+
+class PortfolioConstructionIntegrationForbiddenError(PortfolioConstructionError):
+    pass
