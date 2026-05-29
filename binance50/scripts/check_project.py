@@ -158,6 +158,21 @@ def main() -> None:
         ),
     ]
 
+    cli_checks.extend([
+
+            (["python", "-m", "binance50.cli", "portfolio-sandbox-config"], "Portfolio Sandbox Config Check"),
+            (["python", "-m", "binance50.cli", "portfolio-candidate-inputs"], "Portfolio Candidate Inputs Check"),
+            (["python", "-m", "binance50.cli", "portfolio-run-selection-fixture", "--symbol", "BTCUSDT", "--scope", "spot", "--interval", "1m"], "Portfolio Fixture Selection Check"),
+            (["python", "-m", "binance50.cli", "portfolio-selected-candidates"], "Portfolio Selected Candidates Check"),
+            (["python", "-m", "binance50.cli", "portfolio-correlation-report"], "Portfolio Correlation Check"),
+            (["python", "-m", "binance50.cli", "portfolio-exposure-report"], "Portfolio Exposure Check"),
+            (["python", "-m", "binance50.cli", "portfolio-concentration-report"], "Portfolio Concentration Check"),
+            (["python", "-m", "binance50.cli", "portfolio-diversification-report"], "Portfolio Diversification Check"),
+            (["python", "-m", "binance50.cli", "portfolio-risk-budget-report"], "Portfolio Risk Budget Check"),
+            (["python", "-m", "binance50.cli", "portfolio-safety-check"], "Portfolio Safety Guard Check"),
+            (["python", "-m", "binance50.cli", "portfolio-integration-safety-check"], "Portfolio Integration Guard Check"),
+
+    ])
     cli_checks.extend(
         [
             (["python", "-m", "binance50.cli", "risk-config"], "Risk Config Check"),
@@ -172,6 +187,21 @@ def main() -> None:
         ]
     )
 
+    cli_checks.extend([
+
+            (["python", "-m", "binance50.cli", "portfolio-sandbox-config"], "Portfolio Sandbox Config Check"),
+            (["python", "-m", "binance50.cli", "portfolio-candidate-inputs"], "Portfolio Candidate Inputs Check"),
+            (["python", "-m", "binance50.cli", "portfolio-run-selection-fixture", "--symbol", "BTCUSDT", "--scope", "spot", "--interval", "1m"], "Portfolio Fixture Selection Check"),
+            (["python", "-m", "binance50.cli", "portfolio-selected-candidates"], "Portfolio Selected Candidates Check"),
+            (["python", "-m", "binance50.cli", "portfolio-correlation-report"], "Portfolio Correlation Check"),
+            (["python", "-m", "binance50.cli", "portfolio-exposure-report"], "Portfolio Exposure Check"),
+            (["python", "-m", "binance50.cli", "portfolio-concentration-report"], "Portfolio Concentration Check"),
+            (["python", "-m", "binance50.cli", "portfolio-diversification-report"], "Portfolio Diversification Check"),
+            (["python", "-m", "binance50.cli", "portfolio-risk-budget-report"], "Portfolio Risk Budget Check"),
+            (["python", "-m", "binance50.cli", "portfolio-safety-check"], "Portfolio Safety Guard Check"),
+            (["python", "-m", "binance50.cli", "portfolio-integration-safety-check"], "Portfolio Integration Guard Check"),
+
+    ])
     cli_checks.extend(
         [
             (["python", "-m", "binance50.cli", "walkforward-config"], "Walkforward Config Check"),

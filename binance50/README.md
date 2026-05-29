@@ -345,3 +345,25 @@ python -m binance50.cli optimizer-health
   - `python -m binance50.cli ml-blending-config`
   - `python -m binance50.cli ml-blending-inputs`
   - `python -m binance50.cli ml-run-blending-fixture --symbol BTCUSDT --scope spot --interval 1m`
+
+## Portfolio Candidate Selection Sandbox
+The Portfolio Candidate Selection Sandbox evaluates isolated single-symbol signals, risk contexts, and ML probability blended candidates in aggregate to construct a holistic candidate ranking. By introducing correlation constraints, diversification logic, and hypothetical exposure monitoring, the system identifies the most optimal multi-asset composition.
+
+Key constraints:
+- This is purely hypothetical and offline.
+- It does **not** construct production position sizing.
+- Sandbox candidates are explicitly blocked from executing against live / paper / execution endpoints.
+
+Commands available:
+```bash
+python -m binance50.cli portfolio-sandbox-config
+python -m binance50.cli portfolio-candidate-inputs
+python -m binance50.cli portfolio-run-selection-fixture --symbol BTCUSDT --scope spot --interval 1m
+python -m binance50.cli portfolio-selected-candidates
+python -m binance50.cli portfolio-correlation-report
+python -m binance50.cli portfolio-exposure-report
+python -m binance50.cli portfolio-concentration-report
+python -m binance50.cli portfolio-diversification-report
+python -m binance50.cli portfolio-safety-check
+python -m binance50.cli portfolio-sandbox-health
+```

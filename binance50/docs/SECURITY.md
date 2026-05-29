@@ -281,3 +281,15 @@ Phase 14's signal scoring engine acts as a critical safety boundary between abst
 - Model disagreement riski
 - Threshold sweep execution threshold değildir
 - Stacking leakage riski
+
+## Portfolio Candidate Selection
+- **Portfolio ranking emir değildir**: Selection output is strictly for sandbox and research purposes.
+- **Selected candidate production signal değildir**: Selected candidates cannot be inserted into the live Signal Engine.
+- **Production allocation yasağı**: You must not generate actual allocation commands from the optimizer.
+- **Position sizing production yasağı**: The selection sandbox must not output positional size recommendations for execution logic.
+- **Real balance fetch yasağı**: The portfolio tool computes strictly off hypothetical fixed balances to avoid API interaction.
+- **Correlation geçmiş veriye dayalıdır**: Do not use future data to calculate correlation matrices.
+- **Correlation future guarantee değildir**: The engine views correlation purely as an estimate, bounded by safety limits.
+- **Exposure hypothetical-only**: Limits calculated against exposure use hypothetical dollars.
+- **Risk budget placeholder**: Same as exposure; strictly offline.
+- **SciPy optimizer skeleton**: Even if SciPy provides valid optimal weights, they must remain securely locked in the sandbox format.

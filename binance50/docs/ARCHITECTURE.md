@@ -407,3 +407,17 @@ The optimizer is designed to find robust strategy parameters using exhaustive (g
 - Soft voting skeleton
 - Stacking skeleton
 - No production write in Phase 25.
+
+## Portfolio Candidate Selection Sandbox (Phase 26)
+- **Candidate input loader**: Loads signals, risk context, ML blended candidates, and regime data into unified CandidateInputs.
+- **Candidate normalization**: Normalizes heterogeneous scores and probabilities to a common 0-100 scale.
+- **Eligibility and deduplication**: Filters stale candidates, drops blocked ones, and resolves duplicates.
+- **Correlation matrix builder**: Estimates Pearson/Spearman pair correlation of symbol returns.
+- **Similarity analysis**: Analyzes cosine similarity of candidate score feature vectors.
+- **Hypothetical exposure model**: Computes aggregate candidate exposure percentage relative to simulated equity.
+- **Concentration analysis**: Checks symbol density, directional biases, and regime overlaps.
+- **Diversification scoring**: Rewards candidate selections that blend uncorrelated strategies or signals.
+- **Risk budget placeholder**: Demonstrates risk consumption.
+- **Ranking engine**: Weights scores and applies penalties.
+- **Optional constrained optimizer skeleton**: Provides Scipy optimization logic structure, but restricts output to sandbox-only.
+- **Sandbox selected candidates**: The final product is a non-executable list of portfolio candidate selections, which must never be confused with live execution commands or position sizing.

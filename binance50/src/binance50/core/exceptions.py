@@ -1229,102 +1229,334 @@ class WalkForwardLeakageError(WalkForwardError):
 class WalkForwardExecutionForbiddenError(WalkForwardError):
     pass
 
+
 class MLDatasetError(Binance50Error):
     pass
+
 
 class MLDatasetConfigError(MLDatasetError):
     pass
 
+
 class MLFeatureSourceError(MLDatasetError):
     pass
+
 
 class MLFeatureSelectionError(MLDatasetError):
     pass
 
+
 class MLLabelError(MLDatasetError):
     pass
+
 
 class MLLabelSpecError(MLDatasetError):
     pass
 
+
 class MLSplitError(MLDatasetError):
     pass
+
 
 class MLPreprocessingError(MLDatasetError):
     pass
 
+
 class MLScalerError(MLDatasetError):
     pass
+
 
 class MLAlignmentError(MLDatasetError):
     pass
 
+
 class MLLeakageError(MLDatasetError):
     pass
+
 
 class MLDatasetQualityError(MLDatasetError):
     pass
 
+
 class MLDatasetRegistryError(MLDatasetError):
     pass
+
 
 class MLDatasetCacheError(MLDatasetError):
     pass
 
+
 class MLDatasetExportError(MLDatasetError):
     pass
 
-class MLTrainingError(Binance50Error): pass
-class MLTrainingConfigError(MLTrainingError): pass
-class MLTrainingDatasetError(MLTrainingError): pass
-class MLFeatureMatrixError(MLTrainingError): pass
-class MLTargetError(MLTrainingError): pass
-class MLEstimatorError(MLTrainingError): pass
-class MLValidationError(MLTrainingError): pass
-class MLMetricsError(MLTrainingError): pass
-class MLCalibrationError(MLTrainingError): pass
-class MLFeatureImportanceError(MLTrainingError): pass
-class MLModelArtifactError(MLTrainingError): pass
-class MLModelRegistryError(MLTrainingError): pass
-class MLModelCardError(MLTrainingError): pass
-class MLTrainingQualityError(MLTrainingError): pass
-class MLTrainingSafetyError(MLTrainingError): pass
-class MLModelLeakageError(MLTrainingError): pass
-class MLServingForbiddenError(MLTrainingError): pass
+
+class MLTrainingError(Binance50Error):
+    pass
 
 
-class MLInferenceError(Binance50Error): pass
-class MLInferenceConfigError(MLInferenceError): pass
-class MLRegistryResolveError(MLInferenceError): pass
-class MLArtifactLoadError(MLInferenceError): pass
-class MLArtifactTrustError(MLInferenceError): pass
-class MLArtifactHashMismatchError(MLInferenceError): pass
-class MLFeatureSchemaError(MLInferenceError): pass
-class MLInferencePreprocessingError(MLInferenceError): pass
-class MLPredictionError(MLInferenceError): pass
-class MLProbabilityError(MLInferenceError): pass
-class MLCalibrationCheckError(MLInferenceError): pass
-class MLThresholdSweepError(MLInferenceError): pass
-class MLPredictionDistributionError(MLInferenceError): pass
-class MLInferenceDriftError(MLInferenceError): pass
-class MLSandboxIntegrationError(MLInferenceError): pass
-class MLInferenceQualityError(MLInferenceError): pass
-class MLInferenceSafetyError(MLInferenceError): pass
-class MLSignalIntegrationForbiddenError(MLInferenceError): pass
+class MLTrainingConfigError(MLTrainingError):
+    pass
 
-class DatasetImportError(Binance50Error): pass
 
-class MLBlendingError(Binance50Error): pass
-class MLBlendingConfigError(MLBlendingError): pass
-class MLBlendingInputError(MLBlendingError): pass
-class MLBlendingAlignmentError(MLBlendingError): pass
-class MLBlendingWeightError(MLBlendingError): pass
-class MLProbabilityBlendError(MLBlendingError): pass
-class MLSignalBlendError(MLBlendingError): pass
-class MLEnsembleError(MLBlendingError): pass
-class MLDisagreementError(MLBlendingError): pass
-class MLBlendingQualityError(MLBlendingError): pass
-class MLBlendingSafetyError(MLBlendingError): pass
-class MLBlendingLeakageError(MLBlendingError): pass
-class MLBlendingIntegrationError(MLBlendingError): pass
-class MLBlendingThresholdError(MLBlendingError): pass
+class MLTrainingDatasetError(MLTrainingError):
+    pass
+
+
+class MLFeatureMatrixError(MLTrainingError):
+    pass
+
+
+class MLTargetError(MLTrainingError):
+    pass
+
+
+class MLEstimatorError(MLTrainingError):
+    pass
+
+
+class MLValidationError(MLTrainingError):
+    pass
+
+
+class MLMetricsError(MLTrainingError):
+    pass
+
+
+class MLCalibrationError(MLTrainingError):
+    pass
+
+
+class MLFeatureImportanceError(MLTrainingError):
+    pass
+
+
+class MLModelArtifactError(MLTrainingError):
+    pass
+
+
+class MLModelRegistryError(MLTrainingError):
+    pass
+
+
+class MLModelCardError(MLTrainingError):
+    pass
+
+
+class MLTrainingQualityError(MLTrainingError):
+    pass
+
+
+class MLTrainingSafetyError(MLTrainingError):
+    pass
+
+
+class MLModelLeakageError(MLTrainingError):
+    pass
+
+
+class MLServingForbiddenError(MLTrainingError):
+    pass
+
+
+class MLInferenceError(Binance50Error):
+    pass
+
+
+class MLInferenceConfigError(MLInferenceError):
+    pass
+
+
+class MLRegistryResolveError(MLInferenceError):
+    pass
+
+
+class MLArtifactLoadError(MLInferenceError):
+    pass
+
+
+class MLArtifactTrustError(MLInferenceError):
+    pass
+
+
+class MLArtifactHashMismatchError(MLInferenceError):
+    pass
+
+
+class MLFeatureSchemaError(MLInferenceError):
+    pass
+
+
+class MLInferencePreprocessingError(MLInferenceError):
+    pass
+
+
+class MLPredictionError(MLInferenceError):
+    pass
+
+
+class MLProbabilityError(MLInferenceError):
+    pass
+
+
+class MLCalibrationCheckError(MLInferenceError):
+    pass
+
+
+class MLThresholdSweepError(MLInferenceError):
+    pass
+
+
+class MLPredictionDistributionError(MLInferenceError):
+    pass
+
+
+class MLInferenceDriftError(MLInferenceError):
+    pass
+
+
+class MLSandboxIntegrationError(MLInferenceError):
+    pass
+
+
+class MLInferenceQualityError(MLInferenceError):
+    pass
+
+
+class MLInferenceSafetyError(MLInferenceError):
+    pass
+
+
+class MLSignalIntegrationForbiddenError(MLInferenceError):
+    pass
+
+
+class DatasetImportError(Binance50Error):
+    pass
+
+
+class MLBlendingError(Binance50Error):
+    pass
+
+
+class MLBlendingConfigError(MLBlendingError):
+    pass
+
+
+class MLBlendingInputError(MLBlendingError):
+    pass
+
+
+class MLBlendingAlignmentError(MLBlendingError):
+    pass
+
+
+class MLBlendingWeightError(MLBlendingError):
+    pass
+
+
+class MLProbabilityBlendError(MLBlendingError):
+    pass
+
+
+class MLSignalBlendError(MLBlendingError):
+    pass
+
+
+class MLEnsembleError(MLBlendingError):
+    pass
+
+
+class MLDisagreementError(MLBlendingError):
+    pass
+
+
+class MLBlendingQualityError(MLBlendingError):
+    pass
+
+
+class MLBlendingSafetyError(MLBlendingError):
+    pass
+
+
+class MLBlendingLeakageError(MLBlendingError):
+    pass
+
+
+class MLBlendingIntegrationError(MLBlendingError):
+    pass
+
+
+class MLBlendingThresholdError(MLBlendingError):
+    pass
+
+
+class PortfolioSandboxError(Binance50Error):
+    pass
+
+
+class PortfolioSandboxConfigError(PortfolioSandboxError):
+    pass
+
+
+class PortfolioCandidateInputError(PortfolioSandboxError):
+    pass
+
+
+class PortfolioCandidateNormalizationError(PortfolioSandboxError):
+    pass
+
+
+class PortfolioEligibilityError(PortfolioSandboxError):
+    pass
+
+
+class PortfolioCorrelationError(PortfolioSandboxError):
+    pass
+
+
+class PortfolioSimilarityError(PortfolioSandboxError):
+    pass
+
+
+class PortfolioExposureError(PortfolioSandboxError):
+    pass
+
+
+class PortfolioConcentrationError(PortfolioSandboxError):
+    pass
+
+
+class PortfolioDiversificationError(PortfolioSandboxError):
+    pass
+
+
+class PortfolioRiskBudgetError(PortfolioSandboxError):
+    pass
+
+
+class PortfolioConstraintError(PortfolioSandboxError):
+    pass
+
+
+class PortfolioRankingError(PortfolioSandboxError):
+    pass
+
+
+class PortfolioSelectionError(PortfolioSandboxError):
+    pass
+
+
+class PortfolioOptimizerSkeletonError(PortfolioSandboxError):
+    pass
+
+
+class PortfolioSandboxQualityError(PortfolioSandboxError):
+    pass
+
+
+class PortfolioSandboxSafetyError(PortfolioSandboxError):
+    pass
+
+
+class PortfolioIntegrationForbiddenError(PortfolioSandboxError):
+    pass

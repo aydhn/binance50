@@ -1,230 +1,281 @@
-import yaml
-from pathlib import Path
+import re
 
-config_path = Path("binance50/config/default.yaml")
-with open(config_path, "r") as f:
-    config = yaml.safe_load(f)
+with open("binance50/src/binance50/config/models.py", "r") as f:
+    content = f.read()
 
-if "ml_training" not in config:
-    config["ml_training"] = {
-        "enabled": True,
-        "output_dataset_name": "ml_training_runs",
-        "cache_enabled": True,
-        "cache_dir": "data/ml/training/cache",
-        "export_dir": "data/ml/training/exports",
-        "registry_dir": "data/ml/training/registry",
-        "artifacts_dir": "data/ml/training/artifacts",
-        "reports_dir": "data/ml/training/reports",
+# First, remove the previously inserted incorrect line if it exists
+content = content.replace("class AppConfig(BaseModel):\n    portfolio_sandbox: PortfolioSandboxConfig = Field(default_factory=PortfolioSandboxConfig)", "class AppConfig(BaseModel):")
 
-        "real_exchange_forbidden": True,
-        "paper_trade_forbidden": True,
-        "live_trade_forbidden": True,
-        "order_creation_forbidden": True,
-        "api_key_forbidden": True,
-        "signed_request_forbidden": True,
-        "dashboard_forbidden": True,
-        "prediction_serving_deferred": True,
-        "execution_integration_forbidden": True,
-        "auto_strategy_update_forbidden": True,
+new_models = """
+class PortfolioSandboxInputConfig(BaseModel):
+    use_scored_signals: bool = True
+    use_risk_assessments: bool = True
+    use_ml_blended_candidates: bool = True
+    use_regime_context: bool = True
+    require_at_least_one_candidate_source: bool = True
+    require_risk_context: bool = False
+    require_ml_blend_context: bool = False
+    allow_missing_ml_with_penalty: bool = True
+    allow_missing_risk_with_penalty: bool = True
+    reject_execution_fields: bool = True
+    reject_live_paper_intent: bool = True
 
-        "dataset": {
-            "require_ml_dataset_manifest": True,
-            "require_leakage_free_dataset": True,
-            "require_quality_passed_dataset": True,
-            "allowed_label_types": [
-                "forward_return_classification",
-                "forward_return_regression",
-                "volatility_adjusted_return_classification"
-            ],
-            "default_label_column": "label_forward_return_classification_5",
-            "require_split_metadata": True,
-            "require_preprocessor_metadata": True,
-            "reject_if_feature_contains_label": True,
-            "reject_if_feature_contains_future": True,
-            "reject_if_feature_contains_target": True,
-            "reject_if_missing_train_validation_test": True
-        },
+class PortfolioCandidateNormalizationConfig(BaseModel):
+    score_min: float = 0.0
+    score_max: float = 100.0
+    probability_min: float = 0.0
+    probability_max: float = 1.0
+    normalize_ml_probability_to_score: bool = True
+    normalize_signal_score: bool = True
+    normalize_risk_score: bool = True
+    require_explanation: bool = True
+    require_source_trace: bool = True
 
-        "task": {
-            "default_task_type": "classification",
-            "allowed_task_types": [
-                "classification",
-                "regression_skeleton"
-            ],
-            "multiclass_enabled": True,
-            "binary_enabled": True,
-            "regression_default_enabled": False,
-            "ranking_deferred": True
-        },
+class PortfolioEligibilityConfig(BaseModel):
+    enabled: bool = True
+    min_signal_score: float = 60.0
+    min_risk_score: float = 50.0
+    min_ml_blend_score: float = 50.0
+    allow_research_only_candidates: bool = True
+    reject_blocked_risk: bool = True
+    reject_missing_symbol: bool = True
+    reject_missing_interval: bool = True
+    reject_missing_direction: bool = True
+    reject_stale_candidates: bool = True
+    max_candidate_age_bars: int = 3
+    reject_duplicate_symbol_direction_bar: bool = True
 
-        "models": {
-            "enabled_models": [
-                "dummy_classifier",
-                "logistic_regression",
-                "random_forest_classifier",
-                "hist_gradient_boosting_classifier"
-            ],
-            "default_model": "logistic_regression",
-            "allow_regression_skeletons": True,
-            "random_state": 42,
-            "n_jobs": 1,
-            "max_fit_seconds_per_model": 300,
-            "max_models_per_run": 10,
-            "allow_gpu": False,
-            "require_deterministic_models": True,
+class PortfolioCorrelationConfig(BaseModel):
+    enabled: bool = True
+    method: str = "pearson"
+    allowed_methods: list[str] = Field(default_factory=lambda: ["pearson", "spearman", "kendall"])
+    lookback_bars: int = 500
+    min_periods: int = 100
+    use_returns: bool = True
+    return_column: str = "close"
+    reject_forward_returns: bool = True
+    reject_future_columns: bool = True
+    max_abs_pair_correlation_warning: float = 0.80
+    max_abs_pair_correlation_block: float = 0.95
+    missing_correlation_policy: str = "penalty"
+    correlation_penalty: float = 15.0
 
-            "logistic_regression": {
-                "enabled": True,
-                "max_iter": 1000,
-                "class_weight": "balanced",
-                "solver": "lbfgs",
-                "C": 1.0
-            },
+    @model_validator(mode="after")
+    def validate_correlation_config(self) -> "PortfolioCorrelationConfig":
+        if self.lookback_bars <= self.min_periods:
+            raise ValueError("lookback_bars must be greater than min_periods")
+        if self.max_abs_pair_correlation_block < self.max_abs_pair_correlation_warning:
+            raise ValueError("block threshold cannot be lower than warning threshold")
+        return self
 
-            "random_forest_classifier": {
-                "enabled": True,
-                "n_estimators": 200,
-                "max_depth": 6,
-                "min_samples_leaf": 20,
-                "class_weight": "balanced_subsample",
-                "random_state": 42,
-                "n_jobs": 1
-            },
+class PortfolioSimilarityConfig(BaseModel):
+    enabled: bool = True
+    use_cosine_similarity_for_candidate_vectors: bool = True
+    similarity_threshold_warning: float = 0.85
+    similarity_threshold_block: float = 0.95
+    include_score_vector: list[str] = Field(default_factory=lambda: [
+        "signal_score", "risk_score", "ml_blend_score", "regime_score", "volatility_risk", "liquidity_risk"
+    ])
+    missing_vector_policy: str = "warning"
 
-            "hist_gradient_boosting_classifier": {
-                "enabled": True,
-                "max_iter": 200,
-                "max_leaf_nodes": 31,
-                "learning_rate": 0.05,
-                "l2_regularization": 0.0,
-                "random_state": 42
-            },
+class PortfolioExposureConfig(BaseModel):
+    enabled: bool = True
+    mode: str = "hypothetical_only"
+    starting_equity_usdt: float = 1000.0
+    max_total_hypothetical_exposure_pct: float = 30.0
+    max_symbol_hypothetical_exposure_pct: float = 10.0
+    max_directional_exposure_pct: float = 20.0
+    max_candidates_selected: int = 5
+    max_candidates_per_symbol: int = 1
+    max_candidates_per_interval: int = 5
+    max_candidates_same_direction: int = 4
+    default_candidate_notional_usdt: float = 50.0
+    use_risk_hypothetical_notional_if_available: bool = True
+    real_balance_fetch_forbidden: bool = True
 
-            "dummy_classifier": {
-                "enabled": True,
-                "strategy": "most_frequent"
-            }
-        },
+    @model_validator(mode="after")
+    def validate_exposure_config(self) -> "PortfolioExposureConfig":
+        if not (0.0 <= self.max_total_hypothetical_exposure_pct <= 100.0):
+            raise ValueError("max_total_hypothetical_exposure_pct must be between 0 and 100")
+        if not (0.0 <= self.max_symbol_hypothetical_exposure_pct <= 100.0):
+            raise ValueError("max_symbol_hypothetical_exposure_pct must be between 0 and 100")
+        if not (0.0 <= self.max_directional_exposure_pct <= 100.0):
+            raise ValueError("max_directional_exposure_pct must be between 0 and 100")
+        if self.max_candidates_selected < 1:
+            raise ValueError("max_candidates_selected must be at least 1")
+        return self
 
-        "validation": {
-            "enabled": True,
-            "method": "time_series_split",
-            "use_existing_ml_splits": True,
-            "train_split_name": "train",
-            "validation_split_name": "validation",
-            "test_split_name": "test",
-            "time_series_cv_enabled": True,
-            "time_series_cv_splits": 3,
-            "test_set_final_report_only": True,
-            "reject_test_selection": True,
-            "reject_split_overlap": True,
-            "require_chronological_order": True,
-            "min_train_rows": 500,
-            "min_validation_rows": 200,
-            "min_test_rows": 200,
-            "min_class_count_per_split": 2,
-            "min_samples_per_class_warning": 25
-        },
+class PortfolioConcentrationConfig(BaseModel):
+    enabled: bool = True
+    max_single_symbol_weight_pct: float = 20.0
+    max_top_3_symbol_weight_pct: float = 60.0
+    max_same_regime_ratio: float = 0.80
+    max_same_direction_ratio: float = 0.80
+    max_same_strategy_plugin_ratio: float = 0.70
+    concentration_penalty: float = 20.0
+    warn_high_concentration: bool = True
 
-        "calibration": {
-            "enabled": True,
-            "calibrate_classifiers": True,
-            "method": "sigmoid",
-            "allowed_methods": [
-                "sigmoid",
-                "isotonic"
-            ],
-            "calibration_split": "validation",
-            "fit_calibrator_on_test_forbidden": True,
-            "require_calibration_report": True,
-            "reliability_bins": 10,
-            "compute_brier_score": True,
-            "compute_expected_calibration_error": True,
-            "warn_uncalibrated_probabilities": True,
-            "isotonic_min_samples_warning": 1000
-        },
+    @model_validator(mode="after")
+    def validate_concentration_config(self) -> "PortfolioConcentrationConfig":
+        if not (0.0 <= self.max_same_regime_ratio <= 1.0):
+            raise ValueError("max_same_regime_ratio must be between 0 and 1")
+        if not (0.0 <= self.max_same_direction_ratio <= 1.0):
+            raise ValueError("max_same_direction_ratio must be between 0 and 1")
+        if not (0.0 <= self.max_same_strategy_plugin_ratio <= 1.0):
+            raise ValueError("max_same_strategy_plugin_ratio must be between 0 and 1")
+        return self
 
-        "metrics": {
-            "classification": {
-                "compute_accuracy": True,
-                "compute_balanced_accuracy": True,
-                "compute_precision_recall_f1": True,
-                "compute_roc_auc": True,
-                "compute_pr_auc": True,
-                "compute_log_loss": True,
-                "compute_brier_score": True,
-                "compute_confusion_matrix": True,
-                "compute_classification_report": True,
-                "average": "weighted",
-                "zero_division": 0
-            },
+class PortfolioDiversificationConfig(BaseModel):
+    enabled: bool = True
+    reward_low_correlation: bool = True
+    reward_signal_source_diversity: bool = True
+    reward_regime_diversity: bool = True
+    reward_interval_diversity: bool = False
+    diversification_bonus_max: float = 10.0
+    low_diversification_penalty: float = 15.0
 
-            "regression": {
-                "compute_mae": True,
-                "compute_rmse": True,
-                "compute_r2": True,
-                "compute_directional_accuracy": True,
-                "regression_deferred": True
-            }
-        },
+class PortfolioRiskBudgetConfig(BaseModel):
+    enabled: bool = True
+    mode: str = "placeholder"
+    max_total_risk_budget_pct: float = 2.0
+    max_single_candidate_risk_budget_pct: float = 0.50
+    risk_budget_unit: str = "percent_of_simulated_equity"
+    allocate_budget_production_forbidden: bool = True
+    budget_is_hypothetical: bool = True
 
-        "feature_importance": {
-            "enabled": True,
-            "native_model_importance": True,
-            "permutation_importance": True,
-            "permutation_n_repeats": 5,
-            "permutation_random_state": 42,
-            "permutation_split": "validation",
-            "max_features_reported": 100,
-            "warn_high_cardinality_importance_bias": True
-        },
+class PortfolioRankingConfig(BaseModel):
+    enabled: bool = True
+    method: str = "weighted_score"
+    score_clamp_min: float = 0.0
+    score_clamp_max: float = 100.0
+    components: dict[str, float] = Field(default_factory=lambda: {
+        "candidate_quality_weight": 0.30,
+        "risk_quality_weight": 0.20,
+        "ml_blend_weight": 0.20,
+        "diversification_weight": 0.10,
+        "correlation_penalty_weight": -0.10,
+        "concentration_penalty_weight": -0.10,
+        "liquidity_penalty_weight": -0.05,
+        "stale_candidate_penalty_weight": -0.05
+    })
+    require_breakdown: bool = True
+    require_explanation: bool = True
 
-        "overfit": {
-            "enabled": True,
-            "compare_train_validation": True,
-            "max_train_validation_metric_gap": 0.25,
-            "max_train_validation_auc_gap": 0.20,
-            "warn_if_train_much_better": True,
-            "reject_if_validation_worse_than_dummy": False,
-            "warn_if_validation_worse_than_dummy": True,
-            "warn_if_test_much_worse_than_validation": True,
-            "test_degradation_warning_gap": 0.20
-        },
+class PortfolioOptimizerSkeletonConfig(BaseModel):
+    enabled: bool = True
+    default_enabled_for_selection: bool = False
+    scipy_optional: bool = True
+    fail_if_scipy_missing: bool = False
+    method: str = "slsqp_skeleton"
+    constraints: dict[str, Any] = Field(default_factory=lambda: {
+        "sum_weights_lte_one": True,
+        "long_only_weights": True,
+        "max_single_weight": 0.20,
+        "max_total_exposure": 0.30,
+        "max_pair_correlation": 0.80
+    })
+    production_allocation_forbidden: bool = True
+    optimization_output_sandbox_only: bool = True
 
-        "registry": {
-            "enabled": True,
-            "active_model_serving_forbidden": True,
-            "auto_promote_forbidden": True,
-            "require_model_card": True,
-            "require_training_manifest": True,
-            "require_dataset_manifest_link": True,
-            "require_reproducibility_hashes": True,
-            "persist_model_artifacts": True,
-            "artifact_format": "joblib",
-            "persist_pickled_objects_warning": True,
-            "allow_loading_untrusted_artifacts": False
-        },
+    @model_validator(mode="after")
+    def validate_optimizer_skeleton_config(self) -> "PortfolioOptimizerSkeletonConfig":
+        if not self.production_allocation_forbidden:
+            raise ValueError("production_allocation_forbidden must be True")
+        return self
 
-        "quality": {
-            "reject_no_models_trained": True,
-            "reject_all_models_failed": True,
-            "reject_missing_metrics": True,
-            "reject_missing_calibration_report": False,
-            "reject_missing_model_card": True,
-            "reject_missing_dataset_manifest": True,
-            "reject_missing_hashes": True,
-            "reject_nan_inf_metrics": True,
-            "warn_low_sample_count": True,
-            "warn_class_imbalance": True,
-            "warn_single_class_split": True,
-            "reject_single_class_train": True,
-            "reject_single_class_validation": False,
-            "warn_uncalibrated_model": True,
-            "reject_live_or_paper_intent": True
-        }
-    }
+class PortfolioSandboxOutputConfig(BaseModel):
+    create_selected_candidate_set: bool = True
+    create_portfolio_selection_report: bool = True
+    create_allocation_placeholder: bool = True
+    selected_candidate_production_forbidden: bool = True
+    allocation_production_forbidden: bool = True
+    write_to_signal_engine_forbidden: bool = True
+    write_to_risk_engine_forbidden: bool = True
+    write_to_paper_engine_forbidden: bool = True
+    write_to_live_engine_forbidden: bool = True
+    require_blocked_flags: bool = True
+    require_research_only_intent: bool = True
+    require_no_order_intent: bool = True
 
-    with open(config_path, "w") as f:
-        yaml.dump(config, f, default_flow_style=False, sort_keys=False)
+class PortfolioSandboxQualityConfig(BaseModel):
+    reject_no_candidates: bool = False
+    warn_no_candidates: bool = True
+    reject_missing_breakdown: bool = True
+    reject_missing_explanation: bool = True
+    reject_score_out_of_range: bool = True
+    reject_nan_inf_scores: bool = True
+    reject_missing_hashes: bool = True
+    reject_forward_correlation: bool = True
+    reject_future_columns: bool = True
+    reject_production_write_intent: bool = True
+    reject_live_or_paper_intent: bool = True
+    warn_high_correlation: bool = True
+    warn_high_concentration: bool = True
+    warn_low_diversification: bool = True
+    warn_missing_correlation_data: bool = True
 
-print("Updated config/default.yaml")
+class PortfolioSandboxConfig(BaseModel):
+    enabled: bool = True
+    output_dataset_name: str = "portfolio_candidate_selection_sandbox"
+    cache_enabled: bool = True
+    cache_dir: str = "data/portfolio/sandbox/cache"
+    export_dir: str = "data/portfolio/sandbox/exports"
+    reports_dir: str = "data/portfolio/sandbox/reports"
+
+    real_exchange_forbidden: bool = True
+    paper_trade_forbidden: bool = True
+    live_trade_forbidden: bool = True
+    order_creation_forbidden: bool = True
+    api_key_forbidden: bool = True
+    signed_request_forbidden: bool = True
+    dashboard_forbidden: bool = True
+    signal_auto_write_forbidden: bool = True
+    risk_auto_write_forbidden: bool = True
+    paper_auto_write_forbidden: bool = True
+    live_auto_write_forbidden: bool = True
+    allocation_production_forbidden: bool = True
+    position_sizing_production_forbidden: bool = True
+
+    inputs: PortfolioSandboxInputConfig = Field(default_factory=PortfolioSandboxInputConfig)
+    candidate_normalization: PortfolioCandidateNormalizationConfig = Field(default_factory=PortfolioCandidateNormalizationConfig)
+    eligibility: PortfolioEligibilityConfig = Field(default_factory=PortfolioEligibilityConfig)
+    correlation: PortfolioCorrelationConfig = Field(default_factory=PortfolioCorrelationConfig)
+    similarity: PortfolioSimilarityConfig = Field(default_factory=PortfolioSimilarityConfig)
+    exposure: PortfolioExposureConfig = Field(default_factory=PortfolioExposureConfig)
+    concentration: PortfolioConcentrationConfig = Field(default_factory=PortfolioConcentrationConfig)
+    diversification: PortfolioDiversificationConfig = Field(default_factory=PortfolioDiversificationConfig)
+    risk_budget: PortfolioRiskBudgetConfig = Field(default_factory=PortfolioRiskBudgetConfig)
+    ranking: PortfolioRankingConfig = Field(default_factory=PortfolioRankingConfig)
+    optimizer_skeleton: PortfolioOptimizerSkeletonConfig = Field(default_factory=PortfolioOptimizerSkeletonConfig)
+    sandbox_output: PortfolioSandboxOutputConfig = Field(default_factory=PortfolioSandboxOutputConfig)
+    quality: PortfolioSandboxQualityConfig = Field(default_factory=PortfolioSandboxQualityConfig)
+
+    @model_validator(mode="after")
+    def validate_safety_flags(self) -> "PortfolioSandboxConfig":
+        if not self.real_exchange_forbidden: raise ValueError("real_exchange_forbidden must be True")
+        if not self.paper_trade_forbidden: raise ValueError("paper_trade_forbidden must be True")
+        if not self.live_trade_forbidden: raise ValueError("live_trade_forbidden must be True")
+        if not self.order_creation_forbidden: raise ValueError("order_creation_forbidden must be True")
+        if not self.api_key_forbidden: raise ValueError("api_key_forbidden must be True")
+        if not self.signed_request_forbidden: raise ValueError("signed_request_forbidden must be True")
+        if not self.dashboard_forbidden: raise ValueError("dashboard_forbidden must be True")
+        if not self.signal_auto_write_forbidden: raise ValueError("signal_auto_write_forbidden must be True")
+        if not self.risk_auto_write_forbidden: raise ValueError("risk_auto_write_forbidden must be True")
+        if not self.paper_auto_write_forbidden: raise ValueError("paper_auto_write_forbidden must be True")
+        if not self.live_auto_write_forbidden: raise ValueError("live_auto_write_forbidden must be True")
+        if not self.allocation_production_forbidden: raise ValueError("allocation_production_forbidden must be True")
+        if not self.position_sizing_production_forbidden: raise ValueError("position_sizing_production_forbidden must be True")
+
+        import re
+        if not re.match(r"^[a-zA-Z0-9_-]+$", self.output_dataset_name):
+            raise ValueError("output_dataset_name is not safe")
+
+        return self
+"""
+# Ensure new models are injected before AppConfig
+content = re.sub(r'class AppConfig\(BaseModel\):', new_models + '\nclass AppConfig(BaseModel):\n    portfolio_sandbox: PortfolioSandboxConfig = Field(default_factory=PortfolioSandboxConfig)', content)
+
+# But wait, looking at the previous patch attempt, we need to be careful not to duplicate. Let's just find the first occurrence of MLInferenceConfig definition and put them right after.
+# Wait, let's look for AppConfig instead to append it right above.
+with open("binance50/src/binance50/config/models.py", "w") as f:
+    f.write(content)
