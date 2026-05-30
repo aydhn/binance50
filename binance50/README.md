@@ -407,3 +407,17 @@ Komutlar:
 - `python -m binance50.cli execution-kill-switch-report`
 - `python -m binance50.cli credential-safety-check`
 - `python -m binance50.cli execution-health`
+
+## Paper Execution Bridge
+
+The paper execution bridge allows for local simulation of paper orders based on `ExecutionIntentDraft`s. It safely isolates the paper run from the real exchange API, simulating fills, slippage, fees, and keeping an append-only ledger for PnL calculation. No real order payloads are exported.
+
+Commands:
+- `python -m binance50.cli paper-config`
+- `python -m binance50.cli paper-run-fixture --symbol BTCUSDT --scope spot --interval 1m`
+- `python -m binance50.cli paper-orders`
+- `python -m binance50.cli paper-fills`
+- `python -m binance50.cli paper-ledger`
+- `python -m binance50.cli paper-pnl-report`
+- `python -m binance50.cli paper-safety-check`
+- `python -m binance50.cli paper-health`

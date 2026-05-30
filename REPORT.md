@@ -1,64 +1,70 @@
-# Phase 22 ML Dataset Builder Completion Report
+# Phase 29 / 50 — Paper execution bridge v1: ExecutionIntentDraft'tan lokal paper order lifecycle simülasyonuna güvenli geçiş
 
 ## Oluşturulan/güncellenen dosyalar
-- `src/binance50/config/models.py` - ML Config blocks added with validation logic.
-- `src/binance50/storage/schemas.py` - Added ML dataset/feature/label definitions to schema.
-- `src/binance50/storage/importers.py` - Added quality check guard in ML dataset result importer.
-- `src/binance50/core/exceptions.py`, `error_codes.py`, `error_classifier.py` - Added ML exception hierarchies and codes.
-- `src/binance50/ml/datasets/models.py` - Enums, models and intent declarations.
-- `src/binance50/ml/datasets/sources.py` - Source registries for pulling signal and feature candidates safely.
-- `src/binance50/ml/datasets/feature_selector.py` - Target/Future column isolation.
-- `src/binance50/ml/datasets/label_specs.py`, `labels.py` - Safe generation of forward return shifts strictly inside the label domain.
-- `src/binance50/ml/datasets/alignment.py` - Backward asof alignment tools.
-- `src/binance50/ml/datasets/splitters.py` - Chronological split generation blocking overlaps.
-- `src/binance50/ml/datasets/preprocessing.py`, `scalers.py` - Native safe scaling interfaces restricting transform/fit leakage.
-- `src/binance50/ml/datasets/leakage.py`, `quality.py` - Core structural validators.
-- `src/binance50/ml/datasets/registry.py`, `reproducibility.py` - Safe hash storage.
-- `src/binance50/ml/datasets/builder.py` - Pipeline orchestration.
-- `src/binance50/safety/*` - Guard methods blocking predictive and live commands in data.
+- `src/binance50/config/default.yaml` ve `src/binance50/config/models.py`: Paper execution configuration parametreleri eklendi.
+- `src/binance50/paper/models.py`: Paper execution domain modelleri (Order, Fill, LedgerEvent vs) eklendi.
+- `src/binance50/paper/intents.py`: `ExecutionIntentDraft`'tan `PaperOrder`'a dönüşüm için `PaperIntentBridge` yazıldı.
+- `src/binance50/paper/orders.py`: PaperOrder helper fonksiyonları yazıldı.
+- `src/binance50/paper/lifecycle.py`: State machine transition kuralları kodlandı.
+- `src/binance50/paper/gateway.py`: Tamamen lokal çalışan, network kullanmayan gateway eklendi.
+- `src/binance50/paper/fill_simulator.py`: Next-bar bazlı, market/limit order fill simülatörü kodlandı.
+- `src/binance50/paper/fees.py` ve `src/binance50/paper/slippage.py`: Fee ve slippage simülasyon kuralları eklendi.
+- `src/binance50/paper/ledger.py`, `balances.py`, `positions.py`, `pnl.py`: Append-only ledger ve simüle edilmiş balance, pozisyon, PnL hesaplama altyapısı kuruldu.
+- `src/binance50/paper/events.py`: Lokal çalışan paper olay streams skeletonu oluşturuldu.
+- `src/binance50/paper/replay.py`, `audit.py`, `reproducibility.py`, `quality.py`, `reports.py`, `cache.py`, `export.py`, `runner.py`: Çeşitli yardımcı araçlar ve ana paper_execution runner sınıfı yazıldı.
+- `src/binance50/safety/paper_*_guard.py`: Intent, Gateway, Ledger ve PnL bazında detaylı safety guard'lar eklendi.
+- `src/binance50/core/exceptions.py`, `error_codes.py`, `error_classifier.py`: Paper bazlı özel hata sınıfları kodlandı.
+- `src/binance50/storage/schemas.py`, `importers.py`: Paper output'larının storage entegrasyonu sağlandı.
+- `src/binance50/cli.py`: İlgili tüm paper execution CLI komutları eklendi.
+- `docs/ARCHITECTURE.md`, `SECURITY.md`, `PHASE_PLAN.md`, `README.md` güncellendi.
+- `tests/test_paper.py`: Test kapsamı eklendi.
 
-## ML dataset config kararları
-- Configuration explicitly enforces flags `model_training_deferred=True` and `real_exchange_forbidden=True`.
+## Paper execution config kararları
+Tamamen "local-only" çalışacak şekilde ayarlandı. Binance API, signed request'ler, testnet ve live order execution kesin olarak engellendi (`allow_live: false`, vb.). Next-bar fill required kuralı kondu.
 
-## Feature source registry
-- Skeleton load commands dynamically hook backtest/indicators datasets via robust schema registry patterns.
+## Paper intent bridge
+`PaperIntentBridge`, sadece `safety_scan_passed` durumundaki `ExecutionIntentDraft` nesnelerini `PaperOrder` formatına dönüştürüyor. Redaksiyon yapıyor ve exchange id'lerini dışarıda bırakıyor.
 
-## Safe feature selection
-- Any column with a suffix/prefix corresponding to `label`, `future`, `target` or containing execution commands like `order_id` is forcefully purged.
+## Paper order modeli
+Exchange order id ve client order id'nin olmadığı, tamamen dahili (`paper_` prefixli) bir domain model oluşturuldu.
 
-## Label spec kararları
-- Target definition models created for handling multiple classification/regression tasks simultaneously using horizons.
+## Paper lifecycle state machine
+Sadece paper lokal durumları arası (draft -> submitted -> accepted -> filled vs) geçişe izin veren, Binance exchange execution states geçişlerini yasaklayan bir state machine oluşturuldu.
 
-## Forward return label üretimi
-- Handled with shifting, but strictly maintained within `labels.py` isolating `feature_selector` from looking forward.
+## Local paper gateway
+Ağ bağlantısı kurmayan, API anahtarı istemeyen mock bir gateway yazıldı.
 
-## Chronological split ve TimeSeriesSplit metadata
-- Implemented sequential, percentage-driven splits while tracking embargo and overlap boundaries without executing a shuffle operation.
+## Fill simulator
+Lookahead bias'ı önlemek için same-bar fill'i red edip next_bar_open mantığına dayanan market fill simülatörü kodlandı.
 
-## Train-only preprocessing
-- Implemented specific abstractions like `fit_train` and explicitly rejecting global dataset fitting.
+## Fee ve Slippage simulator
+Quote asset bazlı simüle edilmiş fee'ler ve yön bazlı (buy için fiyat yükselen vs) slippage modeli konuldu.
 
-## Alignment kararları
-- Asof merging utilizing backward matching strictly. Nearest neighbor or forward matching is caught and triggers `MLAlignmentError`.
+## Paper ledger, balances ve positions
+Append-only (sadece ekleme yapılabilen) ledger yapısı, negatif nakde (`cash_usdt < 0`) ve açığa satışa (short spot) izin vermeyecek şekilde güvence altına alındı.
 
-## Leakage guard kararları
-- Extensive scanning across features and labels ensures overlapping indices or columns containing future parameters fail cleanly via `MLLeakageError`.
+## Paper PnL engine
+Mark-to-market mantığıyla realized/unrealized kazanç hesaplamaları ve equity curve oluşturulması eklendi.
 
-## Dataset manifest and registry
-- Appends dataset structural hash and preprocessor hash deterministically.
+## Local paper events & Replay engine & Audit
+Paper etkinlikleri için stream altyapısı ve state deterministik takibi (replay & audit) oluşturuldu.
+
+## Paper quality ve guard kontrolleri
+- `PaperExecutionQualityReport` ile hata ve warning sayıları izleniyor.
+- `paper_intent_guard`, `paper_gateway_guard`, `paper_ledger_guard`, `paper_pnl_guard` modülleri ile işlemlerin kurallara uygunluğu denetleniyor.
 
 ## Storage/cache/export entegrasyonu
-- Implemented dummy shells mapping result definitions to schemas. Storage import guards block persistence of faulty data.
+Export verilerinin Binance formunda sunulması engellendi. API keys vb verilerin schema'ya işlenmesi storage yapılarında yasaklandı.
 
 ## CLI komutları
-- Implemented multiple Typer endpoints (`ml-dataset-config`, `ml-leakage-check`) alongside master integration within `scripts/check_project.py`.
+`paper-config`, `paper-run-fixture`, `paper-orders`, `paper-ledger`, `paper-safety-check` vb CLI komutları sisteme dahil edildi. `doctor` komutu tüm yeni health check'leri çağıracak şekilde genişletildi.
 
 ## Test sonuçları
-- Unit tests written. The environment contains some Pydantic related legacy patching issues within config resolution that fails full integration checks on standard mocked test runs but works fundamentally at an architectural level.
+Tüm eklenen birim testleri pytest ile başarıyla geçti. (`pytest src/tests/test_paper.py`).
+*Not:* Tüm CLI ve doctor testlerini tam olarak çalıştırabilmek için bazı `yaml` / `dotenv` / `pandas` vb test bağımlılıkları eklendi.
 
 ## Bilinen sınırlamalar
-- No live implementations of ML training exist in this phase; only the builder structures and schemas.
-- Some nested config defaults required robust mocking inside test scopes to traverse Pydantic V2 validations properly, meaning `scripts/check_project.py` currently struggles traversing the full graph sequentially.
+Partial fill (liquidity fraction) vb algoritmalar şu an sadece basitleştirilmiş skeleton formatında.
 
-## Phase 23'e hazırlık
-- Foundation built out. Phase 23 will utilize the strictly separated, pre-processed chronological validation splits to orchestrate model selection without exposing test vectors.
+## Phase 30'a hazırlık
+Telegram üzerinden notification atılması (olayların rate limitli, secret-redacted ve güvenli loglanması) hazırlığı dokümanlara yansıtıldı.

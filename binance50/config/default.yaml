@@ -2023,3 +2023,183 @@ execution:
     reject_live_or_testnet_intent: true
     reject_missing_hashes: true
     warn_no_intents_created: true
+
+paper_execution:
+  enabled: true
+  output_dataset_name: paper_execution_runs
+  cache_enabled: true
+  cache_dir: data/paper/cache
+  export_dir: data/paper/exports
+  reports_dir: data/paper/reports
+  ledger_dir: data/paper/ledger
+
+  real_exchange_forbidden: true
+  testnet_exchange_forbidden: true
+  live_exchange_forbidden: true
+  api_key_forbidden: true
+  signed_request_forbidden: true
+  network_gateway_forbidden: true
+  binance_rest_forbidden: true
+  websocket_forbidden: true
+  order_test_endpoint_forbidden: true
+
+  mode:
+    default_mode: local_paper
+    allow_local_paper: true
+    allow_testnet_paper: false
+    allow_live: false
+    require_explicit_cli_command: true
+    auto_start_forbidden: true
+    background_execution_forbidden: true
+
+  intent:
+    source_execution_intent_required: true
+    allow_sandbox_to_paper_candidate_conversion: true
+    require_phase28_safety_scan_passed: true
+    require_kill_switch_override_forbidden: true
+    require_source_trace: true
+    require_correlation_id: true
+    require_idempotency_key: true
+    reject_live_testnet_intent: true
+    reject_exchange_order_fields: true
+    reject_credentials: true
+    reject_signed_payload: true
+
+  order:
+    internal_order_id_prefix: paper_
+    client_order_id_forbidden: true
+    exchange_order_id_forbidden: true
+    allowed_order_types:
+      - market
+      - limit
+    default_order_type: market
+    allowed_sides:
+      - buy
+      - sell
+    allowed_time_in_force:
+      - gtc
+      - ioc
+      - fok
+    default_time_in_force: gtc
+    max_orders_per_run: 50
+    max_orders_per_symbol: 5
+    reject_unknown_symbol: true
+    require_local_filter_validation: true
+    require_quantity_validation: true
+    require_notional_validation: true
+
+  sizing:
+    enabled: true
+    simulated_equity_usdt: 1000.0
+    max_total_paper_exposure_pct: 30.0
+    max_single_order_notional_pct: 5.0
+    max_symbol_exposure_pct: 10.0
+    min_order_notional_usdt: 5.0
+    quantity_from_hypothetical_notional: true
+    quantity_rounding: floor_to_step
+    price_rounding: floor_to_tick
+    leverage_forbidden: true
+    margin_forbidden: true
+    futures_forbidden: true
+
+  fills:
+    enabled: true
+    fill_source_priority:
+      - local_ohlcv
+      - fixture_trades
+    network_market_data_forbidden: true
+    market_order_fill_price: next_bar_open
+    limit_order_fill_model: conservative_touch
+    same_bar_fill_forbidden: true
+    next_bar_fill_required: true
+    allow_partial_fills: true
+    partial_fill_model: liquidity_fraction_skeleton
+    max_partial_fill_ratio: 0.50
+    reject_if_no_next_bar: true
+    expire_unfilled_after_bars: 3
+
+  fees:
+    enabled: true
+    maker_fee_bps: 10.0
+    taker_fee_bps: 10.0
+    use_order_type_fee_assumption: true
+    fee_asset: quote
+    fee_model_is_simulated: true
+
+  slippage:
+    enabled: true
+    default_slippage_bps: 2.0
+    volatility_adjusted_slippage: true
+    max_slippage_bps: 25.0
+    slippage_model_is_simulated: true
+
+  ledger:
+    enabled: true
+    starting_cash_usdt: 1000.0
+    quote_asset: USDT
+    allow_negative_cash: false
+    allow_short_spot: false
+    allow_margin: false
+    allow_futures: false
+    mark_to_market: true
+    require_event_sourcing: true
+    require_append_only_ledger: true
+    reject_manual_balance_edit: true
+
+  pnl:
+    enabled: true
+    realized_pnl: true
+    unrealized_pnl: true
+    mark_to_market: true
+    compute_fees: true
+    compute_slippage_cost: true
+    compute_equity_curve: true
+    compute_drawdown: true
+    pnl_is_simulated: true
+
+  lifecycle:
+    allowed_states:
+      - paper_draft
+      - paper_submitted_local
+      - paper_accepted_local
+      - paper_partially_filled_local
+      - paper_filled_local
+      - paper_rejected_local
+      - paper_expired_local
+      - paper_canceled_local
+      - paper_archived
+    forbidden_states:
+      - submitted_to_exchange
+      - accepted_by_exchange
+      - filled_on_exchange
+      - canceled_on_exchange
+      - rejected_by_exchange
+    exchange_state_forbidden: true
+
+  events:
+    enabled: true
+    create_local_paper_events: true
+    event_stream_is_local_only: true
+    mimic_execution_report_shape: false
+    exchange_execution_report_forbidden: true
+    require_event_id: true
+    require_correlation_id: true
+
+  quality:
+    reject_missing_source_intent: true
+    reject_missing_safety_scan: true
+    reject_missing_local_filter_validation: true
+    reject_missing_ledger_events: true
+    reject_missing_pnl_report: true
+    reject_negative_cash: true
+    reject_short_spot: true
+    reject_exchange_order_fields: true
+    reject_credentials: true
+    reject_signed_payload: true
+    reject_network_calls: true
+    reject_exchange_states: true
+    reject_live_or_testnet_intent: true
+    reject_missing_hashes: true
+    warn_no_orders_filled: true
+    warn_high_slippage: true
+    warn_partial_fills: true
