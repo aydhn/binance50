@@ -112,3 +112,29 @@ def import_portfolio_selection_result(result: Any, config: AppConfig) -> Any:
         pass
 
     return DatasetManifest()
+
+
+def import_execution_safety_result(result, config):
+    from binance50.core.exceptions import DatasetImportError
+
+    if not getattr(result, "success", False):
+        raise DatasetImportError("Cannot import failed execution safety result")
+
+    q_rep = getattr(result, "quality_report", {})
+    if isinstance(q_rep, dict) and q_rep.get("status") == "failed":
+        raise DatasetImportError("Cannot import execution safety run that failed quality checks")
+
+    for scan in getattr(result, "safety_scans", []):
+        if getattr(scan, "credential_detected", False) or            getattr(scan, "signed_payload_detected", False) or            getattr(scan, "order_id_detected", False) or            getattr(scan, "gateway_call_attempt_detected", False):
+            raise DatasetImportError("Safety check failed. Execution run cannot be imported.")
+
+    for intent in getattr(result, "intents", []):
+        if getattr(intent, "quantity", None) is not None or getattr(intent, "price", None) is not None:
+             raise DatasetImportError("Intents with quantity or price cannot be imported.")
+        # mode might be enum or string
+        mode_val = getattr(intent.mode, "value", intent.mode) if hasattr(intent, "mode") else None
+        if mode_val in ["live_candidate", "testnet_candidate", "paper_candidate"]:
+             raise DatasetImportError("Intents in production modes cannot be imported.")
+
+    from binance50.storage.models import DatasetManifest
+    return DatasetManifest(dataset_id='dummy_id', name='dummy_name', version=1, created_at='2021-01-01T00:00:00Z', metadata={}, format='parquet', storage_uri='none')

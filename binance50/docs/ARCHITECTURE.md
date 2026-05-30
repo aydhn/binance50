@@ -435,3 +435,16 @@ The portfolio construction sandbox layer is responsible for creating hypothetica
 - **Optional SciPy SLSQP & PyPortfolioOpt adapters:** Used solely for research purposes without triggering live orders.
 
 Production allocation is strictly forbidden in Phase 27 to maintain absolute separation between research projections and execution realities.
+
+## Execution Safety Abstraction (Phase 28)
+- Execution safety abstraction architecture provides local safety validations.
+- Order intent vs exchange order ayrımı: `ExecutionIntentDraft` is purely internal and not actionable on the exchange.
+- Sandbox/paper/testnet/live mode separation: only `sandbox` is enabled, all execution is blocked.
+- Disabled gateway architecture: local interfaces exist but implementations throw errors.
+- Binance filter validation skeleton ensures formats, max-notionals, and rounding using cached datasets.
+- Payload safety scanner checks for credential, order IDs, and real-order fields, preventing submission.
+- Intent lifecycle state machine allows transitions internally but rejects exchange states.
+- Idempotency/correlation id design ensures traceability of decisions.
+- Kill-switch and circuit breaker act as fail-safes.
+- Intent promotion policy rejects moving intents to testnet or live.
+- Neden Phase 28’de order submission yok? It's essential to build the entire safety boundary before attempting network communication.

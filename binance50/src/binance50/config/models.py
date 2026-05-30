@@ -4014,9 +4014,179 @@ class PortfolioConstructionConfig(BaseModel):
     reporting: PortfolioConstructionReportingConfig = Field(default_factory=PortfolioConstructionReportingConfig)
     quality: PortfolioConstructionQualityConfig = Field(default_factory=PortfolioConstructionQualityConfig)
 
+
+class ExecutionGlobalConfig(BaseModel):
+    default_mode: str = "sandbox"
+    allow_paper_intents: bool = False
+    allow_testnet_intents: bool = False
+    allow_live_intents: bool = False
+    allow_gateway_calls: bool = False
+    allow_signed_requests: bool = False
+    allow_api_credentials: bool = False
+    allow_order_submission: bool = False
+    allow_test_order_submission: bool = False
+    allow_account_queries: bool = False
+    allow_balance_queries: bool = False
+    allow_position_queries: bool = False
+    allow_leverage_changes: bool = False
+
+class ExecutionBoundaryConfig(BaseModel):
+    portfolio_allocation_to_execution_direct_flow_forbidden: bool = True
+    sandbox_candidate_to_order_forbidden: bool = True
+    production_signal_to_order_forbidden: bool = True
+    risk_assessment_to_order_forbidden: bool = True
+    ml_blend_to_order_forbidden: bool = True
+    order_payload_export_forbidden: bool = True
+    exchange_gateway_default_disabled: bool = True
+
+class ExecutionIntentConfig(BaseModel):
+    create_execution_intent_drafts: bool = True
+    intent_draft_is_not_order: bool = True
+    require_intent_mode: bool = True
+    require_source_trace: bool = True
+    require_correlation_id: bool = True
+    require_idempotency_key: bool = True
+    require_explanation: bool = True
+    require_safety_scan: bool = True
+    reject_missing_symbol: bool = True
+    reject_missing_side: bool = True
+    reject_missing_notional: bool = True
+    reject_quantity_output_by_default: bool = True
+    reject_price_output_by_default: bool = True
+    reject_stop_take_profit_output_by_default: bool = True
+    reject_leverage_output: bool = True
+    reject_order_id_fields: bool = True
+    reject_exchange_order_fields: bool = True
+
+class ExecutionModeConfigDetails(BaseModel):
+    enabled: bool = False
+    can_create_intent_draft: bool = False
+    can_submit_order: bool = False
+    can_call_gateway: bool = False
+    can_use_credentials: bool = False
+
+class ExecutionModeConfig(BaseModel):
+    sandbox: ExecutionModeConfigDetails = Field(default_factory=ExecutionModeConfigDetails)
+    paper_candidate: ExecutionModeConfigDetails = Field(default_factory=ExecutionModeConfigDetails)
+    testnet_candidate: ExecutionModeConfigDetails = Field(default_factory=ExecutionModeConfigDetails)
+    live_candidate: ExecutionModeConfigDetails = Field(default_factory=ExecutionModeConfigDetails)
+
+class BinanceFilterValidationConfig(BaseModel):
+    enabled: bool = True
+    source: str = "fixture_or_cached_exchange_info_only"
+    network_fetch_forbidden: bool = True
+    validate_price_filter: bool = True
+    validate_lot_size: bool = True
+    validate_min_notional: bool = True
+    validate_notional: bool = True
+    validate_percent_price_skeleton: bool = True
+    validate_market_lot_size_skeleton: bool = True
+    validate_iceberg_parts_skeleton: bool = False
+    reject_unknown_symbol_filters: bool = True
+    reject_missing_filters: bool = True
+    rounding_mode: str = "floor_to_step"
+    price_tick_rounding: str = "floor_to_tick"
+    quantity_step_rounding: str = "floor_to_step"
+
+class ExecutionPayloadSafetyConfig(BaseModel):
+    enabled: bool = True
+    reject_api_key: bool = True
+    reject_secret: bool = True
+    reject_signature: bool = True
+    reject_listen_key: bool = True
+    reject_timestamp_signed_payload: bool = True
+    reject_order_id: bool = True
+    reject_client_order_id: bool = True
+    reject_exchange_order_id: bool = True
+    reject_real_order: bool = True
+    reject_live_order: bool = True
+    reject_testnet_order: bool = True
+    reject_submit_endpoint: bool = True
+    reject_binance_order_endpoint: bool = True
+    reject_raw_http_request: bool = True
+
+class ExecutionGatewayConfig(BaseModel):
+    interface_enabled: bool = True
+    all_implementations_disabled: bool = True
+    paper_gateway_enabled: bool = False
+    testnet_gateway_enabled: bool = False
+    live_gateway_enabled: bool = False
+    test_order_gateway_enabled: bool = False
+    gateway_call_raises_by_default: bool = True
+    gateway_requires_explicit_future_phase_enable: bool = True
+
+class ExecutionLifecycleConfig(BaseModel):
+    enabled: bool = True
+    allowed_states: list[str] = Field(default_factory=list)
+    forbidden_states: list[str] = Field(default_factory=list)
+    exchange_state_forbidden: bool = True
+
+class ExecutionIdempotencyConfig(BaseModel):
+    enabled: bool = True
+    correlation_id_required: bool = True
+    idempotency_key_required: bool = True
+    deterministic_key_components: list[str] = Field(default_factory=list)
+    exchange_client_order_id_forbidden: bool = True
+
+class ExecutionKillSwitchConfig(BaseModel):
+    enabled: bool = True
+    global_kill_switch_default_on: bool = True
+    block_all_gateway_calls: bool = True
+    block_intent_promotion: bool = True
+    block_testnet_live_modes: bool = True
+    require_kill_switch_report: bool = True
+
+class ExecutionCircuitBreakerConfig(BaseModel):
+    enabled: bool = True
+    max_intents_per_run: int = 50
+    max_intents_per_symbol: int = 5
+    max_rejected_intents_warning: int = 20
+    block_on_safety_error: bool = True
+    block_on_unknown_mode: bool = True
+    block_on_missing_filter: bool = True
+
+class ExecutionQualityConfig(BaseModel):
+    reject_missing_safety_scan: bool = True
+    reject_missing_source_trace: bool = True
+    reject_missing_correlation_id: bool = True
+    reject_missing_idempotency_key: bool = True
+    reject_gateway_call_attempt: bool = True
+    reject_credential_detected: bool = True
+    reject_signed_payload_detected: bool = True
+    reject_order_id_detected: bool = True
+    reject_forbidden_state: bool = True
+    reject_quantity_output: bool = True
+    reject_leverage_output: bool = True
+    reject_production_order_intent: bool = True
+    reject_live_or_testnet_intent: bool = True
+    reject_missing_hashes: bool = True
+    warn_no_intents_created: bool = True
+
+class ExecutionConfig(BaseModel):
+    enabled: bool = True
+    output_dataset_name: str = "execution_safety_runs"
+    cache_enabled: bool = True
+    cache_dir: str = "data/execution/cache"
+    export_dir: str = "data/execution/exports"
+    reports_dir: str = "data/execution/reports"
+    global_: ExecutionGlobalConfig = Field(default_factory=ExecutionGlobalConfig, alias="global")
+    boundaries: ExecutionBoundaryConfig = Field(default_factory=ExecutionBoundaryConfig)
+    intents: ExecutionIntentConfig = Field(default_factory=ExecutionIntentConfig)
+    allowed_modes: ExecutionModeConfig = Field(default_factory=ExecutionModeConfig)
+    binance_filters: BinanceFilterValidationConfig = Field(default_factory=BinanceFilterValidationConfig)
+    payload_safety: ExecutionPayloadSafetyConfig = Field(default_factory=ExecutionPayloadSafetyConfig)
+    gateway: ExecutionGatewayConfig = Field(default_factory=ExecutionGatewayConfig)
+    lifecycle: ExecutionLifecycleConfig = Field(default_factory=ExecutionLifecycleConfig)
+    idempotency: ExecutionIdempotencyConfig = Field(default_factory=ExecutionIdempotencyConfig)
+    kill_switch: ExecutionKillSwitchConfig = Field(default_factory=ExecutionKillSwitchConfig)
+    circuit_breaker: ExecutionCircuitBreakerConfig = Field(default_factory=ExecutionCircuitBreakerConfig)
+    quality: ExecutionQualityConfig = Field(default_factory=ExecutionQualityConfig)
+
+
 class AppConfig(BaseModel):
     portfolio_sandbox: PortfolioSandboxConfig = Field(default_factory=PortfolioSandboxConfig)
     portfolio_construction: PortfolioConstructionConfig = Field(default_factory=PortfolioConstructionConfig)
+    execution: ExecutionConfig = Field(default_factory=ExecutionConfig)
     ml_dataset: MLDatasetConfig = Field(default_factory=MLDatasetConfig)
     ml_training: MLTrainingConfig = Field(default_factory=MLTrainingConfig)
     ml_inference: MLInferenceConfig = Field(default_factory=MLInferenceConfig)

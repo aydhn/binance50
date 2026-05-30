@@ -1175,3 +1175,88 @@ DATASET_WALKFORWARD_PARAMETER_DRIFT = "walkforward_parameter_drift"
 DATASET_WALKFORWARD_DEGRADATION = "walkforward_degradation"
 DATASET_WALKFORWARD_STABILITY = "walkforward_stability"
 DATASET_WALKFORWARD_ROBUSTNESS = "walkforward_robustness"
+
+
+def get_execution_safety_run_schema() -> DatasetSchema:
+    return DatasetSchema(
+        dataset_name="execution_safety_runs",
+        dataset_kind="execution_safety_runs",
+        version=1,
+        columns=[
+            "run_id", "request", "metadata", "success", "error", "created_at", "updated_at"
+        ],
+        primary_key="run_id",
+        partition_keys=["created_at"],
+        forbidden_columns=["api_key", "secret", "signature", "listenKey", "order_id", "orderId", "client_order_id", "clientOrderId", "exchange_order_id", "exchangeOrderId", "quantity", "qty", "leverage", "entry_price", "stop_loss", "take_profit", "live_order", "testnet_order", "real_order", "submit_endpoint"],
+        allowed_columns=["run_id", "request", "metadata", "success", "error", "created_at", "updated_at"]
+    )
+
+def get_execution_intent_draft_schema() -> DatasetSchema:
+    return DatasetSchema(
+        dataset_name="execution_intent_drafts",
+        dataset_kind="execution_intent_drafts",
+        version=1,
+        columns=[
+            "intent_id", "mode", "kind", "status", "source_type", "source_run_id", "source_candidate_id", "symbol", "market_scope", "interval", "side", "hypothetical_notional_usdt", "order_type", "time_in_force", "correlation_id", "idempotency_key", "source_trace", "safety_scan_id", "explanation", "metadata", "created_at_utc", "created_at", "updated_at"
+        ],
+        primary_key="intent_id",
+        partition_keys=["created_at"],
+        forbidden_columns=["api_key", "secret", "signature", "listenKey", "order_id", "orderId", "client_order_id", "clientOrderId", "exchange_order_id", "exchangeOrderId", "quantity", "qty", "leverage", "entry_price", "stop_loss", "take_profit", "live_order", "testnet_order", "real_order", "submit_endpoint"],
+        allowed_columns=["intent_id", "mode", "kind", "status", "source_type", "source_run_id", "source_candidate_id", "symbol", "market_scope", "interval", "side", "hypothetical_notional_usdt", "order_type", "time_in_force", "correlation_id", "idempotency_key", "source_trace", "safety_scan_id", "explanation", "metadata", "created_at_utc", "created_at", "updated_at"]
+    )
+
+def get_execution_safety_scan_schema() -> DatasetSchema:
+    return DatasetSchema(
+        dataset_name="execution_safety_scans",
+        dataset_kind="execution_safety_scans",
+        version=1,
+        columns=[
+            "safety_scan_id", "intent_id", "passed", "blocked", "issues", "credential_detected", "signed_payload_detected", "order_id_detected", "forbidden_field_detected", "gateway_call_attempt_detected", "kill_switch_active", "generated_at_utc", "metadata", "created_at", "updated_at"
+        ],
+        primary_key="safety_scan_id",
+        partition_keys=["created_at"],
+        forbidden_columns=["api_key", "secret", "signature", "listenKey", "order_id", "orderId", "client_order_id", "clientOrderId", "exchange_order_id", "exchangeOrderId", "quantity", "qty", "leverage", "entry_price", "stop_loss", "take_profit", "live_order", "testnet_order", "real_order", "submit_endpoint"],
+        allowed_columns=["safety_scan_id", "intent_id", "passed", "blocked", "issues", "credential_detected", "signed_payload_detected", "order_id_detected", "forbidden_field_detected", "gateway_call_attempt_detected", "kill_switch_active", "generated_at_utc", "metadata", "created_at", "updated_at"]
+    )
+
+def get_execution_dry_run_result_schema() -> DatasetSchema:
+    return DatasetSchema(
+        dataset_name="execution_dry_run_results",
+        dataset_kind="execution_dry_run_results",
+        version=1,
+        columns=[
+            "dry_run_id", "intent_id", "passed", "filter_validation_report", "notional_validation_report", "rounding_report", "payload_safety_report", "boundary_report", "warnings", "metadata", "generated_at_utc", "created_at", "updated_at"
+        ],
+        primary_key="dry_run_id",
+        partition_keys=["created_at"],
+        forbidden_columns=["api_key", "secret", "signature", "listenKey", "order_id", "orderId", "client_order_id", "clientOrderId", "exchange_order_id", "exchangeOrderId", "quantity", "qty", "leverage", "entry_price", "stop_loss", "take_profit", "live_order", "testnet_order", "real_order", "submit_endpoint"],
+        allowed_columns=["dry_run_id", "intent_id", "passed", "filter_validation_report", "notional_validation_report", "rounding_report", "payload_safety_report", "boundary_report", "warnings", "metadata", "generated_at_utc", "created_at", "updated_at"]
+    )
+
+def get_execution_audit_event_schema() -> DatasetSchema:
+    return DatasetSchema(
+        dataset_name="execution_audit_events",
+        dataset_kind="execution_audit_events",
+        version=1,
+        columns=[
+            "event_id", "run_id", "intent_id", "event_type", "severity", "message", "metadata", "created_at_utc", "created_at", "updated_at"
+        ],
+        primary_key="event_id",
+        partition_keys=["created_at"],
+        forbidden_columns=["api_key", "secret", "signature", "listenKey", "order_id", "orderId", "client_order_id", "clientOrderId", "exchange_order_id", "exchangeOrderId", "quantity", "qty", "leverage", "entry_price", "stop_loss", "take_profit", "live_order", "testnet_order", "real_order", "submit_endpoint"],
+        allowed_columns=["event_id", "run_id", "intent_id", "event_type", "severity", "message", "metadata", "created_at_utc", "created_at", "updated_at"]
+    )
+
+def get_execution_quality_report_schema() -> DatasetSchema:
+    return DatasetSchema(
+        dataset_name="execution_quality_reports",
+        dataset_kind="execution_quality_reports",
+        version=1,
+        columns=[
+            "run_id", "status", "intent_count", "safety_scan_count", "dry_run_count", "missing_safety_scan_count", "missing_source_trace_count", "missing_correlation_id_count", "missing_idempotency_key_count", "gateway_call_attempt_count", "credential_detected_count", "signed_payload_detected_count", "order_id_detected_count", "forbidden_state_count", "quantity_output_count", "leverage_output_count", "production_order_intent_count", "live_or_testnet_intent_count", "missing_hash_count", "issues", "generated_at_utc", "created_at", "updated_at"
+        ],
+        primary_key="run_id",
+        partition_keys=["created_at"],
+        forbidden_columns=["api_key", "secret", "signature", "listenKey", "order_id", "orderId", "client_order_id", "clientOrderId", "exchange_order_id", "exchangeOrderId", "quantity", "qty", "leverage", "entry_price", "stop_loss", "take_profit", "live_order", "testnet_order", "real_order", "submit_endpoint"],
+        allowed_columns=["run_id", "status", "intent_count", "safety_scan_count", "dry_run_count", "missing_safety_scan_count", "missing_source_trace_count", "missing_correlation_id_count", "missing_idempotency_key_count", "gateway_call_attempt_count", "credential_detected_count", "signed_payload_detected_count", "order_id_detected_count", "forbidden_state_count", "quantity_output_count", "leverage_output_count", "production_order_intent_count", "live_or_testnet_intent_count", "missing_hash_count", "issues", "generated_at_utc", "created_at", "updated_at"]
+    )
