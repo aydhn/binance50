@@ -431,3 +431,31 @@ def classify_portfolio_error(error_message: str) -> str:
         return PORTFOLIO_SANDBOX_QUALITY_FAILED
 
     return PORTFOLIO_SANDBOX_CONFIG_INVALID
+
+
+def classify_execution_safety_error(error_message: str) -> str:
+    msg_lower = error_message.lower()
+    if "api key detected" in msg_lower or "credential" in msg_lower:
+        return "CREDENTIAL_DETECTED"
+    if "signature detected" in msg_lower or "signed payload" in msg_lower:
+        return "SIGNED_PAYLOAD_DETECTED"
+    if "orderid" in msg_lower or "clientorderid" in msg_lower:
+        return "EXCHANGE_ORDER_IDENTIFIER_DETECTED"
+    if "gateway call attempt" in msg_lower or "gateway" in msg_lower:
+        return "EXECUTION_GATEWAY_DISABLED"
+    if "live/testnet mode" in msg_lower or "testnet intent" in msg_lower or "live intent" in msg_lower or "mode" in msg_lower:
+        return "EXECUTION_MODE_FORBIDDEN"
+    if "promotion request" in msg_lower or "promotion" in msg_lower:
+        return "INTENT_PROMOTION_FORBIDDEN"
+    if "quantity output" in msg_lower or "leverage output" in msg_lower or "entry_price" in msg_lower or "stop_loss" in msg_lower or "take_profit" in msg_lower:
+        return "EXECUTION_INTENT_INVALID"
+    if "direct allocation" in msg_lower or "boundary" in msg_lower:
+        return "EXECUTION_BOUNDARY_VIOLATION"
+    if "kill switch active" in msg_lower or "kill switch" in msg_lower:
+        return "EXECUTION_KILL_SWITCH_ACTIVE"
+    if "order submission attempt" in msg_lower or "submit order" in msg_lower:
+        return "ORDER_SUBMISSION_FORBIDDEN"
+    return "EXECUTION_SAFETY_ERROR"
+
+def is_execution_safety_error(error: Exception) -> bool:
+    return isinstance(error, ExecutionSafetyError)

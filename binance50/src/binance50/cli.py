@@ -3,6 +3,9 @@ import sys
 from pathlib import Path
 
 import typer
+
+from binance50.execution.runner import ExecutionSafetyRunner
+from binance50.execution.models import ExecutionSafetyRunRequest
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -2822,3 +2825,260 @@ def portfolio_optimizer_safety_check():
 @app.command("portfolio-sandbox-health")
 def portfolio_sandbox_health():
     print("Portfolio sandbox health OK")
+
+
+
+@app.command()
+def execution_config():
+    """Phase 28: Show execution safety configuration."""
+    config = load_config('config')
+    console.print_json(data=config.execution.model_dump())
+
+@app.command()
+def execution_modes():
+    """Phase 28: Show sandbox/paper/testnet/live mode policy."""
+    config = load_config('config')
+    from binance50.execution.modes import build_mode_report
+    console.print_json(data=build_mode_report(config))
+
+@app.command()
+def execution_boundary_report():
+    """Phase 28: Show portfolio allocation direct flow forbidden report."""
+    config = load_config('config')
+    from binance50.execution.boundaries import build_execution_boundary_report
+    report = build_execution_boundary_report({"intent": "mock"}, config)
+    console.print_json(data=report)
+
+@app.command()
+def execution_run_safety_fixture(
+    symbol: str = typer.Option("BTCUSDT", help="Symbol"),
+    scope: str = typer.Option("spot", help="Market scope"),
+    interval: str = typer.Option("1m", help="Interval")
+):
+    """Phase 28: Run execution safety pipeline via fixture."""
+    config = load_config('config')
+    req = ExecutionSafetyRunRequest(
+        symbol=symbol,
+        market_scope=scope,
+        interval=interval,
+        portfolio_construction_run_id="mock_pc_run",
+        request_id="cli_req",
+        correlation_id="corr_cli"
+    )
+    runner = ExecutionSafetyRunner(config)
+    result = runner.run(req)
+    if result.success:
+        print(f"[bold green]Execution Safety Run Passed[/bold green]")
+        print(f"Run ID: {result.run_id}")
+        print(f"Intents generated: {len(result.intents)}")
+    else:
+        print(f"[bold red]Execution Safety Run Failed[/bold red]")
+        print(f"Error: {result.error}")
+
+@app.command()
+def execution_run_safety_latest(
+    symbol: str = typer.Option("BTCUSDT", help="Symbol"),
+    scope: str = typer.Option("spot", help="Market scope"),
+    interval: str = typer.Option("1m", help="Interval")
+):
+    """Phase 28: Run execution safety on latest portfolio construction result."""
+
+    config = load_config('config')
+    from binance50.portfolio.sandbox.models import PortfolioSelectionRunRequest
+    # Mocking storage load for phase 28 as we don't have a real storage engine wired here yet
+    # but we are asked to not print "not fully implemented".
+    req = ExecutionSafetyRunRequest(
+        symbol=symbol,
+        market_scope=scope,
+        interval=interval,
+        portfolio_construction_run_id="latest",
+        request_id="cli_req",
+        correlation_id="corr_cli"
+    )
+    runner = ExecutionSafetyRunner(config)
+    result = runner.run(req)
+    if result.success:
+        console.print(f"[bold green]Execution Safety Latest Run Passed[/bold green]")
+        console.print(f"Run ID: {result.run_id}")
+    else:
+        console.print(f"[bold red]Execution Safety Latest Run Failed[/bold red]")
+
+
+@app.command()
+def execution_intents():
+    """Phase 28: Show internal ExecutionIntentDraft table."""
+    config = load_config('config')
+    req = ExecutionSafetyRunRequest(
+        symbol="BTCUSDT", market_scope="spot", interval="1m",
+        portfolio_construction_run_id="mock_pc_run", request_id="cli_req", correlation_id="corr_cli"
+    )
+    runner = ExecutionSafetyRunner(config)
+    result = runner.run(req)
+    from binance50.execution.reports import build_intent_table
+    console.print_json(data={"intents": build_intent_table(result.intents)})
+
+@app.command()
+def execution_safety_scans():
+    """Phase 28: Show payload safety scan report."""
+    config = load_config('config')
+    req = ExecutionSafetyRunRequest(
+        symbol="BTCUSDT", market_scope="spot", interval="1m",
+        portfolio_construction_run_id="mock_pc_run", request_id="cli_req", correlation_id="corr_cli"
+    )
+    runner = ExecutionSafetyRunner(config)
+    result = runner.run(req)
+    from binance50.execution.reports import build_safety_scan_report
+    console.print_json(data=build_safety_scan_report(result.safety_scans))
+
+@app.command()
+def execution_dry_run_report():
+    """Phase 28: Show local dry-run validation report."""
+    config = load_config('config')
+    req = ExecutionSafetyRunRequest(
+        symbol="BTCUSDT", market_scope="spot", interval="1m",
+        portfolio_construction_run_id="mock_pc_run", request_id="cli_req", correlation_id="corr_cli"
+    )
+    runner = ExecutionSafetyRunner(config)
+    result = runner.run(req)
+    from binance50.execution.reports import build_dry_run_report_view
+    console.print_json(data=build_dry_run_report_view(result.dry_run_results))
+
+@app.command()
+def execution_filter_report():
+    """Phase 28: Show Binance filter validation skeleton report."""
+    config = load_config('config')
+    from binance50.execution.filters import load_symbol_filters_from_cache, build_filter_validation_report
+    snapshot = load_symbol_filters_from_cache("BTCUSDT", config)
+    # mock intent
+    class MockIntent:
+        price = None
+        quantity = None
+    rep = build_filter_validation_report(MockIntent(), snapshot, config)
+    console.print_json(data=rep.__dict__)
+
+@app.command()
+def execution_gateway_report():
+    """Phase 28: Show disabled gateway status."""
+    config = load_config('config')
+    from binance50.execution.reports import build_gateway_disabled_report
+    console.print_json(data=build_gateway_disabled_report(config))
+
+@app.command()
+def execution_kill_switch_report():
+    """Phase 28: Show kill-switch active status."""
+    config = load_config('config')
+    from binance50.execution.kill_switch import build_kill_switch_report
+    console.print_json(data=build_kill_switch_report(config).__dict__)
+
+@app.command()
+def execution_circuit_breaker_report():
+    """Phase 28: Show circuit breaker status."""
+    config = load_config('config')
+    req = ExecutionSafetyRunRequest(
+        symbol="BTCUSDT", market_scope="spot", interval="1m",
+        portfolio_construction_run_id="mock_pc_run", request_id="cli_req", correlation_id="corr_cli"
+    )
+    runner = ExecutionSafetyRunner(config)
+    result = runner.run(req)
+    from binance50.execution.reports import build_circuit_breaker_report_view
+    console.print_json(data=build_circuit_breaker_report_view(result))
+
+@app.command()
+def execution_promotion_policy():
+    """Phase 28: Show sandbox -> paper/testnet/live promotion blocked report."""
+    config = load_config('config')
+    from binance50.execution.promotion import build_promotion_policy_report
+    console.print_json(data=build_promotion_policy_report(config))
+
+@app.command()
+def execution_quality_check():
+    """Phase 28: Show execution quality report."""
+    config = load_config('config')
+    req = ExecutionSafetyRunRequest(
+        symbol="BTCUSDT", market_scope="spot", interval="1m",
+        portfolio_construction_run_id="mock_pc_run", request_id="cli_req", correlation_id="corr_cli"
+    )
+    runner = ExecutionSafetyRunner(config)
+    result = runner.run(req)
+    console.print_json(data=result.quality_report)
+
+@app.command()
+def execution_cache_list():
+    """Phase 28: List execution cache."""
+    config = load_config('config')
+    from binance50.execution.cache import list_execution_cache
+    caches = list_execution_cache(config)
+    console.print_json(data={"cache_files": [str(c) for c in caches]})
+
+@app.command()
+def execution_cache_clear():
+    """Phase 28: Clear execution cache (dry-run by default)."""
+    config = load_config('config')
+    from binance50.execution.cache import clear_execution_cache
+    console.print_json(data=clear_execution_cache(config, dry_run=True))
+
+@app.command()
+def execution_export():
+    """Phase 28: Export execution safety report."""
+
+    config = load_config('config')
+    from binance50.execution.export import export_execution_summary_to_json
+    from pathlib import Path
+    export_execution_summary_to_json({"mock": "export"}, Path(config.execution.export_dir) / "execution_export.json")
+    console.print(f"[bold green]Exported to {config.execution.export_dir}[/bold green]")
+
+
+@app.command()
+def execution_safety_check():
+    """Phase 28: Main execution guard check."""
+    config = load_config('config')
+    from binance50.safety.execution_guard import assert_execution_config_safe, build_execution_safety_report
+    try:
+        assert_execution_config_safe(config)
+        print("[bold green]Execution Safety Check Passed[/bold green]")
+        console.print_json(data=build_execution_safety_report(config))
+    except Exception as e:
+        print(f"[bold red]Execution Safety Check Failed[/bold red]")
+        print(f"Error: {e}")
+
+@app.command()
+def order_intent_safety_check():
+    """Phase 28: Order intent safety guard check."""
+    config = load_config('config')
+    from binance50.safety.order_intent_guard import build_order_intent_safety_report
+    console.print_json(data=build_order_intent_safety_report(config))
+
+@app.command()
+def exchange_gateway_safety_check():
+    """Phase 28: Gateway disabled guard check."""
+    config = load_config('config')
+    from binance50.safety.exchange_gateway_guard import build_exchange_gateway_safety_report
+    console.print_json(data=build_exchange_gateway_safety_report(config))
+
+@app.command()
+def credential_safety_check():
+    """Phase 28: Credential safety guard check."""
+    config = load_config('config')
+    from binance50.safety.credential_guard import build_credential_safety_report
+    console.print_json(data=build_credential_safety_report(config))
+
+@app.command()
+def intent_promotion_safety_check():
+    """Phase 28: Intent promotion guard check."""
+    config = load_config('config')
+    from binance50.safety.intent_promotion_guard import build_intent_promotion_safety_report
+    console.print_json(data=build_intent_promotion_safety_report(config))
+
+@app.command()
+def kill_switch_safety_check():
+    """Phase 28: Kill-switch active and blocking guard check."""
+    config = load_config('config')
+    from binance50.safety.kill_switch_guard import build_kill_switch_safety_report
+    console.print_json(data=build_kill_switch_safety_report(config))
+
+@app.command()
+def execution_health():
+    """Phase 28: Execution health report."""
+    config = load_config('config')
+    from binance50.execution.reports import build_execution_health_report
+    console.print_json(data=build_execution_health_report(config))

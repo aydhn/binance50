@@ -1605,3 +1605,58 @@ class PortfolioAllocationForbiddenError(PortfolioConstructionError):
 
 class PortfolioConstructionIntegrationForbiddenError(PortfolioConstructionError):
     pass
+
+
+class ExecutionSafetyError(Binance50Error):
+    pass
+
+class ExecutionConfigError(ExecutionSafetyError):
+    pass
+
+class ExecutionIntentError(ExecutionSafetyError):
+    pass
+
+class ExecutionModeError(ExecutionSafetyError):
+    pass
+
+class ExecutionBoundaryError(ExecutionSafetyError):
+    pass
+
+class ExecutionPayloadSafetyError(ExecutionSafetyError):
+    pass
+
+class BinanceFilterValidationError(ExecutionSafetyError):
+    pass
+
+class ExecutionGatewayDisabledError(ExecutionSafetyError):
+    pass
+
+class ExecutionLifecycleError(ExecutionSafetyError):
+    pass
+
+class ExecutionIdempotencyError(ExecutionSafetyError):
+    pass
+
+class ExecutionKillSwitchError(ExecutionSafetyError):
+    pass
+
+class ExecutionCircuitBreakerError(ExecutionSafetyError):
+    pass
+
+class IntentPromotionForbiddenError(ExecutionSafetyError):
+    pass
+
+class CredentialDetectedError(ExecutionSafetyError):
+    pass
+
+class SignedPayloadDetectedError(ExecutionSafetyError):
+    pass
+
+class ExchangeOrderIdentifierDetectedError(ExecutionSafetyError):
+    pass
+
+class OrderSubmissionForbiddenError(ExecutionSafetyError):
+    pass
+
+class ExecutionQualityError(ExecutionSafetyError):
+    pass

@@ -303,3 +303,14 @@ Phase 14's signal scoring engine acts as a critical safety boundary between abst
 - **Production allocation yasağı:** Output is explicitly marked as sandbox/research intent.
 - **Real balance fetch yasağı:** Balances are simulated rather than queried from the exchange.
 - **Optional optimizer output sandbox-only kalır:** Any optimizations are guaranteed not to propagate to execution engines.
+
+## Execution Safety (Phase 28)
+- `ExecutionIntentDraft` gerçek emir değildir.
+- API key ve signed request yasağı aktif.
+- Gateway call yasağı var, /api/v3/order/test bile Phase 28’de kapalıdır.
+- Sandbox allocation’dan order’a direkt akış yasağı enforced.
+- Quantity/leverage/output yasağı implemented.
+- Exchange order id/clientOrderId yasağı enforced.
+- Kill-switch default ON kalmalı.
+- Intent promotion disabled in all production directions.
+- Binance filter validation local skeleton’dır, no live network calls.

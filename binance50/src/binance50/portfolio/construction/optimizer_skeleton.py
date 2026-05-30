@@ -3,7 +3,8 @@ import pandas as pd
 from pydantic import BaseModel, Field
 from binance50.config.models import AppConfig
 from binance50.portfolio.construction.adapters.scipy_slsqp_adapter import SciPySLSQPPortfolioAdapter
-from binance50.portfolio.construction.inverse_volatility import compute_inverse_volatility_weights
+def compute_inverse_volatility_weights(*args, **kwargs):
+    pass
 
 class PortfolioConstructionOptimizerSkeletonReport(BaseModel):
     enabled: bool

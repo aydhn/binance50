@@ -1837,3 +1837,189 @@ ml_inference:
     warn_low_confidence: true
     warn_feature_drift: true
     reject_live_or_paper_intent: true
+
+execution:
+  enabled: true
+  output_dataset_name: execution_safety_runs
+  cache_enabled: true
+  cache_dir: data/execution/cache
+  export_dir: data/execution/exports
+  reports_dir: data/execution/reports
+
+  global:
+    default_mode: sandbox
+    allow_paper_intents: false
+    allow_testnet_intents: false
+    allow_live_intents: false
+    allow_gateway_calls: false
+    allow_signed_requests: false
+    allow_api_credentials: false
+    allow_order_submission: false
+    allow_test_order_submission: false
+    allow_account_queries: false
+    allow_balance_queries: false
+    allow_position_queries: false
+    allow_leverage_changes: false
+
+  boundaries:
+    portfolio_allocation_to_execution_direct_flow_forbidden: true
+    sandbox_candidate_to_order_forbidden: true
+    production_signal_to_order_forbidden: true
+    risk_assessment_to_order_forbidden: true
+    ml_blend_to_order_forbidden: true
+    order_payload_export_forbidden: true
+    exchange_gateway_default_disabled: true
+
+  intents:
+    create_execution_intent_drafts: true
+    intent_draft_is_not_order: true
+    require_intent_mode: true
+    require_source_trace: true
+    require_correlation_id: true
+    require_idempotency_key: true
+    require_explanation: true
+    require_safety_scan: true
+    reject_missing_symbol: true
+    reject_missing_side: true
+    reject_missing_notional: true
+    reject_quantity_output_by_default: true
+    reject_price_output_by_default: true
+    reject_stop_take_profit_output_by_default: true
+    reject_leverage_output: true
+    reject_order_id_fields: true
+    reject_exchange_order_fields: true
+
+  allowed_modes:
+    sandbox:
+      enabled: true
+      can_create_intent_draft: true
+      can_submit_order: false
+      can_call_gateway: false
+      can_use_credentials: false
+    paper_candidate:
+      enabled: false
+      can_create_intent_draft: false
+      can_submit_order: false
+      can_call_gateway: false
+      can_use_credentials: false
+    testnet_candidate:
+      enabled: false
+      can_create_intent_draft: false
+      can_submit_order: false
+      can_call_gateway: false
+      can_use_credentials: false
+    live_candidate:
+      enabled: false
+      can_create_intent_draft: false
+      can_submit_order: false
+      can_call_gateway: false
+      can_use_credentials: false
+
+  binance_filters:
+    enabled: true
+    source: fixture_or_cached_exchange_info_only
+    network_fetch_forbidden: true
+    validate_price_filter: true
+    validate_lot_size: true
+    validate_min_notional: true
+    validate_notional: true
+    validate_percent_price_skeleton: true
+    validate_market_lot_size_skeleton: true
+    validate_iceberg_parts_skeleton: false
+    reject_unknown_symbol_filters: true
+    reject_missing_filters: true
+    rounding_mode: floor_to_step
+    price_tick_rounding: floor_to_tick
+    quantity_step_rounding: floor_to_step
+
+  payload_safety:
+    enabled: true
+    reject_api_key: true
+    reject_secret: true
+    reject_signature: true
+    reject_listen_key: true
+    reject_timestamp_signed_payload: true
+    reject_order_id: true
+    reject_client_order_id: true
+    reject_exchange_order_id: true
+    reject_real_order: true
+    reject_live_order: true
+    reject_testnet_order: true
+    reject_submit_endpoint: true
+    reject_binance_order_endpoint: true
+    reject_raw_http_request: true
+
+  gateway:
+    interface_enabled: true
+    all_implementations_disabled: true
+    paper_gateway_enabled: false
+    testnet_gateway_enabled: false
+    live_gateway_enabled: false
+    test_order_gateway_enabled: false
+    gateway_call_raises_by_default: true
+    gateway_requires_explicit_future_phase_enable: true
+
+  lifecycle:
+    enabled: true
+    allowed_states:
+      - draft_created
+      - safety_scanned
+      - rejected_by_guard
+      - blocked_by_kill_switch
+      - dry_run_validated
+      - archived
+    forbidden_states:
+      - submitted
+      - accepted_by_exchange
+      - partially_filled
+      - filled
+      - canceled_on_exchange
+      - rejected_by_exchange
+    exchange_state_forbidden: true
+
+  idempotency:
+    enabled: true
+    correlation_id_required: true
+    idempotency_key_required: true
+    deterministic_key_components:
+      - source_run_id
+      - source_candidate_id
+      - symbol
+      - side
+      - intent_mode
+      - open_time
+    exchange_client_order_id_forbidden: true
+
+  kill_switch:
+    enabled: true
+    global_kill_switch_default_on: true
+    block_all_gateway_calls: true
+    block_intent_promotion: true
+    block_testnet_live_modes: true
+    require_kill_switch_report: true
+
+  circuit_breaker:
+    enabled: true
+    max_intents_per_run: 50
+    max_intents_per_symbol: 5
+    max_rejected_intents_warning: 20
+    block_on_safety_error: true
+    block_on_unknown_mode: true
+    block_on_missing_filter: true
+
+  quality:
+    reject_missing_safety_scan: true
+    reject_missing_source_trace: true
+    reject_missing_correlation_id: true
+    reject_missing_idempotency_key: true
+    reject_gateway_call_attempt: true
+    reject_credential_detected: true
+    reject_signed_payload_detected: true
+    reject_order_id_detected: true
+    reject_forbidden_state: true
+    reject_quantity_output: true
+    reject_leverage_output: true
+    reject_production_order_intent: true
+    reject_live_or_testnet_intent: true
+    reject_missing_hashes: true
+    warn_no_intents_created: true

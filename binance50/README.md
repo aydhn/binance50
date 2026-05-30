@@ -386,3 +386,24 @@ The Portfolio Construction layer generates hypothetical allocation structures fr
 - `python -m binance50.cli portfolio-risk-contribution-report`
 - `python -m binance50.cli portfolio-allocation-safety-check`
 - `python -m binance50.cli portfolio-construction-health`
+
+## Execution Safety Abstraction (Phase 28)
+Execution safety abstraction ne yapar? It validates intents before they ever leave the strategy and enforces rules against direct allocation-to-order flow.
+ExecutionIntentDraft neden gerçek emir değildir? It holds internal simulation details and lacks exchange IDs.
+Sandbox/paper/testnet/live ayrımı nasıl korunur? Hardcoded mode configs ensure we operate purely offline in P28.
+Gateway neden disabled? Prevent accidental network calls.
+Kill-switch ne işe yarar? Default on, prevents gateway submissions.
+Payload scanner neyi yakalar? API keys, listen keys, signatures, and exchange IDs.
+Binance filter validation neden local skeleton? We do not rely on live networks to check tick sizes or limits.
+
+Komutlar:
+- `python -m binance50.cli execution-config`
+- `python -m binance50.cli execution-modes`
+- `python -m binance50.cli execution-run-safety-fixture --symbol BTCUSDT --scope spot --interval 1m`
+- `python -m binance50.cli execution-intents`
+- `python -m binance50.cli execution-safety-scans`
+- `python -m binance50.cli execution-dry-run-report`
+- `python -m binance50.cli execution-gateway-report`
+- `python -m binance50.cli execution-kill-switch-report`
+- `python -m binance50.cli credential-safety-check`
+- `python -m binance50.cli execution-health`
