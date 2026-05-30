@@ -314,3 +314,13 @@ Phase 14's signal scoring engine acts as a critical safety boundary between abst
 - Kill-switch default ON kalmalı.
 - Intent promotion disabled in all production directions.
 - Binance filter validation local skeleton’dır, no live network calls.
+
+## Paper Execution Security
+- Paper order is not a real order.
+- Paper fill is not a real fill.
+- Paper PnL is not real profit/loss.
+- API keys, signed requests, Binance REST, WebSocket, and `/api/v3/order/test` are strictly forbidden.
+- Same-bar fill is forbidden to prevent lookahead bias.
+- Negative cash and short spot positions are rejected.
+- The paper gateway is strictly local-only.
+- Paper exports are not exchange-ready payloads.

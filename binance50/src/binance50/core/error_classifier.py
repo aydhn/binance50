@@ -459,3 +459,37 @@ def classify_execution_safety_error(error_message: str) -> str:
 
 def is_execution_safety_error(error: Exception) -> bool:
     return isinstance(error, ExecutionSafetyError)
+
+from .exceptions import (
+    PaperIntentError,
+    PaperOrderError,
+    PaperGatewayError,
+    PaperFillSimulationError,
+    PaperBalanceError,
+    PaperPositionError,
+    PaperLedgerError,
+    PaperPnLError,
+    PaperQualityError,
+)
+
+def classify_paper_error(error_msg: str) -> Exception:
+    msg = error_msg.lower()
+    if "live intent" in msg or "testnet intent" in msg:
+        return PaperIntentError(error_msg)
+    if "exchange order id" in msg:
+        return PaperOrderError(error_msg)
+    if "network call" in msg:
+        return PaperGatewayError(error_msg)
+    if "same-bar fill" in msg:
+        return PaperFillSimulationError(error_msg)
+    if "negative cash" in msg:
+        return PaperBalanceError(error_msg)
+    if "short spot" in msg:
+        return PaperPositionError(error_msg)
+    if "missing ledger event" in msg:
+        return PaperLedgerError(error_msg)
+    if "nan pnl" in msg:
+        return PaperPnLError(error_msg)
+    if "quality fail" in msg:
+        return PaperQualityError(error_msg)
+    return Exception(error_msg)

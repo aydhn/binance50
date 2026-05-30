@@ -1660,3 +1660,74 @@ class OrderSubmissionForbiddenError(ExecutionSafetyError):
 
 class ExecutionQualityError(ExecutionSafetyError):
     pass
+
+class PaperExecutionError(Binance50Error):
+    def __init__(self, message: str):
+        super().__init__(message, error_code="PAPER_EXECUTION_ERROR")
+
+class PaperExecutionConfigError(Binance50Error):
+    def __init__(self, message: str):
+        super().__init__(message, error_code="PAPER_EXECUTION_CONFIG_INVALID")
+
+class PaperIntentError(Binance50Error):
+    def __init__(self, message: str):
+        super().__init__(message, error_code="PAPER_INTENT_INVALID")
+
+class PaperOrderError(Binance50Error):
+    def __init__(self, message: str):
+        super().__init__(message, error_code="PAPER_ORDER_INVALID")
+
+class PaperLifecycleError(Binance50Error):
+    def __init__(self, message: str):
+        super().__init__(message, error_code="PAPER_LIFECYCLE_INVALID")
+
+class PaperGatewayError(Binance50Error):
+    def __init__(self, message: str):
+        super().__init__(message, error_code="PAPER_GATEWAY_FAILED")
+
+class PaperFillSimulationError(Binance50Error):
+    def __init__(self, message: str):
+        super().__init__(message, error_code="PAPER_FILL_SIMULATION_FAILED")
+
+class PaperFeeError(Binance50Error):
+    def __init__(self, message: str):
+        super().__init__(message, error_code="PAPER_FEE_FAILED")
+
+class PaperSlippageError(Binance50Error):
+    def __init__(self, message: str):
+        super().__init__(message, error_code="PAPER_SLIPPAGE_FAILED")
+
+class PaperLedgerError(Binance50Error):
+    def __init__(self, message: str):
+        super().__init__(message, error_code="PAPER_LEDGER_FAILED")
+
+class PaperBalanceError(Binance50Error):
+    def __init__(self, message: str):
+        super().__init__(message, error_code="PAPER_BALANCE_FAILED")
+
+class PaperPositionError(Binance50Error):
+    def __init__(self, message: str):
+        super().__init__(message, error_code="PAPER_POSITION_FAILED")
+
+class PaperPnLError(Binance50Error):
+    def __init__(self, message: str):
+        super().__init__(message, error_code="PAPER_PNL_FAILED")
+
+class PaperEventError(Binance50Error):
+    def __init__(self, message: str):
+        super().__init__(message, error_code="PAPER_EVENT_FAILED")
+
+class PaperReplayError(Binance50Error):
+    def __init__(self, message: str):
+        super().__init__(message, error_code="PAPER_REPLAY_FAILED")
+
+class PaperQualityError(Binance50Error):
+    def __init__(self, message: str):
+        super().__init__(message, error_code="PAPER_QUALITY_FAILED")
+
+class PaperSafetyError(Binance50Error):
+    def __init__(self, message: str):
+        super().__init__(message, error_code="PAPER_SAFETY_FAILED")
+class ExecutionBoundaryError(Binance50Error):
+    def __init__(self, message: str):
+        super().__init__(message, error_code="EXECUTION_BOUNDARY_ERROR")

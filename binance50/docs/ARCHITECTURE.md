@@ -448,3 +448,15 @@ Production allocation is strictly forbidden in Phase 27 to maintain absolute sep
 - Kill-switch and circuit breaker act as fail-safes.
 - Intent promotion policy rejects moving intents to testnet or live.
 - Neden Phase 28’de order submission yok? It's essential to build the entire safety boundary before attempting network communication.
+
+## Paper Execution Bridge v1
+The Paper Execution bridge safely translates a `ExecutionIntentDraft` to a `PaperOrder`.
+- **Local paper gateway:** Does not connect to any network. Simulates transition to accepted state.
+- **Fill simulator:** Generates fills using next-bar execution rules to prevent lookahead bias.
+- **Fee/slippage simulator:** Applies hypothetical slippage and fixed fees.
+- **Append-only paper ledger:** Tracks cash and asset deltas.
+- **Balance and position ledger:** MTM evaluation of equity.
+- **Paper PnL engine:** Calculates realized/unrealized PnL.
+- **Replay engine:** Evaluates determinism.
+
+Note: Testnet and live order execution are strictly disabled in Phase 29.
